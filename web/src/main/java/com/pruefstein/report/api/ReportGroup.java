@@ -106,6 +106,20 @@ public record ReportGroup(Report latest, List<Report> older)
 		{
 			return older;
 		}
+
+		/**
+		 * Read against the clock at render time, the way the deadline itself is
+		 * counted, so a page left open overnight is not still claiming a week.
+		 */
+		public DeadlineUrgency getDeadlineUrgency()
+		{
+			return DeadlineUrgency.of(report.getDeadline(), report.getStatus(), Instant.now());
+		}
+
+		public String getDeadlineHint()
+		{
+			return DeadlineUrgency.hint(report.getDeadline(), report.getStatus(), Instant.now());
+		}
 	}
 
 	/** Identifies the group to the client-side toggle. */

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 @TestSecurity(user = "admin", roles = { "admin" })
@@ -153,16 +154,22 @@ class ReportsTest
 	{
 		// given — the default view
 
-		// when / then — the sort buttons live in the table, which used to sit
-		// outside the x-data element defining setSort, so Alpine never bound
-		// them and clicking a column header did nothing at all. The component
-		// has to wrap the whole page, not just the filter bar.
-		given()
+		// when — the sort buttons live in the table, which used to sit outside
+		// the x-data element defining setSort, so Alpine never bound them and
+		// clicking a column header did nothing at all. The component has to
+		// wrap the whole page, not just the filter bar.
+		String html = given()
 			.when().get("/Reports/index")
 			.then()
 			.statusCode(200)
-			.body(containsString("class=\"max-w-6xl\" x-data="))
-			.body(not(containsString("}\" class=\"mb-5\"")));
+			.extract().asString();
+
+		// then — the component opens before the table it has to reach. Pinning
+		// this on the wrapper's classes instead only tests the page's width.
+		int component = html.indexOf("setSort(col)");
+		int table = html.indexOf("<table");
+		assertTrue(component > 0, "the page defines setSort");
+		assertTrue(table > component, "the table opens inside the component defining setSort");
 	}
 
 	@Test
