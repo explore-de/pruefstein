@@ -27,7 +27,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: proxy
-      traefik.http.routers.pruefstein.rule: Host(`pruefstein.explore.de`)
+      traefik.http.routers.pruefstein.rule: Host(`${PRUEFSTEIN_HOST:-pruefstein.example.com}`)
       traefik.http.routers.pruefstein.entrypoints: websecure
       traefik.http.routers.pruefstein.tls: "true"
       traefik.http.routers.pruefstein.tls.certresolver: le
