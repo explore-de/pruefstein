@@ -1,5 +1,7 @@
 package com.pruefstein.user.service;
 
+import java.util.Optional;
+
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.repository.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,6 +23,7 @@ public class UserSyncService
 	public AppUser syncUser(String subject, String email, String firstName, String lastName)
 	{
 		return userRepository.findBySubject(subject)
+			.or(() -> adoptByMail(subject, email))
 			.map(user -> {
 				if (email != null)
 				{
@@ -43,6 +46,31 @@ public class UserSyncService
 				user.setFirstname(firstName != null ? firstName : subject);
 				user.setLastname(lastName != null ? lastName : "");
 				userRepository.persist(user);
+				return user;
+			});
+	}
+
+	/**
+	 * Claims the row an admin typed in ahead of the person's first login and
+	 * stamps the subject on it. Without this the hand-added user and the one
+	 * who reports are two records for one human, and the Users screen shows a
+	 * colleague who has been reporting for weeks as never having reported.
+	 *
+	 * <p>
+	 * The address is the only thing the two records share — the admin typed it,
+	 * and the identity provider vouches for it — so it is what they are matched
+	 * on. Matching is one-shot: the subject goes on, and every later sync finds
+	 * the row by subject instead.
+	 */
+	private Optional<AppUser> adoptByMail(String subject, String email)
+	{
+		if (email == null || email.isBlank())
+		{
+			return Optional.empty();
+		}
+		return userRepository.findAdoptableByMail(email)
+			.map(user -> {
+				user.setOidcSubject(subject);
 				return user;
 			});
 	}
