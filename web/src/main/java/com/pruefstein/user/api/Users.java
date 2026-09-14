@@ -58,7 +58,15 @@ public class Users extends Controller
 	 *            minutes ago. The screen says so rather than leaving the cell
 	 *            blank, because "never reported" is the finding.
 	 */
-	public record UserRow(AppUser user, Report latestReport, boolean stale)
+	/**
+	 * @param signedIn
+	 *            whether this person has ever authenticated. Only
+	 *            {@code create} leaves a row without a subject, so a false here
+	 *            means an admin typed them in and nothing has happened since —
+	 *            which is a different problem from somebody who signed in and
+	 *            never ran the agent, and wants chasing differently.
+	 */
+	public record UserRow(AppUser user, Report latestReport, boolean stale, boolean signedIn)
 	{
 		public AppUser getUser()
 		{
@@ -80,6 +88,11 @@ public class Users extends Controller
 		{
 			return stale;
 		}
+
+		public boolean isSignedIn()
+		{
+			return signedIn;
+		}
 	}
 
 	public TemplateInstance index()
@@ -94,7 +107,7 @@ public class Users extends Controller
 				boolean stale = report != null
 					&& report.getCheckedAt() != null
 					&& report.getCheckedAt().isBefore(staleBefore);
-				return new UserRow(user, report, stale);
+				return new UserRow(user, report, stale, user.getOidcSubject() != null);
 			})
 			.toList());
 	}

@@ -51,7 +51,15 @@
           <td class="px-4 py-3 text-stone-500">{appUser.mail}</td>
           <td class="px-4 py-3 whitespace-nowrap">
             {#if report == null}
-            <span class="text-xs font-medium text-stone-400">Never reported</span>
+            <!-- Two different silences: one person never opened the door,
+                 the other came in and never ran anything. -->
+            {#if row.signedIn}
+            <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-white text-stone-500">NO REPORT</span>
+            <span class="ml-1 text-xs font-medium text-stone-400">signed in, never ran the agent</span>
+            {#else}
+            <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-stone-300 bg-white text-stone-400">INVITED</span>
+            <span class="ml-1 text-xs font-medium text-stone-400">never signed in</span>
+            {/if}
             {#else}
             <a href="{uri:Reports.show(report.id)}" class="group inline-flex items-center gap-2">
               {#if report.status.name() == "COMPLIANT"}

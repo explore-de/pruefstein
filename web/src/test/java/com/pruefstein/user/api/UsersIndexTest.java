@@ -88,16 +88,22 @@ class UsersIndexTest
 	}
 
 	@Test
-	void saysSoWhenNothingHasEverReportedForAUser()
+	void separatesSomeoneWhoNeverSignedInFromSomeoneWhoNeverReported()
 	{
-		// given a user an admin typed in and nobody has reported for
+		// given one user an admin typed in who has never authenticated, and
+		// one who has signed in but never run the agent
 		seedUser("Nora", "Never", "index-never@example.com");
+		AppUser signedIn = seedUser("Dana", "Dormant", "index-dormant@example.com");
+		QuarkusTransaction.requiringNew()
+			.run(() -> userRepository.findById(signedIn.id).setOidcSubject("index-dormant-subject"));
 
-		// when / then
+		// when / then — both have no report, and the reasons differ enough to
+		// be chased differently
 		given().when().get("/Users/index")
 			.then()
 			.statusCode(200)
-			.body(containsString("Never reported"));
+			.body(containsString("never signed in"))
+			.body(containsString("signed in, never ran the agent"));
 	}
 
 	@Test
