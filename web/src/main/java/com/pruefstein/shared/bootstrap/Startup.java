@@ -162,9 +162,12 @@ public class Startup
 		AppUser aliceUser = seedUser("alice", "Alice", "Andersson");
 		AppUser bobUser = seedUser("bob", "Bob", "Bergmann");
 		AppUser plainUser = seedUser("user", "Uli", "Ulrich");
-		// Carol has an account and no device — the new-hire case the invite
-		// and "Resend invite" are for.
+		// Carol was typed in and nothing has happened since: the invite may
+		// never even have landed.
 		seedUser(null, "Carol", "Chen");
+		// Dan got in and stopped there — signed in, never ran the agent. The
+		// same blank row as Carol on the old screen, a different problem.
+		seedUser("dev-dan", "Dan", "Doyle");
 
 		// Report 1: fully compliant, finalized yesterday
 		Report compliant = new Report();
