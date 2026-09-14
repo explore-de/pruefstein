@@ -23,6 +23,8 @@ import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
 import com.pruefstein.report.repository.ReportRepository;
+import com.pruefstein.user.domain.AppUser;
+import com.pruefstein.user.repository.UserRepository;
 import io.quarkus.runtime.LaunchMode;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Priority;
@@ -77,6 +79,9 @@ public class Startup
 
 	@Inject
 	DeviceRepository deviceRepository;
+
+	@Inject
+	UserRepository userRepository;
 
 	@Transactional
 	public void start(@Observes @Priority(CatalogSeeder.PRIORITY + 100) StartupEvent evt)
@@ -151,11 +156,22 @@ public class Startup
 	private void seedReports(ComplianceItem fileVault, ComplianceItem firewall,
 		ComplianceItem autoUpdates, ComplianceItem screenLock)
 	{
+		// The people the reports belong to. Without these the Users screen is
+		// empty and every report is unattributed, so the last-report column,
+		// the STALE badge and the two mail actions all have nothing to show.
+		AppUser aliceUser = seedUser("alice", "Alice", "Andersson");
+		AppUser bobUser = seedUser("bob", "Bob", "Bergmann");
+		AppUser plainUser = seedUser("user", "Uli", "Ulrich");
+		// Carol has an account and no device — the new-hire case the invite
+		// and "Resend invite" are for.
+		seedUser(null, "Carol", "Chen");
+
 		// Report 1: fully compliant, finalized yesterday
 		Report compliant = new Report();
 		compliant.setDeviceId("MacBook-Pro-Alice.local");
 		compliant.setUserId("alice");
 		compliant.setKeycloakUser("alice");
+		compliant.setAppUser(aliceUser);
 		compliant.setCheckedAt(Instant.now().minus(1, ChronoUnit.DAYS));
 		compliant.setStatus(ReportStatus.COMPLIANT);
 		compliant.setFinalizedAt(Instant.now().minus(1, ChronoUnit.DAYS).plusSeconds(5));
@@ -171,6 +187,7 @@ public class Startup
 		nonCompliant.setDeviceId("MacBook-Air-Bob.local");
 		nonCompliant.setUserId("bob");
 		nonCompliant.setKeycloakUser("bob");
+		nonCompliant.setAppUser(bobUser);
 		nonCompliant.setCheckedAt(Instant.now().minus(1, ChronoUnit.HOURS));
 		nonCompliant.setStatus(ReportStatus.NON_COMPLIANT);
 		nonCompliant.setDeadline(Instant.now().plus(6, ChronoUnit.DAYS));
@@ -187,6 +204,7 @@ public class Startup
 		userReport.setDeviceId("MacBook-Pro-User.local");
 		userReport.setUserId("user");
 		userReport.setKeycloakUser("user");
+		userReport.setAppUser(plainUser);
 		userReport.setCheckedAt(Instant.now().minus(2, ChronoUnit.HOURS));
 		userReport.setStatus(ReportStatus.COMPLIANT);
 		userReport.setFinalizedAt(Instant.now().minus(2, ChronoUnit.HOURS).plusSeconds(5));
@@ -197,12 +215,31 @@ public class Startup
 		addResult(userReport, autoUpdates, true, "[{\"value\":\"1\"}]");
 		addResult(userReport, screenLock, true, "[{\"value\":\"180\"}]");
 
+		// Report 4: Uli's older run, well past the 7-day interval. The newest
+		// run wins the row, so this one only shows inside the folded group —
+		// it is here to give the Reports list a genuinely aged entry.
+		Report aged = new Report();
+		aged.setDeviceId("MacBook-Pro-User.local");
+		aged.setUserId("user");
+		aged.setKeycloakUser("user");
+		aged.setAppUser(plainUser);
+		aged.setCheckedAt(Instant.now().minus(40, ChronoUnit.DAYS));
+		aged.setStatus(ReportStatus.COMPLIANT);
+		aged.setFinalizedAt(Instant.now().minus(40, ChronoUnit.DAYS).plusSeconds(5));
+		reportRepository.persist(aged);
+
+		addResult(aged, fileVault, true, "[{\"filevault_status\":\"on\"}]");
+		addResult(aged, firewall, true, "[{\"global_state\":\"1\"}]");
+		addResult(aged, autoUpdates, true, "[{\"value\":\"1\"}]");
+		addResult(aged, screenLock, true, "[{\"value\":\"180\"}]");
+
 		// Device registry — seeded devices carry no periodic flow instance;
 		// the first real check-in starts one.
 		Device alice = new Device();
 		alice.setDeviceId("MacBook-Pro-Alice.local");
 		alice.setUserId("alice");
 		alice.setKeycloakUser("alice");
+		alice.setAppUser(aliceUser);
 		alice.setLastReportAt(compliant.getCheckedAt());
 		deviceRepository.persist(alice);
 
@@ -210,6 +247,7 @@ public class Startup
 		bob.setDeviceId("MacBook-Air-Bob.local");
 		bob.setUserId("bob");
 		bob.setKeycloakUser("bob");
+		bob.setAppUser(bobUser);
 		bob.setLastReportAt(nonCompliant.getCheckedAt());
 		deviceRepository.persist(bob);
 
@@ -217,8 +255,25 @@ public class Startup
 		user.setDeviceId("MacBook-Pro-User.local");
 		user.setUserId("user");
 		user.setKeycloakUser("user");
+		user.setAppUser(plainUser);
 		user.setLastReportAt(userReport.getCheckedAt());
 		deviceRepository.persist(user);
+	}
+
+	/**
+	 * A seeded person. The subject is what a real login would carry;
+	 * {@code null} leaves the row in the state an admin's typing leaves it in,
+	 * which is the one the mail-address matching has to cope with.
+	 */
+	private AppUser seedUser(String oidcSubject, String firstname, String lastname)
+	{
+		AppUser user = new AppUser();
+		user.setOidcSubject(oidcSubject);
+		user.setFirstname(firstname);
+		user.setLastname(lastname);
+		user.setMail(firstname.toLowerCase() + "@example.com");
+		userRepository.persist(user);
+		return user;
 	}
 
 	private void addResult(Report report, ComplianceItem item, boolean passed, String output)
