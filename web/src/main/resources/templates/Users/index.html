@@ -4,7 +4,7 @@
 <div x-data="usersPage()"
      @open-edit.window="editUser($event.detail)"
      @open-delete.window="deleteUser($event.detail)"
-     class="max-w-4xl">
+     class="max-w-6xl">
 
   <!-- Page header -->
   <div class="flex items-start justify-between mb-8">
@@ -37,16 +37,46 @@
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs">First Name</th>
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs">Last Name</th>
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs">Email</th>
+          <th class="text-left px-4 py-3 font-black tracking-wide text-xs">Last Report</th>
           <th class="px-4 py-3 w-10"></th>
         </tr>
       </thead>
       <tbody>
-        {#for appUser in appUsers}
+        {#for row in rows}
+        {#let appUser=row.user report=row.latestReport}
         <tr class="border-b-2 border-black last:border-0 hover:bg-accent transition-colors"
             x-show="!search || '{appUser.firstname} {appUser.lastname} {appUser.mail}'.toLowerCase().includes(search.toLowerCase())">
           <td class="px-4 py-3 font-medium">{appUser.firstname}</td>
           <td class="px-4 py-3 font-medium">{appUser.lastname}</td>
           <td class="px-4 py-3 text-stone-500">{appUser.mail}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            {#if report == null}
+            <span class="text-xs font-medium text-stone-400">Never reported</span>
+            {#else}
+            <a href="{uri:Reports.show(report.id)}" class="group inline-flex items-center gap-2">
+              {#if report.status.name() == "COMPLIANT"}
+              <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-emerald-400">COMPLIANT</span>
+              {#else if report.status.name() == "NON_COMPLIANT"}
+              <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-red-400 text-white">NON-COMPLIANT</span>
+              {#else if report.status.name() == "MISSING"}
+              <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-accent">MISSING</span>
+              {#else}
+              <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-stone-200">OPEN</span>
+              {/if}
+              <span class="text-xs font-medium {#if row.stale}text-red-600 font-bold{#else}text-stone-500 group-hover:text-black{/if}">
+                {#if report.status.name() == "OPEN" && report.deadline != null}
+                fix by {report.deadline.toString().substring(0, 10)}
+                {#else}
+                {report.checkedAt.ago}
+                {/if}
+              </span>
+              {#if row.stale}
+              <span title="Older than the reporting interval — this no longer proves much"
+                    class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-white text-red-600">STALE</span>
+              {/if}
+            </a>
+            {/if}
+          </td>
           <td class="px-4 py-3 text-right">
             {#if inject:currentUser.admin}
             <div class="inline-block"
@@ -68,7 +98,7 @@
                    :style="pos"
                    x-transition:enter="transition ease-out duration-100"
                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                   class="z-50 w-32 bg-white border-2 border-black shadow-brutal py-1 origin-top-right">
+                   class="z-50 w-40 bg-white border-2 border-black shadow-brutal py-1 origin-top-right">
                 <button
                   @click="$dispatch('open-edit', $el.dataset); open = false"
                   data-id="{appUser.id}"
@@ -78,6 +108,27 @@
                   class="w-full text-left px-3 py-1.5 text-sm font-medium hover:bg-accent transition-none">
                   Edit
                 </button>
+                <!-- Somebody with no report has nothing to be reminded about
+                     yet — they need the setup instructions instead. -->
+                {#if report == null}
+                <form method="post" action="{uri:Users.invite}">
+                  {#authenticityToken /}
+                  <input type="hidden" name="id" value="{appUser.id}">
+                  <button type="submit"
+                    class="w-full text-left px-3 py-1.5 text-sm font-medium hover:bg-accent transition-none">
+                    Resend invite
+                  </button>
+                </form>
+                {#else}
+                <form method="post" action="{uri:Users.requestReport}">
+                  {#authenticityToken /}
+                  <input type="hidden" name="id" value="{appUser.id}">
+                  <button type="submit"
+                    class="w-full text-left px-3 py-1.5 text-sm font-medium hover:bg-accent transition-none">
+                    Request report
+                  </button>
+                </form>
+                {/if}
                 <button
                   @click="$dispatch('open-delete', $el.dataset); open = false"
                   data-id="{appUser.id}"
@@ -89,9 +140,10 @@
             {/if}
           </td>
         </tr>
+        {/let}
         {#else}
         <tr>
-          <td colspan="4" class="px-4 py-16 text-center text-sm font-medium text-stone-400">
+          <td colspan="5" class="px-4 py-16 text-center text-sm font-medium text-stone-400">
             No users yet — click <span class="font-bold text-black">Add User</span> to get started.
           </td>
         </tr>

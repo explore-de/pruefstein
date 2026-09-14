@@ -18,4 +18,16 @@ public class MailTemplates
 
 	/** Sent shortly before the remediation deadline of a still-open report. */
 	public static native MailTemplateInstance deadlineReminder(ReportMailData report);
+
+	/**
+	 * Sent when a device's proof of compliance is about to go stale, and by the
+	 * admin asking for a run out of band.
+	 */
+	public static native MailTemplateInstance reportDue(ReportRequestMailData request);
+
+	/**
+	 * Sent to someone nobody has ever reported for — a new hire, or a colleague
+	 * who has not installed the agent yet.
+	 */
+	public static native MailTemplateInstance invite(ReportRequestMailData request);
 }

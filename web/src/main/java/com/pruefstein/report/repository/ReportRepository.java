@@ -2,7 +2,10 @@ package com.pruefstein.report.repository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.pruefstein.report.domain.Report;
@@ -34,6 +37,35 @@ public class ReportRepository implements PanacheRepository<Report>
 	{
 		return list("status = ?1 and reminderSentAt is null and deadline > ?2 and deadline <= ?3",
 			ReportStatus.OPEN, now, threshold);
+	}
+
+	/**
+	 * The newest run of each of the given users, keyed by user id.
+	 *
+	 * <p>
+	 * One query for a whole page of users rather than one per row: walking
+	 * {@code AppUser.reports} instead would be an N+1, and the Users screen
+	 * needs exactly one report from each list.
+	 *
+	 * <p>
+	 * The reduce keeps the first report seen per user, which the ordering makes
+	 * the newest. Id breaks a tie, so two runs landing in the same second still
+	 * pick the same winner every time the page is drawn.
+	 */
+	public Map<Long, Report> findLatestByUser(Collection<Long> userIds)
+	{
+		if (userIds.isEmpty())
+		{
+			return Map.of();
+		}
+		Sort newestFirst = Sort.by("checkedAt", Sort.Direction.Descending)
+			.and("id", Sort.Direction.Descending);
+		Map<Long, Report> latest = new LinkedHashMap<>();
+		for (Report report : list("appUser.id in ?1", newestFirst, userIds))
+		{
+			latest.putIfAbsent(report.getAppUser().id, report);
+		}
+		return latest;
 	}
 
 	public List<Report> listFiltered(ReportStatus status, String q, String sort, String dir)

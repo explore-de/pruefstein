@@ -11,6 +11,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class DeviceRepository implements PanacheRepository<Device>
 {
+	public List<Device> findByAppUser(Long appUserId)
+	{
+		return list("appUser.id", appUserId);
+	}
+
 	public Optional<Device> findByDeviceId(String deviceId)
 	{
 		return find("deviceId", deviceId).firstResultOptional();
@@ -23,5 +28,26 @@ public class DeviceRepository implements PanacheRepository<Device>
 	public List<Device> findOverdue(Instant cutoff)
 	{
 		return list("lastReportAt < ?1 and periodicFlowInstanceId is not null", cutoff);
+	}
+
+	/**
+	 * Devices whose next report is close enough to ask for, and that have not
+	 * been asked yet this cycle.
+	 *
+	 * <p>
+	 * Already-overdue devices are deliberately excluded: {@code
+	 * PeriodicDeadlineJob} files their MISSING report and turns their cycle
+	 * over, and a reminder about a deadline that has already passed helps
+	 * nobody.
+	 *
+	 * @param remindFrom
+	 *            report older than this and the nudge is due
+	 * @param overdueCutoff
+	 *            report older than this and it is too late to nudge
+	 */
+	public List<Device> findDueForReminder(Instant remindFrom, Instant overdueCutoff)
+	{
+		return list("reminderSentAt is null and lastReportAt <= ?1 and lastReportAt > ?2 "
+			+ "and periodicFlowInstanceId is not null", remindFrom, overdueCutoff);
 	}
 }

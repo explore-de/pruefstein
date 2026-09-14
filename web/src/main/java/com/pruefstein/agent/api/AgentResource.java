@@ -164,10 +164,11 @@ public class AgentResource
 		// Agents authenticate as their own bearer identity, which never passes
 		// through the web login augmentor — so the local user record (and with
 		// it the address every notification goes to) is synced here.
-		report.setAppUser(syncReportingUser());
+		AppUser reportingUser = syncReportingUser();
+		report.setAppUser(reportingUser);
 
 		replaceInventory(report, payload.installedApps());
-		upsertDevice(payload);
+		upsertDevice(payload, reportingUser);
 
 		String reportUrl = uriInfo.getBaseUri().resolve("Reports/show/" + report.id).toString();
 		Instant deadline = report.getStatus() == ReportStatus.OPEN ? report.getDeadline() : null;
@@ -301,7 +302,7 @@ public class AgentResource
 	 * for the next cycle.</li>
 	 * </ul>
 	 */
-	private void upsertDevice(ReportPayload payload)
+	private void upsertDevice(ReportPayload payload, AppUser reportingUser)
 	{
 		String keycloakUser = jwt.<String> claim("preferred_username").orElse(jwt.getSubject());
 		Device device = deviceRepository.findByDeviceId(payload.deviceId()).orElse(null);
@@ -314,6 +315,7 @@ public class AgentResource
 			device.setDeviceId(payload.deviceId());
 			device.setUserId(payload.userId());
 			device.setKeycloakUser(keycloakUser);
+			device.setAppUser(reportingUser);
 			device.setLastReportAt(Instant.now());
 			deviceRepository.persist(device);
 
@@ -328,6 +330,10 @@ public class AgentResource
 			device.setLastReportAt(Instant.now());
 			device.setUserId(payload.userId());
 			device.setKeycloakUser(keycloakUser);
+			device.setAppUser(reportingUser);
+			// A fresh report starts a fresh cycle, so the nudge for the last
+			// one is spent — clearing it is what makes the reminder recur.
+			device.setReminderSentAt(null);
 			periodicFlowTrigger.fire(
 				new PeriodicFlowTrigger(device.getDeviceId(), device.getPeriodicFlowInstanceId(), true));
 		}

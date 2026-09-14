@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prüfstein — time to re-check {request.deviceId}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f4;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f5f5f4;padding:32px 12px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:100%;max-width:600px;background-color:#ffffff;border:2px solid #000000;font-family:'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;color:#000000;">
+
+        <!-- Brand bar -->
+        <tr>
+          <td style="background-color:#000000;padding:16px 24px;">
+            <span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:-0.5px;">Prüfstein</span>
+          </td>
+        </tr>
+
+        <!-- Banner -->
+        <tr>
+          <td style="background-color:{#if request.overdue}#f87171{#else}#facc15{/if};border-bottom:2px solid #000000;padding:14px 24px;">
+            <span style="font-size:12px;font-weight:bold;letter-spacing:3px;color:{#if request.overdue}#ffffff{#else}#000000{/if};">
+              {#if request.overdue}⚠ OVERDUE — REPORT NEEDED NOW{#else}DUE IN {request.dayLabel}{/if}
+            </span>
+          </td>
+        </tr>
+
+        <!-- Lead -->
+        <tr>
+          <td style="padding:28px 24px 20px 24px;border-bottom:2px solid #000000;">
+            <p style="margin:0;font-size:22px;font-weight:bold;line-height:1.3;letter-spacing:-0.5px;">
+              Time to re-check {request.deviceId}.
+            </p>
+            <p style="margin:10px 0 0 0;font-size:15px;line-height:1.6;color:#44403c;">
+              Hi {request.name ?: 'there'}, compliance is proved by a recent check, not a past one —
+              so every device reports again every {request.intervalLabel}.
+              {#if request.overdue}
+              Yours is now past due.
+              {#else}
+              Yours is due by <strong>{request.dueAt}</strong>.
+              {/if}
+            </p>
+            {#if request.lastCheckedAt}
+            <p style="margin:14px 0 0 0;font-size:15px;line-height:1.6;color:#44403c;">
+              Your last report was on <strong>{request.lastCheckedAt}</strong>.
+            </p>
+            {/if}
+          </td>
+        </tr>
+
+        <!-- What to do -->
+        <tr>
+          <td style="padding:20px 24px;border-bottom:2px solid #000000;">
+            <p style="margin:0 0 12px 0;font-size:10px;font-weight:bold;letter-spacing:2px;color:#57534e;">WHAT TO DO</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="background-color:#f5f5f4;border:2px solid #000000;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <p style="margin:0;font-size:15px;line-height:1.6;color:#44403c;">
+                    Run the agent and, if the checks look right to you, send the report:
+                  </p>
+                  <p style="margin:12px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:15px;font-weight:bold;">
+                    pruefstein-agent run
+                  </p>
+                  <p style="margin:12px 0 0 0;font-size:13px;line-height:1.5;color:#57534e;">
+                    It shows you everything it found before anything is sent. Nothing leaves your
+                    machine until you say so.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Consequence -->
+        <tr>
+          <td style="padding:20px 24px;border-bottom:2px solid #000000;">
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#57534e;">
+              If nothing arrives by {request.dueAt}, the cycle closes itself and this device is
+              recorded as <strong>missing a report</strong> — which reads the same as a failure in
+              the fleet overview.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 24px;">
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#78716c;">
+              <a href="{request.url}" style="color:#000000;font-weight:bold;">Open Prüfstein</a>
+              to see your own reports. This is an automated message.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
