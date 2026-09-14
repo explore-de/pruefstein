@@ -53,11 +53,24 @@ class MailPreviewDump
 			"18 Aug 2026, 11:02", "20 Aug 2026", 0, failures,
 			"https://pruefstein.example.com/Reports/show/483");
 
+		// No device on this one — which is what makes it an invitation
+		ReportRequestMailData invite = new ReportRequestMailData("Markus", null, null,
+			"27 Aug 2026", 7, 7, "https://pruefstein.example.com");
+
+		ReportRequestMailData due = new ReportRequestMailData("Markus", "MBP-C02XK1",
+			"13 Aug 2026, 09:14", "20 Aug 2026", 2, 7, "https://pruefstein.example.com");
+
+		ReportRequestMailData overdue = new ReportRequestMailData("Markus", "MBP-C02XK1",
+			"13 Aug 2026, 09:14", "20 Aug 2026", 0, 7, "https://pruefstein.example.com");
+
 		Files.createDirectories(OUT);
 		write("compliant.html", MailTemplates.reportOutcome(compliant));
 		write("open.html", MailTemplates.reportOutcome(open));
 		write("noncompliant.html", MailTemplates.reportOutcome(nonCompliant));
 		write("reminder.html", MailTemplates.deadlineReminder(reminder));
+		write("invite.html", MailTemplates.invite(invite));
+		write("report-due.html", MailTemplates.reportDue(due));
+		write("report-overdue.html", MailTemplates.reportDue(overdue));
 	}
 
 	private void write(String file, MailTemplateInstance template) throws Exception

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prüfstein — set up your device compliance check</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f5f5f4;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f5f5f4;padding:32px 12px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:100%;max-width:600px;background-color:#ffffff;border:2px solid #000000;font-family:'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;color:#000000;">
+
+        <!-- Brand bar -->
+        <tr>
+          <td style="background-color:#000000;padding:16px 24px;">
+            <span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:-0.5px;">Prüfstein</span>
+          </td>
+        </tr>
+
+        <!-- Banner -->
+        <tr>
+          <td style="background-color:#facc15;border-bottom:2px solid #000000;padding:14px 24px;">
+            <span style="font-size:12px;font-weight:bold;letter-spacing:3px;color:#000000;">WELCOME — FIRST REPORT BY {request.dueAt}</span>
+          </td>
+        </tr>
+
+        <!-- Lead -->
+        <tr>
+          <td style="padding:28px 24px 20px 24px;border-bottom:2px solid #000000;">
+            <p style="margin:0;font-size:22px;font-weight:bold;line-height:1.3;letter-spacing:-0.5px;">
+              Let's get your Mac checked.
+            </p>
+            <p style="margin:10px 0 0 0;font-size:15px;line-height:1.6;color:#44403c;">
+              Hi {request.name ?: 'there'}, we check company Macs against our ISO 27001 controls —
+              disk encryption, screen lock, that sort of thing. It takes a couple of minutes to set
+              up and then about ten seconds every {request.intervalLabel}.
+            </p>
+            <p style="margin:14px 0 0 0;font-size:15px;line-height:1.6;color:#44403c;">
+              Nothing runs in the background and nothing is sent without you seeing it first. The
+              agent shows you every result and asks before it reports anything.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Setup -->
+        <tr>
+          <td style="padding:20px 24px;border-bottom:2px solid #000000;">
+            <p style="margin:0 0 12px 0;font-size:10px;font-weight:bold;letter-spacing:2px;color:#57534e;">SETTING UP</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="background-color:#f5f5f4;border:2px solid #000000;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <p style="margin:0;font-size:13px;font-weight:bold;color:#57534e;">1 — INSTALL THE AGENT</p>
+                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;">
+                    ./agent/bin/install.sh
+                  </p>
+                  <p style="margin:16px 0 0 0;font-size:13px;font-weight:bold;color:#57534e;">2 — SIGN IN, ONCE</p>
+                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;">
+                    pruefstein-agent login
+                  </p>
+                  <p style="margin:16px 0 0 0;font-size:13px;font-weight:bold;color:#57534e;">3 — RUN THE CHECKS</p>
+                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;">
+                    pruefstein-agent run
+                  </p>
+                  <p style="margin:12px 0 0 0;font-size:13px;line-height:1.5;color:#57534e;">
+                    It prints what each check found, then asks whether to send the report.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Deadline -->
+        <tr>
+          <td style="padding:20px 24px;border-bottom:2px solid #000000;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="background-color:#fef9c3;border:2px solid #000000;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <p style="margin:0;font-size:10px;font-weight:bold;letter-spacing:2px;color:#57534e;">FIRST REPORT DUE</p>
+                  <p style="margin:6px 0 0 0;font-size:20px;font-weight:bold;">{request.dueAt}</p>
+                  <p style="margin:6px 0 0 0;font-size:13px;line-height:1.5;color:#44403c;">
+                    After that it repeats every {request.intervalLabel}, and we'll remind you before
+                    each one is due.
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 24px;">
+            <p style="margin:0;font-size:12px;line-height:1.6;color:#78716c;">
+              <a href="{request.url}" style="color:#000000;font-weight:bold;">Open Prüfstein</a>
+              to see what is checked and why. Stuck on any of this? Reply and ask.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

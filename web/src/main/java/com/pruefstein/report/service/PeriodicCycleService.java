@@ -49,6 +49,9 @@ public class PeriodicCycleService
 
 		// Reset the clock so the next hourly tick does not immediately re-fire
 		device.setLastReportAt(Instant.now());
+		// The new cycle gets its own nudge, whether or not the last one was
+		// answered.
+		device.setReminderSentAt(null);
 
 		var wi = periodicReportingFlow.instance(Map.of("deviceId", device.getDeviceId()));
 		device.setPeriodicFlowInstanceId(wi.id());
