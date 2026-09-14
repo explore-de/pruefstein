@@ -79,6 +79,75 @@ class UserSyncServiceTest
 	}
 
 	@Test
+	void adoptsHandAddedUserWithMatchingMail()
+	{
+		// given a user an admin typed in, who has never logged in
+		AppUser typedIn = new AppUser();
+		typedIn.setFirstname("Vlad");
+		typedIn.setLastname("Knyshov");
+		typedIn.setMail("adopt-me@example.com");
+		userRepository.persist(typedIn);
+
+		// when that person's agent reports for the first time
+		AppUser synced = userSyncService.syncUser("sub-adopt", "adopt-me@example.com", "Vlad", "Knyshov");
+
+		// then the typed-in row was claimed rather than a second one created
+		assertEquals(typedIn.id, synced.id);
+		assertEquals("sub-adopt", synced.getOidcSubject());
+		assertEquals(1, userRepository.count("mail", "adopt-me@example.com"));
+	}
+
+	@Test
+	void adoptionMatchesMailCaseInsensitively()
+	{
+		// given
+		AppUser typedIn = new AppUser();
+		typedIn.setFirstname("Alena");
+		typedIn.setLastname("Knyshova");
+		typedIn.setMail("Mixed.Case@Example.com");
+		userRepository.persist(typedIn);
+
+		// when the provider hands the address back lowercased
+		AppUser synced = userSyncService.syncUser("sub-case", "mixed.case@example.com", "Alena", "Knyshova");
+
+		// then
+		assertEquals(typedIn.id, synced.id);
+	}
+
+	@Test
+	void doesNotAdoptRowThatAlreadyBelongsToAnotherSubject()
+	{
+		// given a row already claimed by one identity
+		userSyncService.syncUser("sub-owner", "shared@example.com", "First", "Owner");
+
+		// when a different identity arrives under the same address
+		AppUser second = userSyncService.syncUser("sub-intruder", "shared@example.com", "Second", "Comer");
+
+		// then it gets its own row and the first keeps its subject
+		assertEquals("sub-intruder", second.getOidcSubject());
+		assertEquals("sub-owner", userRepository.findBySubject("sub-owner").orElseThrow().getOidcSubject());
+		assertEquals(2, userRepository.count("mail", "shared@example.com"));
+	}
+
+	@Test
+	void createsNewUserWhenSyncCarriesNoMail()
+	{
+		// given a hand-added row that could only be matched on its address
+		AppUser typedIn = new AppUser();
+		typedIn.setFirstname("No");
+		typedIn.setLastname("Mail");
+		typedIn.setMail("nomail-match@example.com");
+		userRepository.persist(typedIn);
+
+		// when a sync arrives with no address to match on
+		AppUser synced = userSyncService.syncUser("sub-nomail", null, "No", "Mail");
+
+		// then nothing is adopted
+		assertNotEquals(typedIn.id, synced.id);
+		assertNull(typedIn.getOidcSubject());
+	}
+
+	@Test
 	void doesNotOverwriteFieldsWithNullOnUpdate()
 	{
 		// given
