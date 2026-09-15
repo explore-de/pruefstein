@@ -46,6 +46,21 @@
       "realmRoles": ["admin", "offline_access"]
     },
     {
+      "username": "newbie",
+      "email": "newbie@example.com",
+      "firstName": "Nina",
+      "lastName": "Neuling",
+      "enabled": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "newbie",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["offline_access"]
+    },
+    {
       "username": "user",
       "email": "user@example.com",
       "firstName": "Regular",

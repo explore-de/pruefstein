@@ -168,6 +168,9 @@ public class Startup
 		// Dan got in and stopped there — signed in, never ran the agent. The
 		// same blank row as Carol on the old screen, a different problem.
 		seedUser("dev-dan", "Dan", "Doyle");
+		// Nina is the dev realm's third login and owns no device on purpose:
+		// signing in as her is how the dashboard's setup state gets looked at.
+		seedUser("newbie", "Nina", "Neuling");
 
 		// Report 1: fully compliant, finalized yesterday
 		Report compliant = new Report();
@@ -236,6 +239,25 @@ public class Startup
 		addResult(aged, autoUpdates, true, "[{\"value\":\"1\"}]");
 		addResult(aged, screenLock, true, "[{\"value\":\"180\"}]");
 
+		// Report 5: Uli's other machine, failing two checks with the repair
+		// window still open. The one report state the personal dashboard is
+		// built around — signing in as "user" has to show both this and the
+		// clean machine above, or half the page never gets looked at.
+		Report userOpen = new Report();
+		userOpen.setDeviceId("MacBook-Air-User.local");
+		userOpen.setUserId("user");
+		userOpen.setKeycloakUser("user");
+		userOpen.setAppUser(plainUser);
+		userOpen.setCheckedAt(Instant.now().minus(3, ChronoUnit.HOURS));
+		userOpen.setStatus(ReportStatus.OPEN);
+		userOpen.setDeadline(Instant.now().plus(5, ChronoUnit.DAYS));
+		reportRepository.persist(userOpen);
+
+		addResult(userOpen, fileVault, false, "[]", FILEVAULT_FALLBACK);
+		addResult(userOpen, firewall, true, "[{\"global_state\":\"1\"}]");
+		addResult(userOpen, autoUpdates, false, "[{\"value\":\"0\"}]", AUTO_UPDATES_FALLBACK);
+		addResult(userOpen, screenLock, true, "[{\"value\":\"180\"}]");
+
 		// Device registry — seeded devices carry no periodic flow instance;
 		// the first real check-in starts one.
 		Device alice = new Device();
@@ -261,6 +283,14 @@ public class Startup
 		user.setAppUser(plainUser);
 		user.setLastReportAt(userReport.getCheckedAt());
 		deviceRepository.persist(user);
+
+		Device userAir = new Device();
+		userAir.setDeviceId("MacBook-Air-User.local");
+		userAir.setUserId("user");
+		userAir.setKeycloakUser("user");
+		userAir.setAppUser(plainUser);
+		userAir.setLastReportAt(userOpen.getCheckedAt());
+		deviceRepository.persist(userAir);
 	}
 
 	/**

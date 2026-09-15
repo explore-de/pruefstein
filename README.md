@@ -165,6 +165,39 @@ cd web
 
 Quarkus Dev Services starts a PostgreSQL container automatically. The app is available at `http://localhost:8080`.
 
+#### Signing in, and what each account shows
+
+Dev mode also starts Keycloak (fixed port 8180) from
+`web/src/main/resources/keycloak/pruefstein-realm.json`, and `Startup` seeds
+demo data to go with it. Three logins, each one there to show a different face
+of the app:
+
+| User | Password | Role | What you get |
+|---|---|---|---|
+| `admin` | `admin` | admin | The fleet dashboard, every report, Users, and the AI suggest actions |
+| `user` | `user` | — | The personal dashboard with one clean Mac and one that needs work |
+| `newbie` | `newbie` | — | The personal dashboard with no devices at all: the setup walkthrough |
+
+The dashboard at `/` serves whichever of the two it owes you. An admin sees the
+estate's totals; everybody else sees only their own machines, the same way the
+report list has always scoped itself.
+
+**`user` is the one to test the personal dashboard with.** Uli Ulrich owns two
+seeded machines:
+
+- `MacBook-Pro-User.local` — compliant, all four checks passing
+- `MacBook-Air-User.local` — **open**, FileVault and automatic updates failing,
+  with the repair deadline five days out
+
+so a single login shows both the "all clear" card and the to-do list with the
+model's fix behind each failing check. Sign in as `newbie` for the state a new
+colleague lands in.
+
+The seed runs only in dev mode and only against the throwaway Dev Services
+database, which is recreated on every boot — so the demo data resets itself and
+never reaches a real deployment.
+
+
 ### Setup walkthrough
 
 The three commands a new colleague has to run are written once, in
