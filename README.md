@@ -222,6 +222,30 @@ docker compose up -d
 
 ---
 
+## Building
+
+The root `pom.xml` is a reactor over `web` and `agent`. It carries the version
+both of them ship under, the Quarkus platform they both build against, and the
+plugins they both run — before it existed each module kept its own copy of all
+three and nothing but habit kept the copies equal.
+
+```bash
+./mvnw test                          # both modules
+./mvnw package -pl web               # one of them
+cd agent && ./mvnw package -Dnative  # or from inside it; same thing
+```
+
+A module resolves the parent through `../pom.xml`, so building one does not
+require installing the other, and the per-module `mvnw` wrappers still work
+exactly as they did.
+
+**The version lives in one place: `<version>` in the root `pom.xml`.** Bump it
+with `./mvnw versions:set -DnewVersion=0.1.0`, which rewrites the parent and
+both modules together. It is what names the agent's release archive, so it has
+to be a real version — not `1.0.0-SNAPSHOT` — before the first tag.
+
+---
+
 ## ISO 27001 mapping
 
 Compliance Groups map to ISO 27001 Annex A control families. Suggested groups:

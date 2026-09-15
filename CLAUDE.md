@@ -24,27 +24,37 @@ web/          ← Quarkus Maven project (pruefstein-web)
 
 ## Commands
 
-All Maven commands must be run from the `web/` directory.
+The root `pom.xml` is a reactor over two modules, `web` and `agent`, and holds
+the one version both of them carry. Run Maven from the root for anything that
+spans both, or from a module for anything that does not — a module resolves the
+parent through `../pom.xml`, so neither needs the other installed.
 
 ```bash
-# Dev mode with live reload
-./mvnw quarkus:dev
-
-# Run unit tests
+# Everything, both modules
 ./mvnw test
-
-# Run a single test class
-./mvnw test -Dtest=GreetingResourceTest
-
-# Build (skip ITs by default)
 ./mvnw package
 
-# Build and run integration tests against packaged jar
+# One module (equivalently: cd web && ./mvnw …)
+./mvnw test -pl web
+./mvnw package -pl agent
+
+# Dev mode with live reload — a single module, so run it there
+cd web && ./mvnw quarkus:dev
+
+# A single test class
+./mvnw test -pl web -Dtest=ReportsTest
+
+# Integration tests, which package first and are skipped by default
 ./mvnw verify -DskipITs=false
 
-# Native build (requires GraalVM)
-./mvnw package -Pnative
+# Native build (requires GraalVM on JAVA_HOME)
+./mvnw package -pl agent -Dnative
 ```
+
+Formatting is enforced at `validate`: `formatter-maven-plugin` on `web`,
+`impsort-maven-plugin` on both. `./mvnw formatter:format impsort:sort` fixes
+what they would fail on. The agent's sources are not formatter-clean yet, which
+is why only `web` runs the formatter.
 
 ## Architecture
 
