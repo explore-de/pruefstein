@@ -55,23 +55,33 @@
   <!-- ── Secondary stats ──────────────────────────────────────── -->
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
 
-    <div class="bg-white border-2 border-black shadow-brutal p-5">
+    <a href="{uri:Reports.index}?status=OPEN" class="block bg-white border-2 border-black shadow-brutal p-5 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <p class="text-[10px] font-black tracking-widest text-stone-400">PENDING</p>
       <p class="text-3xl font-black mt-1">{openCount}</p>
       <p class="text-xs font-medium text-stone-400 mt-1">awaiting finalization</p>
-    </div>
+    </a>
 
-    <div class="bg-white border-2 border-black shadow-brutal p-5">
+    <a href="{uri:ComplianceGroups.index}" class="block bg-white border-2 border-black shadow-brutal p-5 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <p class="text-[10px] font-black tracking-widest text-stone-400">CHECKS DEFINED</p>
       <p class="text-3xl font-black mt-1">{itemCount}</p>
       <p class="text-xs font-medium text-stone-400 mt-1">across all groups</p>
-    </div>
+    </a>
 
+    <!-- The user list is admin-only, so only an admin gets the card as a link;
+         everyone else keeps the number without a door that would 403 on them. -->
+    {#if inject:currentUser.admin}
+    <a href="{uri:Users.index}" class="block bg-white border-2 border-black shadow-brutal p-5 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
+      <p class="text-[10px] font-black tracking-widest text-stone-400">USERS</p>
+      <p class="text-3xl font-black mt-1">{userCount}</p>
+      <p class="text-xs font-medium text-stone-400 mt-1">registered accounts</p>
+    </a>
+    {#else}
     <div class="bg-white border-2 border-black shadow-brutal p-5">
       <p class="text-[10px] font-black tracking-widest text-stone-400">USERS</p>
       <p class="text-3xl font-black mt-1">{userCount}</p>
       <p class="text-xs font-medium text-stone-400 mt-1">registered accounts</p>
     </div>
+    {/if}
 
   </div>
 
