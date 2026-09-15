@@ -247,6 +247,35 @@ packaging:
 ./mvnw test
 ```
 
+## Packaging a release
+
+`bin/install.sh` links the command back into this working tree, which is right
+while you are working on the agent and useless to anybody installing it. For
+that there is:
+
+```bash
+./bin/package.sh --build    # build the native binary, then archive it
+./bin/package.sh            # archive whatever is already in target/
+```
+
+It writes `dist/pruefstein-agent-<version>-<os>-<arch>.tar.gz` and a `.sha256`
+beside it. The archive holds the binary under its command name plus the licence
+and this README, so an unpacked copy explains itself — the shape a Homebrew
+formula, or anything else that downloads a tarball, expects.
+
+Archiving is deterministic: ownership, timestamps, member order and the gzip
+header are all pinned, so re-packaging the same binary yields the same
+checksum. The binary itself is not reproducible — `native-image` bakes build
+paths into it — so a formula should pin the checksum of a published archive
+rather than one built locally.
+
+**A native build only ever targets the machine it runs on.** `.github/workflows/
+agent-release.yml` therefore builds on one runner per architecture — Apple
+silicon and Intel — checks that the archived binary starts, and attaches both
+archives to the release when a `v*` tag is pushed. Run it from the Actions tab
+without a tag to get the archives as workflow artifacts instead, which is the
+cheap way to try a formula against a real binary before naming a version.
+
 ## Related guides
 
 - [Picocli](https://quarkus.io/guides/picocli) — the CLI framework

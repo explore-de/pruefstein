@@ -15,6 +15,7 @@ release.properties
 bin/*
 !bin/pruefstein-agent
 !bin/install.sh
+!bin/package.sh
 
 # IntelliJ
 .idea

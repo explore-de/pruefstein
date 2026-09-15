@@ -61,3 +61,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Release archives built by agent/bin/package.sh — a 60 MB binary per
+# architecture belongs on a release, not in the history.
+agent/dist/
