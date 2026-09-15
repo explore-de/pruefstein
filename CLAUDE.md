@@ -51,6 +51,12 @@ cd web && ./mvnw quarkus:dev
 ./mvnw package -pl agent -Dnative
 ```
 
+Releases go through `maven-release-plugin` from the root: `./mvnw
+release:prepare` sets one version across the reactor, tags it `vX.Y.Z` and
+pushes, and that tag is what makes `agent-release.yml` build the native
+binaries and create the GitHub release. Nothing is deployed to a Maven
+repository, so `perform` is configured to `verify` rather than `deploy`.
+
 Formatting is enforced at `validate`: `formatter-maven-plugin` on `web`,
 `impsort-maven-plugin` on both. `./mvnw formatter:format impsort:sort` fixes
 what they would fail on. The agent's sources are not formatter-clean yet, which

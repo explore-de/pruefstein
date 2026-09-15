@@ -239,10 +239,35 @@ A module resolves the parent through `../pom.xml`, so building one does not
 require installing the other, and the per-module `mvnw` wrappers still work
 exactly as they did.
 
-**The version lives in one place: `<version>` in the root `pom.xml`.** Bump it
-with `./mvnw versions:set -DnewVersion=0.1.0`, which rewrites the parent and
-both modules together. It is what names the agent's release archive, so it has
-to be a real version — not `1.0.0-SNAPSHOT` — before the first tag.
+**The version lives in one place: `<version>` in the root `pom.xml`**, and both
+modules inherit it. It is what names the agent's release archive, so it has to
+be a real version — not `1.0.0-SNAPSHOT` — before the first release.
+
+### Cutting a release
+
+```bash
+./mvnw release:prepare      # asks for the version, or pass -DreleaseVersion=…
+./mvnw release:perform      # optional: builds the tag from a clean checkout
+```
+
+`release:prepare` sets the version across the reactor, runs `clean verify`,
+commits, tags `vX.Y.Z`, bumps to the next snapshot and pushes. **The tag push is
+the release**: it starts `agent-release.yml`, which builds the agent natively on
+one macOS runner per architecture and attaches both archives, with their
+checksums, to a GitHub release it creates from the tag.
+
+Maven publishes nothing. What this project ships is a container image — already
+tagged per commit by `ci.yml` — and two native binaries that only a macOS runner
+can produce, so `perform` is configured to run `verify` rather than `deploy`:
+it proves the tag builds from a clean checkout and stops there. Skipping it
+costs you nothing the tag workflow does not already check.
+
+Try it without consequences first:
+
+```bash
+./mvnw release:prepare -DdryRun=true -DpushChanges=false
+./mvnw release:clean          # removes the *.tag / *.next files it left
+```
 
 ---
 

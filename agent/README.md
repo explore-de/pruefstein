@@ -272,9 +272,11 @@ rather than one built locally.
 **A native build only ever targets the machine it runs on.** `.github/workflows/
 agent-release.yml` therefore builds on one runner per architecture — Apple
 silicon and Intel — checks that the archived binary starts, and attaches both
-archives to the release when a `v*` tag is pushed. Run it from the Actions tab
-without a tag to get the archives as workflow artifacts instead, which is the
-cheap way to try a formula against a real binary before naming a version.
+archives to the release when a `v*` tag is pushed. `./mvnw release:prepare` from
+the repository root is what pushes that tag; see [Building](../README.md#building).
+Run the workflow from the Actions tab without a tag to get the archives as
+workflow artifacts instead, which is the cheap way to try a formula against a
+real binary before naming a version.
 
 ## Related guides
 

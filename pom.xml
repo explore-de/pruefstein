@@ -10,6 +10,18 @@
     <name>Prüfstein</name>
     <description>ISO 27001 device compliance: a web app your admins use and a command your colleagues run.</description>
 
+    <!-- One git repository for both modules. Maven would otherwise append each
+         module's path to the inherited URLs and have the agent looking for a
+         repository at .../pruefstein/agent, so the appending is turned off. -->
+    <scm child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false"
+         child.scm.url.inherit.append.path="false">
+        <connection>scm:git:https://github.com/explore-de/pruefstein.git</connection>
+        <developerConnection>scm:git:git@github.com:explore-de/pruefstein.git</developerConnection>
+        <url>https://github.com/explore-de/pruefstein</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <!-- The web app and the agent ship as one thing and are versioned as one
          thing. Before this pom they each carried their own copy of the same
          number, the same Quarkus platform, and the same eight plugins, and
@@ -30,6 +42,7 @@
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.39.3</quarkus.platform.version>
         <quarkus-banner.version>1.6.0</quarkus-banner.version>
+        <release-plugin.version>3.3.1</release-plugin.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.6.0</surefire-plugin.version>
     </properties>
@@ -122,6 +135,22 @@
                         <lineEnding>LF</lineEnding>
                     </configuration>
                 </plugin>
+                <!-- `release:prepare` sets the version across the reactor,
+                     tags it vX.Y.Z and pushes — and that tag push is what
+                     builds the agent binaries and creates the GitHub release.
+                     Maven never publishes anything here: what this project
+                     ships is a container image and two native binaries, and
+                     neither comes out of a Maven repository, which is why
+                     `perform` verifies the tag instead of deploying it. -->
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${release-plugin.version}</version>
+                    <configuration>
+                        <tagNameFormat>v@{project.version}</tagNameFormat>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <goals>verify</goals>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>net.revelc.code</groupId>
                     <artifactId>impsort-maven-plugin</artifactId>
@@ -146,6 +175,12 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>

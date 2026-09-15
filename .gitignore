@@ -64,3 +64,9 @@ Temporary Items
 # Release archives built by agent/bin/package.sh — a 60 MB binary per
 # architecture belongs on a release, not in the history.
 agent/dist/
+
+# maven-release-plugin working files
+pom.xml.releaseBackup
+pom.xml.tag
+pom.xml.next
+release.properties
