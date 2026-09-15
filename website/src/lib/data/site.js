@@ -54,6 +54,7 @@ export const company = {
 /** Hrefs are relative to the deployment root; components prefix `base`. */
 export const nav = [
 	{ href: '/#how', label: 'How it works' },
+	{ href: '/#screens', label: 'Screenshots' },
 	{ href: '/#trust', label: 'Trust' },
 	{ href: '/#anatomy', label: 'Anatomy of a check' },
 	{ href: '/#features', label: 'Features' },

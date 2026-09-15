@@ -1,6 +1,7 @@
 <script>
 	import Hero from '$lib/components/Hero.svelte';
 	import HowItWorks from '$lib/components/HowItWorks.svelte';
+	import Screenshots from '$lib/components/Screenshots.svelte';
 	import Trust from '$lib/components/Trust.svelte';
 	import CheckAnatomy from '$lib/components/CheckAnatomy.svelte';
 	import Features from '$lib/components/Features.svelte';
@@ -51,6 +52,7 @@
 
 <Hero />
 <HowItWorks />
+<Screenshots />
 <Trust />
 <CheckAnatomy />
 <Features />
