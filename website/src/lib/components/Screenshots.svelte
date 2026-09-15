@@ -1,5 +1,6 @@
 <script>
 	import Section from './Section.svelte';
+	import { base } from '$app/paths';
 	import { shots } from '$lib/data/shots.js';
 </script>
 
@@ -15,9 +16,9 @@
 			<figure class="shot" class:wide={shot.wide}>
 				<div class="frame">
 					<picture>
-						<source srcset="/shots/{shot.file}.webp" type="image/webp" />
+						<source srcset="{base}/shots/{shot.file}.webp" type="image/webp" />
 						<img
-							src="/shots/{shot.file}.png"
+							src="{base}/shots/{shot.file}.png"
 							width={shot.w}
 							height={shot.h}
 							alt={shot.alt}
