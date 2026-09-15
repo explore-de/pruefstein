@@ -87,7 +87,7 @@ Podman for the web app's Dev Services, and **osquery** on the `PATH`
 (`brew install --cask osquery` on macOS).
 
 ```bash
-git clone git@github.com:d135-1r43/pruefstein.git
+git clone git@github.com:explore-de/pruefstein.git
 cd pruefstein
 ./agent/bin/install.sh
 ```
@@ -213,7 +213,7 @@ your people should be reading the agent's source before they run it.
 
 ### Production
 
-A ready-to-use Compose stack (Postgres, Kafka, and the web image from `ghcr.io/d135-1r43/pruefstein-web`) lives in `deploy/`. Copy `deploy/.env.example` to `deploy/.env`, fill in the required values (database credentials, Entra tenant/client IDs, OpenAI key), then run:
+A ready-to-use Compose stack (Postgres, Kafka, and the web image from `ghcr.io/explore-de/pruefstein-web`) lives in `deploy/`. Copy `deploy/.env.example` to `deploy/.env`, fill in the required values (database credentials, Entra tenant/client IDs, OpenAI key), then run:
 
 ```bash
 cd deploy

@@ -8,7 +8,7 @@ export const lanes = [
 		title: 'Add a check to the catalog',
 		body: 'You know an osquery table and the control it satisfies. Add a CheckDef with a permanent key, an expression and the Annex A group it belongs to. Two lines of Java and a test. No Quarkus knowledge required.',
 		cta: 'Browse the catalog',
-		href: 'https://github.com/d135-1r43/pruefstein/blob/main/web/src/main/java/com/pruefstein/compliance/bootstrap/ComplianceCatalog.java',
+		href: 'https://github.com/explore-de/pruefstein/blob/main/web/src/main/java/com/pruefstein/compliance/bootstrap/ComplianceCatalog.java',
 		accent: true
 	},
 	{
@@ -16,35 +16,35 @@ export const lanes = [
 		title: 'Windows and Linux checks',
 		body: 'The agent already runs anywhere osquery runs. The seeded catalog does not: it is macOS to the last row. A Windows or Linux equivalent for each control is the single biggest thing missing from the project.',
 		cta: 'Open an issue',
-		href: 'https://github.com/d135-1r43/pruefstein/issues/new'
+		href: 'https://github.com/explore-de/pruefstein/issues/new'
 	},
 	{
 		tag: 'Code',
 		title: 'Pick up the agent or the web app',
 		body: 'Quarkus 3, Java 25, Renarde and Qute on the server; Picocli and a native image on the client. Both build with the wrapper, both have tests, and dev mode brings up Postgres and Keycloak for you.',
 		cta: 'Read the README',
-		href: 'https://github.com/d135-1r43/pruefstein#readme'
+		href: 'https://github.com/explore-de/pruefstein#readme'
 	},
 	{
 		tag: 'Docs',
 		title: 'Write down what tripped you up',
 		body: 'Deploying behind a proxy, wiring Entra ID, scheduling the agent with launchd or systemd. If you worked it out once, the note you wished you had is a contribution.',
 		cta: 'Start a discussion',
-		href: 'https://github.com/d135-1r43/pruefstein/discussions'
+		href: 'https://github.com/explore-de/pruefstein/discussions'
 	},
 	{
 		tag: 'Field report',
 		title: 'Tell us it failed your audit',
 		body: 'A control your auditor rejected, an expression that is wrong on macOS 15, a check that passes when it should not. Negative results are worth more than feature requests here.',
 		cta: 'File a bug',
-		href: 'https://github.com/d135-1r43/pruefstein/issues/new'
+		href: 'https://github.com/explore-de/pruefstein/issues/new'
 	},
 	{
 		tag: 'No code',
 		title: 'Map more of Annex A',
 		body: 'Which controls are genuinely machine-checkable on an endpoint, and which are policy that no query will ever settle? That judgement is the hard part, and it does not need a compiler.',
 		cta: 'Join the discussion',
-		href: 'https://github.com/d135-1r43/pruefstein/discussions'
+		href: 'https://github.com/explore-de/pruefstein/discussions'
 	}
 ];
 

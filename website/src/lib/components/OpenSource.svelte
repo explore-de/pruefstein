@@ -5,7 +5,7 @@
 	import { promises } from '$lib/data/contribute.js';
 	import { site } from '$lib/data/site.js';
 
-	const quickstart = `git clone https://github.com/d135-1r43/pruefstein.git
+	const quickstart = `git clone https://github.com/explore-de/pruefstein.git
 cd pruefstein
 
 # terminal 1: Dev Services bring up Postgres and Keycloak

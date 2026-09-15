@@ -9,20 +9,20 @@ export const site = {
 	// Deployed to GitHub Pages under /<repo> for now. Moving to the apex domain
 	// later is three edits: these two lines, dropping BASE_PATH from
 	// .github/workflows/website.yml, and putting static/CNAME back.
-	domain: 'd135-1r43.github.io/pruefstein',
-	url: 'https://d135-1r43.github.io/pruefstein',
+	domain: 'explore-de.github.io/pruefstein',
+	url: 'https://explore-de.github.io/pruefstein',
 	tagline: 'ISO 27001 device compliance without spying on your team.',
 	description:
 		'Prüfstein checks every employee Mac against your ISO 27001 controls. Nothing runs in the ' +
 		'background, nothing is filed until the person says so, and the fleet data never leaves you. ' +
 		'macOS today. Optional AI writes the checks and explains the failures, using a model you ' +
 		'choose. 100% open source, self-hosted, no paid tier. By EXP Software GmbH.',
-	repo: 'https://github.com/d135-1r43/pruefstein',
-	issues: 'https://github.com/d135-1r43/pruefstein/issues',
-	discussions: 'https://github.com/d135-1r43/pruefstein/discussions',
-	newIssue: 'https://github.com/d135-1r43/pruefstein/issues/new',
+	repo: 'https://github.com/explore-de/pruefstein',
+	issues: 'https://github.com/explore-de/pruefstein/issues',
+	discussions: 'https://github.com/explore-de/pruefstein/discussions',
+	newIssue: 'https://github.com/explore-de/pruefstein/issues/new',
 	license: 'Apache-2.0',
-	licenseUrl: 'https://github.com/d135-1r43/pruefstein/blob/main/LICENSE'
+	licenseUrl: 'https://github.com/explore-de/pruefstein/blob/main/LICENSE'
 };
 
 /**

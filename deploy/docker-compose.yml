@@ -16,7 +16,7 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/d135-1r43/pruefstein-web:latest
+    image: ghcr.io/explore-de/pruefstein-web:latest
     restart: unless-stopped
     # No host port published: the app trusts X-Forwarded-* (see
     # quarkus.http.proxy.* in application.properties), so it must only ever be

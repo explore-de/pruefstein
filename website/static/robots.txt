@@ -4,4 +4,4 @@ Allow: /
 # Note: on a project Pages site robots.txt is only honoured at the origin root,
 # not under /pruefstein/. This becomes effective once the site moves to its own
 # domain.
-Sitemap: https://d135-1r43.github.io/pruefstein/sitemap.xml
+Sitemap: https://explore-de.github.io/pruefstein/sitemap.xml

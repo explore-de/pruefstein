@@ -26,7 +26,7 @@ build and run the checks but do not deploy. It is a separate workflow from
 or fail because of one.
 
 The site is currently served from the default project URL,
-<https://d135-1r43.github.io/pruefstein/>, which is a **sub-path**. That is why
+<https://explore-de.github.io/pruefstein/>, which is a **sub-path**. That is why
 the workflow builds with `BASE_PATH=/<repo>`, read by `paths.base` in
 `svelte.config.js`. SvelteKit then emits every asset and internal link
 relative (`./_app/…`, `../_app/…`), which works at any prefix. Two checks in the
