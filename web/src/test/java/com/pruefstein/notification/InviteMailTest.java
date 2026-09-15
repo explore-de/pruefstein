@@ -53,6 +53,16 @@ class InviteMailTest
 			"the invitation has to say which server the agent reports to");
 	}
 
+	/** One command, because three would be three chances to stop reading. */
+	@Test
+	void asksForASingleInstallCommand()
+	{
+		mailService.sendInvite(invitee());
+
+		assertTrue(html().contains("brew install " + manual.brewFormula()),
+			"the invitation has to carry the install command somebody can paste");
+	}
+
 	@Test
 	void linksTheRepository()
 	{

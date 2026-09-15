@@ -20,6 +20,9 @@ public class SetupManual
 	@ConfigProperty(name = "pruefstein.project.repository-url")
 	String repositoryUrl;
 
+	@ConfigProperty(name = "pruefstein.project.brew-formula")
+	String brewFormula;
+
 	/**
 	 * The three commands, in the order they have to be run. Login names this
 	 * server outright rather than relying on a default: the agent ships with no
@@ -29,9 +32,10 @@ public class SetupManual
 	public List<SetupStep> steps()
 	{
 		return List.of(
-			new SetupStep("Install the agent", "./agent/bin/install.sh",
-				"Clone the repository and run this from its root. It builds the agent if needed "
-					+ "and puts pruefstein-agent on your PATH."),
+			new SetupStep("Install the agent", "brew install " + brewFormula,
+				"One command: Homebrew finds the tap on its own and installs a prebuilt binary. "
+					+ "Nothing to compile, and no Java to install — the agent is a native "
+					+ "executable."),
 			new SetupStep("Sign in, once", "pruefstein-agent login --server " + baseUrl(),
 				"--server (short: -s) names the Prüfstein server you report to. It is stored "
 					+ "alongside your credentials and reused by every later run, so this is the "
@@ -54,6 +58,16 @@ public class SetupManual
 	public String repositoryUrl()
 	{
 		return repositoryUrl;
+	}
+
+	/**
+	 * The fully-qualified formula, which is what lets a single install command
+	 * work without tapping first — {@code brew install owner/tap/formula} taps
+	 * on the reader's behalf.
+	 */
+	public String brewFormula()
+	{
+		return brewFormula;
 	}
 
 	/** A trailing slash would read as a typo in the middle of a command. */

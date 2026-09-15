@@ -11,16 +11,25 @@ Built with Quarkus and [Picocli](https://quarkus.io/guides/picocli).
 
 ## Installing
 
-From this directory:
+```bash
+brew install explore-de/pruefstein/pruefstein-agent
+```
+
+A prebuilt native binary from the tap at
+[explore-de/homebrew-pruefstein](https://github.com/explore-de/homebrew-pruefstein).
+No JDK and nothing to compile.
+
+To work on the agent instead, build and link it from this directory:
 
 ```bash
 ./bin/install.sh
 ```
 
 (or `./agent/bin/install.sh` from the repository root). This builds the agent
-if nothing is built yet and makes it available as the
-`pruefstein-agent` command. `./bin/install.sh --uninstall` removes it again.
-See the [root README](../README.md#building-and-installing-the-cli) for
+if nothing is built yet and makes it available as the same
+`pruefstein-agent` command, linked back into this working tree so a rebuild
+takes effect with nothing to reinstall. `./bin/install.sh --uninstall` removes
+it again. See the [root README](../README.md#building-the-cli-from-source) for
 prerequisites and the full first-run walkthrough.
 
 ## Commands

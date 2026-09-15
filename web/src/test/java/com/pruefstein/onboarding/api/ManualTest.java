@@ -23,7 +23,7 @@ class ManualTest
 			.when().get("/Manual/index")
 			.then()
 			.statusCode(200)
-			.body(containsString("./agent/bin/install.sh"))
+			.body(containsString("brew install " + manual.brewFormula()))
 			.body(containsString("pruefstein-agent run"));
 	}
 

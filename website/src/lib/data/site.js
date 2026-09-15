@@ -17,6 +17,10 @@ export const site = {
 		'background, nothing is filed until the person says so, and the fleet data never leaves you. ' +
 		'macOS today. Optional AI writes the checks and explains the failures, using a model you ' +
 		'choose. 100% open source, self-hosted, no paid tier. By EXP Software GmbH.',
+	// One command: `brew install owner/tap/formula` taps on the reader's behalf,
+	// so nobody has to be told about `brew tap` first.
+	install: 'brew install explore-de/pruefstein/pruefstein-agent',
+	tap: 'https://github.com/explore-de/homebrew-pruefstein',
 	repo: 'https://github.com/explore-de/pruefstein',
 	issues: 'https://github.com/explore-de/pruefstein/issues',
 	discussions: 'https://github.com/explore-de/pruefstein/discussions',

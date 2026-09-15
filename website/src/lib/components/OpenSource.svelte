@@ -5,14 +5,14 @@
 	import { promises } from '$lib/data/contribute.js';
 	import { site } from '$lib/data/site.js';
 
-	const quickstart = `git clone https://github.com/explore-de/pruefstein.git
+	const quickstart = `git clone ${site.repo}.git
 cd pruefstein
 
 # terminal 1: Dev Services bring up Postgres and Keycloak
 cd web && ./mvnw quarkus:dev
 
-# terminal 2: build, link and run the agent
-./agent/bin/install.sh
+# terminal 2: the agent, against the server you just started
+${site.install}
 pruefstein-agent login --server http://localhost:8080
 pruefstein-agent run`;
 </script>

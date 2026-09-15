@@ -56,7 +56,7 @@ class DashboardAccessTest
 			.then()
 			.statusCode(200)
 			.body(containsString("NOTHING CHECKED YET"))
-			.body(containsString("./agent/bin/install.sh"))
+			.body(containsString("brew install"))
 			.body(containsString("pruefstein-agent run"));
 	}
 }

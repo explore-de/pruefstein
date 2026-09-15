@@ -65,6 +65,10 @@ Temporary Items
 # architecture belongs on a release, not in the history.
 agent/dist/
 
+# Maven output. The reactor root builds nothing of its own, but
+# release:perform checks the tag out into target/checkout.
+target/
+
 # maven-release-plugin working files
 pom.xml.releaseBackup
 pom.xml.tag

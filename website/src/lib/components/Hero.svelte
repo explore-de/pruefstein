@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import Button from './Button.svelte';
+	import CodeBlock from './CodeBlock.svelte';
 	import Terminal from './Terminal.svelte';
 	import Stone from './Stone.svelte';
 	import { site } from '$lib/data/site.js';
@@ -73,6 +74,12 @@
 			<div class="actions">
 				<Button href="#how" variant="accent">See how it works</Button>
 				<Button href={site.repo} external variant="dark">Get it on GitHub ↗</Button>
+			</div>
+
+			<!-- The one line somebody has to copy to try it. Fully qualified, so
+			     Homebrew taps on their behalf and this really is one command. -->
+			<div class="install">
+				<CodeBlock label="Install the agent" code={site.install} tone="dark" />
 			</div>
 
 			<dl class="facts">
@@ -150,6 +157,11 @@
 		flex-wrap: wrap;
 		gap: 0.9rem;
 		margin-top: 2.1rem;
+	}
+
+	.install {
+		margin-top: 1.75rem;
+		max-width: 46ch;
 	}
 
 	.facts {

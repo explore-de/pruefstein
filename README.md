@@ -80,11 +80,27 @@ One user can have multiple devices — each device reports independently and app
 
 It is intended to run as a scheduled task (launchd on macOS, systemd on Linux, Task Scheduler on Windows).
 
-### Building and installing the CLI
+### Installing the CLI
 
-Prerequisites: **JDK 25** (GraalVM if you want the native binary), **Docker** or
-Podman for the web app's Dev Services, and **osquery** on the `PATH`
-(`brew install --cask osquery` on macOS).
+```bash
+brew install explore-de/pruefstein/pruefstein-agent
+```
+
+That is the whole thing. The formula is fully qualified, so Homebrew taps
+[explore-de/homebrew-pruefstein](https://github.com/explore-de/homebrew-pruefstein)
+on your behalf, and what it installs is a prebuilt native binary: no JDK, no
+build. `brew uninstall pruefstein-agent` removes it.
+
+The checks themselves run through **osquery**, which the formula deliberately
+does not pull in — `pruefstein-agent run` offers to install it the first time
+it needs it, and asks first. `brew install --cask osquery` if you would rather
+get it out of the way.
+
+### Building the CLI from source
+
+For working on the agent rather than using it. Prerequisites: **JDK 25**
+(GraalVM if you want the native binary) and **Docker** or Podman for the web
+app's Dev Services.
 
 ```bash
 git clone git@github.com:explore-de/pruefstein.git
@@ -92,11 +108,11 @@ cd pruefstein
 ./agent/bin/install.sh
 ```
 
-That is the whole setup. The installer builds the agent if nothing is built
-yet, then links it as `pruefstein-agent` into whichever directory is already
-on your `PATH` — so there is normally nothing to add to your shell profile. If
-no suitable directory exists it uses `~/.local/bin` and prints the one line to
-add. `./agent/bin/install.sh --uninstall` removes the command again.
+The installer builds the agent if nothing is built yet, then links it as
+`pruefstein-agent` into whichever directory is already on your `PATH` — so
+there is normally nothing to add to your shell profile. If no suitable
+directory exists it uses `~/.local/bin` and prints the one line to add.
+`./agent/bin/install.sh --uninstall` removes the command again.
 
 What gets linked is `agent/bin/pruefstein-agent`, a launcher rather than a copy: it
 runs whichever build is present in `agent/target`, preferring the native binary
