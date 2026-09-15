@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import com.pruefstein.device.domain.Device;
+import com.pruefstein.onboarding.SetupManual;
 import com.pruefstein.user.domain.AppUser;
 import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -43,6 +44,12 @@ public class ReportRequestMailService
 
 	@Inject
 	ReportRequestMailService.Sender sender;
+
+	@Inject
+	SetupManual manual;
+
+	@Inject
+	MailBranding branding;
 
 	@ConfigProperty(name = "pruefstein.web.base-url")
 	String baseUrl;
@@ -94,7 +101,8 @@ public class ReportRequestMailService
 				reportingIntervalDays,
 				baseUrl);
 			sender.send(address, "Prüfstein: set up your device compliance check",
-				MailTemplates.invite(data));
+				branding.brand(MailTemplates.invite(data, manual.steps(), manual.repositoryUrl(),
+					manual.manualUrl())));
 		});
 	}
 

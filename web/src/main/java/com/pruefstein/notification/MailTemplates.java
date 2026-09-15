@@ -1,5 +1,8 @@
 package com.pruefstein.notification;
 
+import java.util.List;
+
+import com.pruefstein.onboarding.SetupStep;
 import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
 import io.quarkus.qute.CheckedTemplate;
 
@@ -27,7 +30,10 @@ public class MailTemplates
 
 	/**
 	 * Sent to someone nobody has ever reported for — a new hire, or a colleague
-	 * who has not installed the agent yet.
+	 * who has not installed the agent yet. The steps come from
+	 * {@link com.pruefstein.onboarding.SetupManual} rather than from the
+	 * template, so this mail and the page in the app say the same thing.
 	 */
-	public static native MailTemplateInstance invite(ReportRequestMailData request);
+	public static native MailTemplateInstance invite(ReportRequestMailData request,
+		List<SetupStep> steps, String repositoryUrl, String manualUrl);
 }

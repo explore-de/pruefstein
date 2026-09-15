@@ -13,10 +13,22 @@
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
              style="width:100%;max-width:600px;background-color:#ffffff;border:2px solid #000000;font-family:'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;color:#000000;">
 
-        <!-- Brand bar -->
+        <!-- Brand bar. The mark rides along as an attachment (cid:) because
+             every path that would serve it is behind the login. The wordmark
+             sits beside it, so a client with images off still reads right. -->
         <tr>
-          <td style="background-color:#000000;padding:16px 24px;">
-            <span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:-0.5px;">Prüfstein</span>
+          <td style="background-color:#000000;padding:14px 24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding-right:12px;line-height:0;">
+                  <img src="cid:pruefstein-logo" width="36" height="36" alt=""
+                       style="display:block;width:36px;height:36px;border:0;">
+                </td>
+                <td style="vertical-align:middle;">
+                  <span style="color:#ffffff;font-size:18px;font-weight:bold;letter-spacing:-0.5px;">Prüfstein</span>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
@@ -45,7 +57,8 @@
           </td>
         </tr>
 
-        <!-- Setup -->
+        <!-- Setup. The steps come from SetupManual, which is also what the
+             page at {manualUrl} renders — one walkthrough, two places. -->
         <tr>
           <td style="padding:20px 24px;border-bottom:2px solid #000000;">
             <p style="margin:0 0 12px 0;font-size:10px;font-weight:bold;letter-spacing:2px;color:#57534e;">SETTING UP</p>
@@ -53,21 +66,17 @@
                    style="background-color:#f5f5f4;border:2px solid #000000;">
               <tr>
                 <td style="padding:16px 18px;">
-                  <p style="margin:0;font-size:13px;font-weight:bold;color:#57534e;">1 — INSTALL THE AGENT</p>
-                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;">
-                    ./agent/bin/install.sh
+                  {#for step in steps}
+                  <p style="margin:{#if step_count > 1}18px{#else}0{/if} 0 0 0;font-size:13px;font-weight:bold;text-transform:uppercase;color:#57534e;">
+                    {step_count} — {step.title}
                   </p>
-                  <p style="margin:16px 0 0 0;font-size:13px;font-weight:bold;color:#57534e;">2 — SIGN IN, ONCE</p>
-                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;">
-                    pruefstein-agent login
+                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;word-break:break-all;">
+                    {step.command}
                   </p>
-                  <p style="margin:16px 0 0 0;font-size:13px;font-weight:bold;color:#57534e;">3 — RUN THE CHECKS</p>
-                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;">
-                    pruefstein-agent run
+                  <p style="margin:6px 0 0 0;font-size:13px;line-height:1.5;color:#57534e;">
+                    {step.note}
                   </p>
-                  <p style="margin:12px 0 0 0;font-size:13px;line-height:1.5;color:#57534e;">
-                    It prints what each check found, then asks whether to send the report.
-                  </p>
+                  {/for}
                 </td>
               </tr>
             </table>
@@ -93,11 +102,27 @@
           </td>
         </tr>
 
+        <!-- Open source -->
+        <tr>
+          <td style="padding:20px 24px;border-bottom:2px solid #000000;">
+            <p style="margin:0 0 12px 0;font-size:10px;font-weight:bold;letter-spacing:2px;color:#57534e;">BEFORE YOU RUN IT</p>
+            <p style="margin:0;font-size:14px;line-height:1.6;color:#44403c;">
+              Prüfstein is open source. Every check the agent runs, and everything it sends back, is
+              there to read first:
+            </p>
+            <p style="margin:8px 0 0 0;font-size:14px;line-height:1.5;word-break:break-all;">
+              <a href="{repositoryUrl}" style="color:#000000;font-weight:bold;">{repositoryUrl}</a>
+            </p>
+          </td>
+        </tr>
+
         <!-- Footer -->
         <tr>
           <td style="padding:20px 24px;">
             <p style="margin:0;font-size:12px;line-height:1.6;color:#78716c;">
-              <a href="{request.url}" style="color:#000000;font-weight:bold;">Open Prüfstein</a>
+              These steps live in the app too, at
+              <a href="{manualUrl}" style="color:#000000;font-weight:bold;">How to report</a> —
+              handy once this mail is buried. <a href="{request.url}" style="color:#000000;font-weight:bold;">Open Prüfstein</a>
               to see what is checked and why. Stuck on any of this? Reply and ask.
             </p>
           </td>

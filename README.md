@@ -165,6 +165,19 @@ cd web
 
 Quarkus Dev Services starts a PostgreSQL container automatically. The app is available at `http://localhost:8080`.
 
+### Setup walkthrough
+
+The three commands a new colleague has to run are written once, in
+`SetupManual`, and rendered twice: by the invitation mail and by the **How to
+Report** page at `/Manual/index`. The login step names the server from
+`pruefstein.web.base-url`, so the command in both places is one a reader can
+paste as it stands.
+
+The repository those mails and pages point at is
+`pruefstein.project.repository-url` in `application.properties`. It defaults to
+this repository — point it at a fork or an internal mirror if that is where
+your people should be reading the agent's source before they run it.
+
 ### Production
 
 A ready-to-use Compose stack (Postgres, Kafka, and the web image from `ghcr.io/d135-1r43/pruefstein-web`) lives in `deploy/`. Copy `deploy/.env.example` to `deploy/.env`, fill in the required values (database credentials, Entra tenant/client IDs, OpenAI key), then run:

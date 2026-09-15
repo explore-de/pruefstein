@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import com.pruefstein.onboarding.SetupManual;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
 import io.quarkus.mailer.MockMailbox;
@@ -26,6 +27,9 @@ class MailPreviewDump
 
 	@Inject
 	MockMailbox mailbox;
+
+	@Inject
+	SetupManual manual;
 
 	@Test
 	void dump() throws Exception
@@ -68,7 +72,8 @@ class MailPreviewDump
 		write("open.html", MailTemplates.reportOutcome(open));
 		write("noncompliant.html", MailTemplates.reportOutcome(nonCompliant));
 		write("reminder.html", MailTemplates.deadlineReminder(reminder));
-		write("invite.html", MailTemplates.invite(invite));
+		write("invite.html", MailTemplates.invite(invite, manual.steps(), manual.repositoryUrl(),
+			manual.manualUrl()));
 		write("report-due.html", MailTemplates.reportDue(due));
 		write("report-overdue.html", MailTemplates.reportDue(overdue));
 	}
