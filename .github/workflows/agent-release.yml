@@ -28,9 +28,15 @@ jobs:
           ## osquery, so these are the two platforms a tap actually needs;
           ## cross-compiling native images is not a thing, hence one runner
           ## per architecture.
-          - runner: macos-latest
+          ##
+          ## Both labels name an OS version rather than -latest: that label
+          ## moves to the next macOS over a month or two, and a release build
+          ## should not change underfoot. macos-13 was the Intel label until
+          ## it was retired — a job asking for it queues for ever instead of
+          ## failing, which is its own kind of unpleasant.
+          - runner: macos-15
             arch: arm64
-          - runner: macos-13
+          - runner: macos-15-intel
             arch: amd64
 
     runs-on: ${{ matrix.runner }}
