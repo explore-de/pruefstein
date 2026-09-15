@@ -36,9 +36,19 @@ public class SetupManual
 				"--server (short: -s) names the Prüfstein server you report to. It is stored "
 					+ "alongside your credentials and reused by every later run, so this is the "
 					+ "only time you pass it."),
-			new SetupStep("Run the checks", "pruefstein-agent run",
+			new SetupStep("Run the checks", runCommand(),
 				"It prints what each check found, then asks whether to send the report. Nothing "
 					+ "reaches the server until you answer yes."));
+	}
+
+	/**
+	 * The one command somebody already set up ever has to type again. Named
+	 * separately because the dashboard offers it on its own, without the two
+	 * steps that only matter once.
+	 */
+	public String runCommand()
+	{
+		return "pruefstein-agent run";
 	}
 
 	public String repositoryUrl()

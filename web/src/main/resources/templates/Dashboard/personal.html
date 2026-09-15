@@ -1,0 +1,185 @@
+{#include main.html}
+{#title}Your Devices — Prüfstein{/title}
+
+<div class="max-w-3xl">
+
+  <div class="mb-8">
+    <h1 class="text-4xl font-black tracking-tight">Your Devices</h1>
+    <p class="text-sm font-medium text-stone-500 mt-1">
+      What your machines reported, and anything that still wants doing.
+    </p>
+  </div>
+
+  {#if devices.isEmpty}
+  <!-- Nobody has ever reported for this person. The page they need is the
+       walkthrough, not an empty grid of their own zeroes. -->
+  <div class="bg-accent border-2 border-black shadow-brutal p-6 mb-5">
+    <p class="text-[10px] font-black tracking-widest text-stone-700 mb-2">NOTHING CHECKED YET</p>
+    <h2 class="text-2xl font-black tracking-tight">Let's get your Mac checked.</h2>
+    <p class="text-sm leading-relaxed text-stone-800 mt-2">
+      The agent runs on your machine, on your say-so: it shows you every result and asks before it
+      reports anything. A couple of minutes to set up, then about ten seconds every {intervalLabel}.
+    </p>
+  </div>
+
+  <div class="space-y-4 mb-5">
+    {#for step in steps}
+    <div class="bg-white border-2 border-black shadow-brutal p-5">
+      <div class="flex items-baseline gap-3">
+        <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-accent border-2 border-black text-sm font-black">
+          {step_count}
+        </span>
+        <h3 class="text-[11px] font-black tracking-widest uppercase text-stone-500">{step.title}</h3>
+      </div>
+      <pre class="mt-3 bg-stone-100 border-2 border-black p-3 overflow-x-auto"><code class="text-sm font-bold">{step.command}</code></pre>
+      <p class="mt-3 text-sm leading-relaxed text-stone-600">{step.note}</p>
+    </div>
+    {/for}
+  </div>
+
+  <p class="text-sm text-stone-500">
+    The long version, with what each check looks at, is under
+    <a href="{uri:Manual.index}" class="font-bold underline underline-offset-2">How to Report</a>.
+  </p>
+
+  {#else}
+  <div class="space-y-8">
+    {#for device in devices}
+    <div>
+
+      <!-- The verdict. Whatever else is on the card, this is the line the
+           reader came for, so it gets the plate and the colour. -->
+      <div class="border-2 border-black shadow-brutal p-6
+                  {#if device.clear}bg-emerald-400{#else if device.actionable}bg-accent{#else if device.late}bg-red-400{#else}bg-white{/if}">
+        <p class="font-mono text-xs font-bold {#if device.late}text-red-900{#else}text-stone-700{/if}">{device.deviceId}</p>
+
+        {#if device.neverReported}
+        <h2 class="text-2xl font-black tracking-tight mt-2">No report yet</h2>
+        <p class="text-sm font-medium text-stone-600 mt-2">
+          This machine is registered but has never checked in. Run
+          <code class="font-bold">{runCommand}</code> on it.
+        </p>
+
+        {#else if device.clear}
+        <h2 class="text-3xl font-black tracking-tight mt-2">All clear</h2>
+        <p class="text-sm font-black text-emerald-900 mt-2">
+          Every one of the {device.total} checks passed, {device.checkedAt.ago}.
+        </p>
+
+        {#else if device.actionable}
+        <h2 class="text-3xl font-black tracking-tight mt-2">{device.failureLabel}</h2>
+        <p class="text-sm font-black text-stone-800 mt-2">
+          Fix {#if device.failureCount == 1}it{#else}them{/if} and report again before
+          <strong>{device.deadline.toString().substring(0, 10)}</strong> and this same report closes
+          compliant. Let the date pass and it is recorded as non-compliant.
+        </p>
+
+        {#else}
+        <h2 class="text-3xl font-black tracking-tight mt-2">
+          {#if device.status.name() == "MISSING"}No report was filed{#else}{device.failureLabel}{/if}
+        </h2>
+        <p class="text-sm font-black text-red-900 mt-2">
+          {#if device.status.name() == "MISSING"}
+          The window for this cycle ran out before anything was reported.
+          {#else}
+          The repair window ran out. Still fixable — report a clean run and the next one counts.
+          {/if}
+        </p>
+        {/if}
+      </div>
+
+      {#if !device.neverReported}
+      <!-- How much of it passes. A bar instead of a verdict, because one
+           failing check out of nineteen and nine out of nineteen are not the
+           same morning's work. -->
+      <div class="bg-white border-2 border-black border-t-0 shadow-brutal px-6 py-4">
+        <div class="flex items-baseline justify-between">
+          <p class="text-[10px] font-black tracking-widest text-stone-400">CHECKS PASSING</p>
+          <p class="text-sm font-black">{device.passed} of {device.total}</p>
+        </div>
+        <div class="mt-2 h-3 border-2 border-black bg-stone-100">
+          <div class="h-full {#if device.clear}bg-emerald-400{#else}bg-accent{/if}"
+               style="width: {device.passedPct}%"></div>
+        </div>
+      </div>
+      {/if}
+
+      <!-- The to-do list. The whole reason this page exists: the failures are
+           here, with the fix, rather than two clicks into the report. -->
+      {#if device.failureCount > 0}
+      <div class="bg-white border-2 border-black border-t-0 shadow-brutal">
+        <p class="text-[10px] font-black tracking-widest text-stone-400 px-6 pt-5">WHAT TO FIX</p>
+        <div class="px-6 pb-5 pt-2 space-y-3">
+          {#for check in device.failures}
+          <details class="border-2 border-black bg-stone-50 group">
+            <summary class="flex items-start gap-3 p-4 cursor-pointer list-none hover:bg-accent transition-none">
+              <span class="flex-shrink-0 w-5 h-5 mt-0.5 flex items-center justify-center border-2 border-black bg-white text-[11px] font-black leading-none group-open:bg-accent">
+                <span class="group-open:hidden">+</span><span class="hidden group-open:inline">–</span>
+              </span>
+              <span class="min-w-0">
+                <span class="block font-bold text-sm">{check.name}</span>
+                {#if check.control}
+                <span class="block text-[10px] font-black tracking-widest text-stone-400 mt-0.5">{check.control}</span>
+                {/if}
+                {#if check.summary}
+                <span class="block text-sm text-stone-600 mt-1">{check.summary}</span>
+                {/if}
+              </span>
+            </summary>
+            {#if check.hasExplanation}
+            <div class="border-t-2 border-black px-4 py-4 text-sm leading-relaxed text-stone-700 whitespace-pre-line">{check.explanation}</div>
+            {#else}
+            <div class="border-t-2 border-black px-4 py-4 text-sm text-stone-500">
+              No explanation was generated for this one. The
+              <a href="{uri:Reports.show(device.reportId)}" class="font-bold underline underline-offset-2">full report</a>
+              shows what the check asked for and what it got back.
+            </div>
+            {/if}
+          </details>
+          {/for}
+        </div>
+      </div>
+      {/if}
+
+      <!-- When the next one is wanted, and the command that does it. -->
+      <div class="bg-white border-2 border-black border-t-0 shadow-brutal px-6 py-5">
+        <div class="sm:flex sm:items-start sm:justify-between sm:gap-6">
+          <div>
+            <p class="text-[10px] font-black tracking-widest text-stone-400">NEXT CHECK-IN</p>
+            {#if device.overdue}
+            <p class="text-lg font-black mt-1">Overdue</p>
+            <p class="text-sm text-stone-600 mt-1">
+              This machine was due on {device.dueAt.toString().substring(0, 10)}.
+            </p>
+            {#else}
+            <p class="text-lg font-black mt-1 tabular-nums">{device.dueAt.toString().substring(0, 10)}</p>
+            <p class="text-sm text-stone-600 mt-1">
+              {device.dueLabel} from now. Running early is free.
+            </p>
+            {/if}
+          </div>
+          <pre class="mt-3 sm:mt-0 bg-stone-100 border-2 border-black p-3 overflow-x-auto"><code class="text-sm font-bold">{runCommand}</code></pre>
+        </div>
+      </div>
+
+      {#if !device.neverReported}
+      <div class="mt-3 text-sm">
+        <a href="{uri:Reports.show(device.reportId)}" class="font-bold underline underline-offset-2">
+          Full report from {device.checkedAt.toString().substring(0, 16).replace('T', ' ')} →
+        </a>
+      </div>
+      {/if}
+
+    </div>
+    {/for}
+  </div>
+
+  <p class="text-sm text-stone-500 mt-8">
+    Every check, and what it looks at, is under
+    <a href="{uri:Manual.index}" class="font-bold underline underline-offset-2">How to Report</a>.
+  </p>
+  {/if}
+
+</div>
+
+{/include}

@@ -1,6 +1,5 @@
 package com.pruefstein.notification;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +9,7 @@ import java.util.Optional;
 
 import com.pruefstein.device.domain.Device;
 import com.pruefstein.onboarding.SetupManual;
+import com.pruefstein.report.service.ReportingSchedule;
 import com.pruefstein.user.domain.AppUser;
 import io.quarkus.mailer.MailTemplate.MailTemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -54,8 +54,8 @@ public class ReportRequestMailService
 	@ConfigProperty(name = "pruefstein.web.base-url")
 	String baseUrl;
 
-	@ConfigProperty(name = "pruefstein.compliance.reporting-interval-days", defaultValue = "7")
-	int reportingIntervalDays;
+	@Inject
+	ReportingSchedule schedule;
 
 	/**
 	 * The recurring ask, for a device that has reported before. The due date is
@@ -65,16 +65,14 @@ public class ReportRequestMailService
 	public void sendReportDue(Device device)
 	{
 		recipient(device.getAppUser(), device.getKeycloakUser()).ifPresent(address -> {
-			Instant dueAt = device.getLastReportAt() != null
-				? device.getLastReportAt().plus(reportingIntervalDays, ChronoUnit.DAYS)
-				: Instant.now();
+			Instant dueAt = schedule.dueAt(device.getLastReportAt());
 			ReportRequestMailData data = new ReportRequestMailData(
 				firstName(device.getAppUser(), device.getKeycloakUser()),
 				device.getDeviceId(),
 				device.getLastReportAt() != null ? DATE_TIME.format(device.getLastReportAt()) : null,
 				DATE.format(dueAt),
-				daysUntil(dueAt),
-				reportingIntervalDays,
+				schedule.daysUntil(dueAt),
+				schedule.intervalDays(),
 				baseUrl);
 			String subject = data.overdue()
 				? "Prüfstein: %s is overdue for a compliance report".formatted(device.getDeviceId())
@@ -91,14 +89,14 @@ public class ReportRequestMailService
 	public void sendInvite(AppUser user)
 	{
 		recipient(user, null).ifPresent(address -> {
-			Instant dueAt = Instant.now().plus(reportingIntervalDays, ChronoUnit.DAYS);
+			Instant dueAt = Instant.now().plus(schedule.intervalDays(), ChronoUnit.DAYS);
 			ReportRequestMailData data = new ReportRequestMailData(
 				firstName(user, null),
 				null,
 				null,
 				DATE.format(dueAt),
-				daysUntil(dueAt),
-				reportingIntervalDays,
+				schedule.daysUntil(dueAt),
+				schedule.intervalDays(),
 				baseUrl);
 			sender.send(address, "Prüfstein: set up your device compliance check",
 				branding.brand(MailTemplates.invite(data, manual.steps(), manual.repositoryUrl(),
@@ -124,13 +122,6 @@ public class ReportRequestMailService
 			return user.getFirstname();
 		}
 		return fallback;
-	}
-
-	/** Rounded up, so a due date 47 hours out still reads as "2 days". */
-	private static long daysUntil(Instant dueAt)
-	{
-		long hours = Duration.between(Instant.now(), dueAt).toHours();
-		return Math.max(0, (long)Math.ceil(hours / 24.0));
 	}
 
 	/**

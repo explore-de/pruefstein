@@ -23,6 +23,17 @@ public class ReportRepository implements PanacheRepository<Report>
 			deviceId, userId, ReportStatus.OPEN).firstResultOptional();
 	}
 
+	/**
+	 * The newest run for one device, scoped to the person who owns it so a
+	 * device id guessed from elsewhere cannot be used to read someone else's
+	 * report.
+	 */
+	public Optional<Report> findLatestForDevice(String deviceId, String keycloakUser)
+	{
+		return find("deviceId = ?1 and keycloakUser = ?2 order by checkedAt desc",
+			deviceId, keycloakUser).firstResultOptional();
+	}
+
 	public List<Report> findExpiredOpen(Instant now)
 	{
 		return list("status = ?1 and deadline < ?2", ReportStatus.OPEN, now);

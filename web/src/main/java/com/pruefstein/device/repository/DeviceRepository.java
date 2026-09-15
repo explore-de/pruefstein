@@ -16,6 +16,15 @@ public class DeviceRepository implements PanacheRepository<Device>
 		return list("appUser.id", appUserId);
 	}
 
+	/**
+	 * Everything this person reports for, oldest first so the list does not
+	 * reshuffle itself every time one of them checks in.
+	 */
+	public List<Device> findByKeycloakUser(String keycloakUser)
+	{
+		return list("keycloakUser = ?1 order by deviceId asc", keycloakUser);
+	}
+
 	public Optional<Device> findByDeviceId(String deviceId)
 	{
 		return find("deviceId", deviceId).firstResultOptional();
