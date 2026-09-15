@@ -4,7 +4,7 @@
 
     <groupId>com.pruefstein</groupId>
     <artifactId>pruefstein-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>Prüfstein</name>
@@ -13,13 +13,11 @@
     <!-- One git repository for both modules. Maven would otherwise append each
          module's path to the inherited URLs and have the agent looking for a
          repository at .../pruefstein/agent, so the appending is turned off. -->
-    <scm child.scm.connection.inherit.append.path="false"
-         child.scm.developerConnection.inherit.append.path="false"
-         child.scm.url.inherit.append.path="false">
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
         <connection>scm:git:https://github.com/explore-de/pruefstein.git</connection>
         <developerConnection>scm:git:git@github.com:explore-de/pruefstein.git</developerConnection>
         <url>https://github.com/explore-de/pruefstein</url>
-        <tag>HEAD</tag>
+        <tag>v1.0.0</tag>
     </scm>
 
     <!-- The web app and the agent ship as one thing and are versioned as one
