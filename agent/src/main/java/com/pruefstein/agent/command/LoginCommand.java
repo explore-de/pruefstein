@@ -4,7 +4,8 @@ import com.pruefstein.agent.auth.AuthResolver;
 import jakarta.inject.Inject;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "login", description = "Authenticate with the Prüfstein server", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "login", description = "Authenticate with the Prüfstein server", mixinStandardHelpOptions = true,
+	versionProvider = AgentVersionProvider.class)
 public class LoginCommand implements Runnable
 {
 	@Inject

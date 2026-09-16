@@ -4,7 +4,8 @@ import com.pruefstein.agent.auth.TokenStore;
 import jakarta.inject.Inject;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "logout", description = "Clear stored credentials", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "logout", description = "Clear stored credentials", mixinStandardHelpOptions = true,
+	versionProvider = AgentVersionProvider.class)
 public class LogoutCommand implements Runnable
 {
 	@Inject
