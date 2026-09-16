@@ -330,7 +330,15 @@ public class ComplianceRunner
 		return output;
 	}
 
-	private boolean evaluate(String jsonOutput, String expression) throws Exception
+	/**
+	 * Applies a check's expression to what osquery returned.
+	 * <p>
+	 * Package-private so the expression shapes the catalog actually ships can
+	 * be tested directly. Note that JEXL reaches everything here by
+	 * reflection — see {@link JexlNativeSupport} for what that costs in a
+	 * native build, and why a green test run is not proof the binary works.
+	 */
+	boolean evaluate(String jsonOutput, String expression) throws Exception
 	{
 		List<Map<String, Object>> results = objectMapper.readValue(
 			jsonOutput, new TypeReference<List<Map<String, Object>>>()
