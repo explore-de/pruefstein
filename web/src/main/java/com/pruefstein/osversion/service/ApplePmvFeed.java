@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
  * The slice of Apple's public asset metadata feed (gdmf.apple.com/v2/pmv) that
@@ -21,6 +22,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param assetSets
  *            the wider list, which reaches further back
  */
+// Nothing in the application constructs these: they exist only for Jackson to
+// fill in, so native-image sees no reason to keep the constructors and the
+// parse fails there while every JVM test passes.
+@RegisterForReflection
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ApplePmvFeed(
 	@JsonProperty("PublicAssetSets") Map<String, List<Asset>> publicAssetSets,
@@ -29,6 +34,7 @@ public record ApplePmvFeed(
 	/** Apple's key for macOS in both maps. */
 	public static final String MAC_OS = "macOS";
 
+	@RegisterForReflection
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public record Asset(
 		@JsonProperty("ProductVersion") String productVersion,
