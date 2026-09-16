@@ -53,8 +53,9 @@ public class BlockedApps extends Controller
 
 	public TemplateInstance index()
 	{
-		AppBlacklistCheck check = itemRepository.find("from AppBlacklistCheck").firstResult();
-		String checkName = check != null ? check.getName() : null;
+		String checkName = itemRepository.findActiveBlacklistCheck()
+			.map(AppBlacklistCheck::getName)
+			.orElse(null);
 		boolean devMode = LaunchMode.current() == LaunchMode.DEVELOPMENT;
 		return Templates.index(repository.listAllSorted(), checkName,
 			queryGenerator.generate(repository.listEnabled()), BlacklistQueryGenerator.EXPRESSION, devMode);

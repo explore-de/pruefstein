@@ -110,11 +110,13 @@ public class CatalogSeeder
 	/**
 	 * Groups are matched by name rather than ledgered: a check being created
 	 * needs somewhere to live, so if its group is gone it is recreated with it.
+	 * A retired group counts as gone — a check added by a later release must
+	 * not land somewhere no one can reach it.
 	 */
 	private ComplianceGroup group(String groupKey)
 	{
 		String name = ComplianceCatalog.groupName(groupKey);
-		return groupRepository.find("name", name).firstResultOptional()
+		return groupRepository.findActiveByName(name)
 			.orElseGet(() -> {
 				ComplianceGroup group = new ComplianceGroup();
 				group.setName(name);

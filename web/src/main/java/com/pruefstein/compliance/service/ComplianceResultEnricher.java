@@ -79,7 +79,8 @@ public class ComplianceResultEnricher
 	public List<EnrichmentRequest> findPending(int limit)
 	{
 		List<ComplianceResult> candidates = resultRepository
-			.find("passed = false and aiShortDescription is null and output is not null",
+			.find("passed = false and item.retiredAt is null"
+				+ " and aiShortDescription is null and output is not null",
 				Sort.by("id").descending())
 			.page(0, limit)
 			.list();

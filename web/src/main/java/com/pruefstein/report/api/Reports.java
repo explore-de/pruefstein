@@ -1,5 +1,6 @@
 package com.pruefstein.report.api;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.pruefstein.compliance.domain.AppBlacklistCheck;
@@ -62,7 +63,8 @@ public class Reports extends Controller
 			String dir);
 
 		public static native TemplateInstance show(Report report, List<ResultRow> results,
-			ResultRow blacklistResult, List<InventoryRow> inventory, long blockedCount);
+			ResultRow blacklistResult, List<InventoryRow> inventory, long blockedCount,
+			long waivedCount);
 	}
 
 	/**
@@ -166,9 +168,36 @@ public class Reports extends Controller
 			return result.getOutput();
 		}
 
+		/**
+		 * How the row reads today, which is not always how it was recorded: a
+		 * check retired since this report was filed passes, because it is no
+		 * longer a rule this device is measured by.
+		 */
 		public boolean isPassed()
 		{
-			return result.isPassed();
+			return !result.isFailing();
+		}
+
+		/** Whether the check was retired after this report was filed. */
+		public boolean isRetired()
+		{
+			return result.isCheckRetired();
+		}
+
+		/** When it was retired, for the note that explains the green badge. */
+		public Instant getRetiredAt()
+		{
+			return getItem().getRetiredAt();
+		}
+
+		/**
+		 * A row that reads green only because the check was retired — the one
+		 * case where the badge and the recorded answer disagree, and so the one
+		 * case the report has to explain.
+		 */
+		public boolean isWaived()
+		{
+			return isRetired() && !result.isPassed();
 		}
 
 		public String getAiShortDescription()
@@ -265,6 +294,9 @@ public class Reports extends Controller
 			.toList();
 
 		long blockedCount = inventory.stream().filter(InventoryRow::isBlocked).count();
-		return Templates.show(report, results, blacklistResult, inventory, blockedCount);
+		// Counted over every row, blacklist check included, so the note at the
+		// top of the report accounts for the section below it too.
+		long waivedCount = rows.stream().filter(ResultRow::isWaived).count();
+		return Templates.show(report, results, blacklistResult, inventory, blockedCount, waivedCount);
 	}
 }

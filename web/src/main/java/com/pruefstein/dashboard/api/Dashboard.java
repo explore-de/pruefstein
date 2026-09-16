@@ -98,7 +98,7 @@ public class Dashboard extends Controller
 
 		return Templates.index(compliant, nonCompliant, missing, open, total,
 			compliantPct, nonCompliantPct, missingPct,
-			itemRepository.count(), userRepository.count());
+			itemRepository.countActive(), userRepository.count());
 	}
 
 	/**

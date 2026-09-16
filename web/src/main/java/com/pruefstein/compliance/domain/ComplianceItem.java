@@ -1,5 +1,6 @@
 package com.pruefstein.compliance.domain;
 
+import java.time.Instant;
 import java.util.List;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -20,6 +21,10 @@ import jakarta.persistence.OneToMany;
  * {@link AppBlacklistCheck} derives its SQL from the {@link BlockedApp} list.
  * Use {@code CheckResolver} to obtain the query and expression for any check
  * rather than branching on the type at the call site.
+ * <p>
+ * Checks are retired rather than deleted. A check that has ever been reported
+ * on is part of the evidence behind those reports, so removing the row would
+ * take the history with it — see {@link #retire()}.
  */
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -33,6 +38,13 @@ public abstract class ComplianceItem extends PanacheEntity
 
 	@OneToMany(mappedBy = "item")
 	private List<ComplianceResult> results;
+
+	/**
+	 * When an admin retired this check, or {@code null} while it is still in
+	 * force. A retired check is gone from the catalogue, from what the agent
+	 * fetches and from every count, but its rows stay where they are.
+	 */
+	private Instant retiredAt;
 
 	public String getName()
 	{
@@ -62,6 +74,33 @@ public abstract class ComplianceItem extends PanacheEntity
 	public void setResults(List<ComplianceResult> results)
 	{
 		this.results = results;
+	}
+
+	public Instant getRetiredAt()
+	{
+		return retiredAt;
+	}
+
+	public boolean isRetired()
+	{
+		return retiredAt != null;
+	}
+
+	/**
+	 * Takes this check out of force without touching what it already recorded.
+	 * <p>
+	 * A hard delete is not available to us: every result of this check names it
+	 * through a foreign key, so removing the row would mean removing the
+	 * findings that justify past reports. Retiring keeps the evidence and stops
+	 * the check from being asked again. Idempotent — retiring twice keeps the
+	 * first date, which is the one the reports were judged against.
+	 */
+	public void retire()
+	{
+		if (retiredAt == null)
+		{
+			retiredAt = Instant.now();
+		}
 	}
 
 	/**

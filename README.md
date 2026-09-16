@@ -67,8 +67,8 @@ checks as a list of things to do, and the date the next run is wanted.
 |---|---|---|
 | `AppUser` | oidcSubject, firstname, lastname, mail | An employee whose devices are checked |
 | `Device` | deviceId, appUser, lastReportAt | One machine, and when it last proved itself |
-| `ComplianceGroup` | name | Groups related items (maps to ISO 27001 control family) |
-| `ComplianceItem` | name, group | One check. `ExpressionCheck` carries a query and a JEXL expression; `AppBlacklistCheck` generates its query from the `BlockedApp` rules |
+| `ComplianceGroup` | name, retiredAt | Groups related items (maps to ISO 27001 control family). Retired rather than deleted — see [Retiring a check](#retiring-a-check) |
+| `ComplianceItem` | name, group, retiredAt | One check. `ExpressionCheck` carries a query and a JEXL expression; `AppBlacklistCheck` generates its query from the `BlockedApp` rules. Retired rather than deleted — see [Retiring a check](#retiring-a-check) |
 | `Report` | deviceId, userId, checkedAt, status, deadline | One agent run for one device. `status` is COMPLIANT, NON_COMPLIANT, MISSING or OPEN — open meaning the repair window has not run out yet |
 | `ComplianceResult` | item, report, passed, output, aiShortDescription | Outcome of one check in one report, with the JSON osquery returned and the model's reading of it |
 
@@ -111,6 +111,36 @@ SELECT DISTINCT port FROM listening_ports WHERE pid != 0;
 ```jexl
 results.size() == 0
 ```
+
+### Retiring a check
+
+A check cannot be deleted, because every result it ever produced points back at
+it — removing the row would take the findings that justify past reports with it.
+Deleting one in the UI **retires** it instead: `retiredAt` is stamped, and from
+that moment the check is gone from its group, from the catalogue the agent
+fetches, and from every count on the dashboard. Agents stop running it on their
+next run; nothing needs to be resynced.
+
+Reports already filed keep the check, and it now reads as **passed** there — on
+devices that failed it too. A device cannot be held to a rule that has been
+withdrawn, and it certainly cannot fix one. So a retired check also stops
+counting towards an open report's deadline, drops out of the personal dashboard's
+to-do list, and is left out of outcome mails and of the AI enrichment queue.
+
+Nothing is rewritten to achieve this. The recorded `passed` flag and the osquery
+output stay exactly as the device reported them, and the report explains in place
+why the row is green — including what the device originally answered and when the
+check was retired. The row's link back to the catalogue is dropped, since there is
+no entry left to point at; the query and expression it was judged by are on the
+expanded row instead.
+
+Groups work the same way and for the same reason — past reports name the group of
+every check they record. Deleting a group retires it **and every check in it**,
+because the group screen is the only place those checks can be managed. A retired
+group leaves the index, its own page returns 404, and its name is free to be used
+again: the catalogue seeder matches groups by name among the ones still in force,
+so a check shipped in a later release is never filed into a group nobody can
+reach.
 
 ---
 
