@@ -1,0 +1,174 @@
+{
+  "PublicAssetSets": {
+    "macOS": [
+      {
+        "ProductVersion": "14.8.9",
+        "Build": "23J631",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "26.7",
+        "Build": "25G229",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "15.8",
+        "Build": "24H23",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "27.0",
+        "Build": "26A5428",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "12.7.6",
+        "Build": "21H1320",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "27.0",
+        "Build": "26A428",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "11.7.11",
+        "Build": "20G1443",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "13.7.8",
+        "Build": "22H730",
+        "PostingDate": "2026-09-15",
+        "ExpirationDate": "2026-12-15"
+      }
+    ],
+    "iOS": [
+      {
+        "ProductVersion": "17.7.11",
+        "Build": "21H461",
+        "PostingDate": "2026-09-14",
+        "ExpirationDate": "2026-12-15"
+      }
+    ]
+  },
+  "AssetSets": {
+    "macOS": [
+      {
+        "ProductVersion": "15.7.7",
+        "Build": "24G720",
+        "PostingDate": "2026-06-09",
+        "ExpirationDate": "2026-10-25"
+      },
+      {
+        "ProductVersion": "26.6.2",
+        "Build": "25G83",
+        "PostingDate": "2026-08-17",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "14.8.9",
+        "Build": "23J631",
+        "PostingDate": "2026-08-06",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "26.6.1",
+        "Build": "25G76",
+        "PostingDate": "2026-08-06",
+        "ExpirationDate": "2026-11-15"
+      },
+      {
+        "ProductVersion": "14.8.7",
+        "Build": "23J520",
+        "PostingDate": "2026-06-09",
+        "ExpirationDate": "2026-10-25"
+      },
+      {
+        "ProductVersion": "27.0",
+        "Build": "26A428",
+        "PostingDate": "2026-09-14",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "26.5.1",
+        "Build": "25F80",
+        "PostingDate": "2026-06-09",
+        "ExpirationDate": "2026-09-27"
+      },
+      {
+        "ProductVersion": "15.7.8",
+        "Build": "24G824",
+        "PostingDate": "2026-07-27",
+        "ExpirationDate": "2026-11-04"
+      },
+      {
+        "ProductVersion": "26.5.2",
+        "Build": "25F84",
+        "PostingDate": "2026-06-29",
+        "ExpirationDate": "2026-10-25"
+      },
+      {
+        "ProductVersion": "26.7",
+        "Build": "25G229",
+        "PostingDate": "2026-09-14",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "15.8",
+        "Build": "24H23",
+        "PostingDate": "2026-09-14",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "15.7.9",
+        "Build": "24G830",
+        "PostingDate": "2026-08-06",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "26.6",
+        "Build": "25G72",
+        "PostingDate": "2026-07-27",
+        "ExpirationDate": "2026-11-04"
+      },
+      {
+        "ProductVersion": "14.8.8",
+        "Build": "23J620",
+        "PostingDate": "2026-07-27",
+        "ExpirationDate": "2026-11-04"
+      },
+      {
+        "ProductVersion": "27.0",
+        "Build": "26A5428",
+        "PostingDate": "2026-09-14",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "12.7.6",
+        "Build": "21H1320",
+        "PostingDate": "2026-06-09",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "11.7.11",
+        "Build": "20G1443",
+        "PostingDate": "2026-06-09",
+        "ExpirationDate": "2026-12-15"
+      },
+      {
+        "ProductVersion": "13.7.8",
+        "Build": "22H730",
+        "PostingDate": "2026-06-09",
+        "ExpirationDate": "2026-12-15"
+      }
+    ]
+  }
+}

@@ -51,6 +51,24 @@ public class Report extends PanacheEntity
 
 	private String keycloakUser;
 
+	/** What osquery called the operating system, e.g. {@code macOS}. */
+	private String osName;
+
+	/** The marketing version the device reported, e.g. {@code 15.7.9}. */
+	private String osVersion;
+
+	/** The build identifier, e.g. {@code 24G830}. */
+	private String osBuild;
+
+	/**
+	 * The newest macOS Apple had published when this report was filed.
+	 * <p>
+	 * Stamped here rather than looked up when the page is read, so a report
+	 * keeps saying what it said: judging an old report against today's releases
+	 * would turn it red months later without the machine having changed.
+	 */
+	private String osLatestVersion;
+
 	@ManyToOne
 	private AppUser appUser;
 
@@ -155,6 +173,46 @@ public class Report extends PanacheEntity
 	public void setAppUser(AppUser appUser)
 	{
 		this.appUser = appUser;
+	}
+
+	public String getOsName()
+	{
+		return osName;
+	}
+
+	public void setOsName(String osName)
+	{
+		this.osName = osName;
+	}
+
+	public String getOsVersion()
+	{
+		return osVersion;
+	}
+
+	public void setOsVersion(String osVersion)
+	{
+		this.osVersion = osVersion;
+	}
+
+	public String getOsBuild()
+	{
+		return osBuild;
+	}
+
+	public void setOsBuild(String osBuild)
+	{
+		this.osBuild = osBuild;
+	}
+
+	public String getOsLatestVersion()
+	{
+		return osLatestVersion;
+	}
+
+	public void setOsLatestVersion(String osLatestVersion)
+	{
+		this.osLatestVersion = osLatestVersion;
 	}
 
 	public List<ComplianceResult> getResults()
