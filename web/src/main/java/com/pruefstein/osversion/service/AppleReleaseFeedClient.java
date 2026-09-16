@@ -5,14 +5,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.tls.TlsConfiguration;
-import io.quarkus.tls.TlsConfigurationRegistry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import javax.net.ssl.SSLContext;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 /**
@@ -43,10 +39,7 @@ public class AppleReleaseFeedClient
 	ObjectMapper objectMapper;
 
 	@Inject
-	TlsConfigurationRegistry tlsRegistry;
-
-	@ConfigProperty(name = "pruefstein.macos.feed-tls-config", defaultValue = "apple-gdmf")
-	String tlsConfigName;
+	AppleTrust appleTrust;
 
 	/**
 	 * @return the feed as Apple published it
@@ -58,7 +51,7 @@ public class AppleReleaseFeedClient
 	{
 		try (HttpClient client = HttpClient.newBuilder()
 			.connectTimeout(timeout)
-			.sslContext(appleTrust())
+			.sslContext(appleTrust.sslContext())
 			.build())
 		{
 			HttpRequest request = HttpRequest.newBuilder(URI.create(feedUrl))
@@ -76,15 +69,4 @@ public class AppleReleaseFeedClient
 		}
 	}
 
-	/**
-	 * The trust anchors to verify Apple's certificate against — the named TLS
-	 * configuration if it is registered, and the JDK's own if it is not, so a
-	 * deployment pointed at some other feed URL is not forced through Apple's
-	 * root.
-	 */
-	private SSLContext appleTrust() throws Exception
-	{
-		Optional<TlsConfiguration> configured = tlsRegistry.get(tlsConfigName);
-		return configured.isPresent() ? configured.get().createSSLContext() : SSLContext.getDefault();
-	}
 }
