@@ -151,6 +151,13 @@
 		flex-direction: column;
 		border-top: var(--rule) solid var(--ink);
 		background: var(--surface);
+		/* Nine links plus the bar is taller than a phone held sideways, and the
+		   bar is sticky — without a ceiling of its own the last few links would
+		   sit below the fold with nothing to scroll them into view. */
+		max-height: calc(100vh - 64px);
+		max-height: calc(100dvh - 64px);
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.sheet a {

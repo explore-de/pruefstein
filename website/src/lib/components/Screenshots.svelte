@@ -40,11 +40,16 @@
 <style>
 	.stack {
 		display: grid;
+		/* minmax(0, …) rather than a bare auto track: the wide shot below sets a
+		   680px floor on its image, and an auto track would happily grow to it
+		   and take the page with it. */
+		grid-template-columns: minmax(0, 1fr);
 		gap: clamp(2.75rem, 6vw, 4.5rem);
 	}
 
 	.shot {
 		margin: 0;
+		min-width: 0;
 	}
 
 	/* The plate the app itself is built out of: 2px rule, hard offset shadow,

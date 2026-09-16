@@ -126,6 +126,36 @@ configuration is the `quarkus-langchain4j-openai` extension's own properties —
 key, model name and base URL — so any OpenAI-compatible endpoint works without
 a code change.
 
+## Responsive
+
+Every layout is mobile-first: one column by default, `@media (min-width: …)`
+adding the second and third. There is no `max-width` breakpoint anywhere except
+two places that deliberately fold something on a phone, both at `699px` — one
+below the narrowest layout breakpoint any component uses.
+
+Two rules keep it honest:
+
+- **Nothing scrolls sideways except the page's one deliberately wide image.**
+  A code plate or a terminal transcript that scrolls horizontally inside a page
+  that scrolls vertically just hides its own second half, so below `699px`
+  `CodeBlock` and `Terminal` fold their content instead (`Terminal` with a
+  hanging indent, so a wrapped line stays clear of the `[PASS]`/`[FAIL]`
+  column). The one exception is the wide reports screenshot in `Screenshots`,
+  which is 4:1 and would be a texture rather than a picture if it were squeezed
+  to fit; its frame scrolls, and its scrollbar says so.
+
+- **Every grid item that can hold something wide carries `min-width: 0`**, and
+  every `1fr` track that can is written `minmax(0, 1fr)`. A grid item's
+  automatic minimum size is its min-content width, and `overflow-x: auto` on a
+  descendant does not stop that contribution from propagating — so one long
+  `brew install` line or one `min-width: 680px` image will otherwise set the
+  width of the whole document and drag everything else off the right edge. It
+  fails silently on a desktop, which is exactly why it is worth naming.
+
+The cheapest check: load the page at 390px and compare
+`document.documentElement.scrollWidth` against `clientWidth`. They must be
+equal.
+
 ## Motion
 
 Everything that moves is decoration over content that is already correct

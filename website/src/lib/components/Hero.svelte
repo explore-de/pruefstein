@@ -79,7 +79,7 @@
 			<!-- The one line somebody has to copy to try it. Fully qualified, so
 			     Homebrew taps on their behalf and this really is one command. -->
 			<div class="install">
-				<CodeBlock label="Install the agent" code={site.install} tone="dark" />
+				<CodeBlock label="Install the agent" code={site.install} tone="dark" wrap />
 			</div>
 
 			<dl class="facts">
@@ -167,7 +167,7 @@
 	.facts {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0 2.5rem;
+		gap: 1.1rem 2.5rem;
 		margin: 2.6rem 0 0;
 		padding-top: 1.4rem;
 		border-top: var(--rule) solid var(--ink);
@@ -187,6 +187,11 @@
 		font-size: 0.95rem;
 	}
 
+	/* Both columns need an explicit floor. A grid item's automatic minimum
+	   size is its min-content width, and the install plate's one-line brew
+	   command is wider than a phone — without this it sets the page width and
+	   everything else is dragged off the right edge with it. */
+	.copy,
 	.demo {
 		min-width: 0;
 	}
@@ -200,7 +205,7 @@
 
 	@media (min-width: 980px) {
 		.grid {
-			grid-template-columns: 1.1fr 1fr;
+			grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
 			gap: 4rem;
 		}
 	}

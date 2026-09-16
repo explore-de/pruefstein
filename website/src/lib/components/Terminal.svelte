@@ -320,6 +320,29 @@
 		color: #fafaf9;
 	}
 
+	/* Off the two-column hero there is no column wide enough for a 63-character
+	   run line, and sideways scrolling inside a page that already scrolls is the
+	   worst way to spend the reader's attention. So the transcript folds, one
+	   size smaller, with a hanging indent that keeps the wrapped remainder clear
+	   of the [PASS]/[FAIL] column. Lines still hold their own height from the
+	   first paint, so playback does not reflow anything. */
+	@media (max-width: 699px) {
+		.body {
+			padding: 0.9rem 0.9rem 1rem;
+			font-size: clamp(0.62rem, 2.7vw, 0.7rem);
+		}
+
+		code {
+			white-space: pre-wrap;
+			overflow-wrap: break-word;
+		}
+
+		.ln {
+			padding-left: 3.5ch;
+			text-indent: -3.5ch;
+		}
+	}
+
 	/* A failure gets one quick flash as it lands, then sits still */
 	.flash.on {
 		animation: land 0.45s steps(3, end) 1;

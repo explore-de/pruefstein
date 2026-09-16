@@ -223,6 +223,22 @@
 		overflow-wrap: anywhere;
 	}
 
+	/* Below the two-column breakpoint no plate has a column wide enough for a
+	   full command line, and a box that scrolls sideways inside a page that
+	   scrolls down mostly just hides its own second half. So every plate folds
+	   on a phone, `wrap` or not; the Copy button still hands over the real text
+	   with its line breaks intact. */
+	@media (max-width: 699px) {
+		pre {
+			padding: 0.9rem;
+		}
+
+		code {
+			white-space: pre-wrap;
+			overflow-wrap: anywhere;
+		}
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.copy.done {
 			animation: none;
