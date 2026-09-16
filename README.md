@@ -1,8 +1,38 @@
-# Prüfstein
+<div align="center">
 
-**Device compliance management for ISO 27001 — powered by [osquery](https://osquery.io/).**
+<img src="website/static/og.png" alt="Prüfstein — compliant laptops, without spying on your team" width="840">
 
-Prüfstein lets you define compliance checks as SQL queries, run them on every employee's device via a lightweight local agent, and track pass/fail status across your entire fleet from a central web dashboard.
+<br>
+
+[![CI build](https://img.shields.io/github/actions/workflow/status/explore-de/pruefstein/ci.yml?branch=main&style=flat-square&label=build&labelColor=000000&color=FACC15)](https://github.com/explore-de/pruefstein/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/explore-de/pruefstein?style=flat-square&label=release&labelColor=000000&color=FACC15)](https://github.com/explore-de/pruefstein/releases/latest)
+[![Homebrew](https://img.shields.io/badge/brew-explore--de%2Fpruefstein-FACC15?style=flat-square&labelColor=000000)](https://github.com/explore-de/homebrew-pruefstein)
+[![macOS](https://img.shields.io/badge/macOS-arm64%20%C2%B7%20x86__64-FACC15?style=flat-square&labelColor=000000)](#local-agent)
+[![Licence](https://img.shields.io/badge/licence-Apache--2.0-FACC15?style=flat-square&labelColor=000000)](LICENSE)
+
+**ISO 27001 device compliance, without spying on your team.**
+
+</div>
+
+---
+
+Prüfstein checks every employee Mac against the controls you wrote down, using
+[osquery](https://osquery.io/). Nothing runs in the background, nothing is filed
+until the person at the keyboard says so, and the fleet data never leaves your
+infrastructure. It is one repository under Apache-2.0 — no core edition, no
+feature held back for a paid tier.
+
+```bash
+brew install explore-de/pruefstein/pruefstein-agent
+pruefstein-agent login --server https://pruefstein.example.com
+pruefstein-agent run
+```
+
+Admins get a web app for writing the checks and reading the results; everybody
+else gets that one command. Self-hosted, on your own PostgreSQL and your own
+identity provider.
+
+**[Read more →](https://explore-de.github.io/pruefstein/)**
 
 ---
 
@@ -14,15 +44,33 @@ A lightweight local agent runs on each employee's machine. It fetches all Compli
 
 ---
 
+## What it looks like
+
+The reports list as an admin sees it — everyone else sees only their own
+machines:
+
+<img src="website/static/shots/reports-admin.png" alt="The Prüfstein reports list: three devices with compliant and non-compliant status chips, status filters and a deadline column" width="900">
+
+A failed check opens onto the JSON osquery actually returned and the expression
+it was judged against, and the model writes the way out of it:
+
+<img src="website/static/shots/report-explain.png" alt="A report with the How to Fix panel open, explaining why the automatic-updates check failed and the steps to resolve it" width="720">
+
+And the person whose Mac it is gets their own page: a verdict, the failing
+checks as a list of things to do, and the date the next run is wanted.
+
+---
+
 ## Domain model
 
 | Entity | Key fields | Purpose |
 |---|---|---|
-| `AppUser` | firstname, lastname, mail | An employee whose devices are checked |
+| `AppUser` | oidcSubject, firstname, lastname, mail | An employee whose devices are checked |
+| `Device` | deviceId, appUser, lastReportAt | One machine, and when it last proved itself |
 | `ComplianceGroup` | name | Groups related items (maps to ISO 27001 control family) |
-| `ComplianceItem` | name, query, expectedExpression, group | One osquery check with a JEXL pass/fail expression |
-| `Report` | user, deviceHostname, checkedAt, passed | One agent run for one device |
-| `ComplianceResult` | item, report, actualResult (JSON), passed | Outcome of one check in one report |
+| `ComplianceItem` | name, group | One check. `ExpressionCheck` carries a query and a JEXL expression; `AppBlacklistCheck` generates its query from the `BlockedApp` rules |
+| `Report` | deviceId, userId, checkedAt, status, deadline | One agent run for one device. `status` is COMPLIANT, NON_COMPLIANT, MISSING or OPEN — open meaning the repair window has not run out yet |
+| `ComplianceResult` | item, report, passed, output, aiShortDescription | Outcome of one check in one report, with the JSON osquery returned and the model's reading of it |
 
 ---
 
@@ -171,6 +219,26 @@ agent gets a registration separate from the web client.
 - **Qute** templates
 - **Hibernate Panache** + PostgreSQL (Dev Services in dev mode)
 - **Quarkus Web Bundler** (Tailwind CSS + Alpine.js, no Node.js required)
+- **LangChain4j** for the optional explanations — see below
+- **Serverless Workflow** for the reporting cycle: the deadline on an open
+  report, the reminder before the next one is due, the MISSING report when
+  nobody answers
+- **SmallRye Mailer** for the invitation, the reminder and the outcome mail
+
+### The AI part, and why it is optional
+
+A failed check can be handed to a model, which reads the query, the expression
+and the JSON that came back, and writes what it means and how to fix it. That
+is what the **How to fix** panel shows, and what the outcome mail carries. It
+runs on a model you choose and a key you supply: leave `OPENAI_API_KEY` unset
+and every one of those explanations is simply absent — nothing else changes,
+and no check depends on it.
+
+The prompt is the check's name, its query, the expression it had to satisfy and
+the output osquery returned — never who ran it or which machine it was. Worth
+knowing where that stops short of a guarantee: the output of the
+installed-applications check contains file paths, and a path can run through a
+home directory.
 
 ### Running locally
 
