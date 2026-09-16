@@ -69,8 +69,9 @@ checks as a list of things to do, and the date the next run is wanted.
 | `Device` | deviceId, appUser, lastReportAt | One machine, and when it last proved itself |
 | `ComplianceGroup` | name, retiredAt | Groups related items (maps to ISO 27001 control family). Retired rather than deleted — see [Retiring a check](#retiring-a-check) |
 | `ComplianceItem` | name, group, retiredAt | One check. `ExpressionCheck` carries a query and a JEXL expression; `AppBlacklistCheck` generates its query from the `BlockedApp` rules. Retired rather than deleted — see [Retiring a check](#retiring-a-check) |
-| `Report` | deviceId, userId, checkedAt, status, deadline | One agent run for one device. `status` is COMPLIANT, NON_COMPLIANT, MISSING or OPEN — open meaning the repair window has not run out yet |
+| `Report` | deviceId, userId, checkedAt, status, deadline, osVersion, osLatestVersion | One agent run for one device. `status` is COMPLIANT, NON_COMPLIANT, MISSING or OPEN — open meaning the repair window has not run out yet. Carries the macOS the device was running and the newest Apple had published at the time — see [macOS versions](#macos-versions) |
 | `ComplianceResult` | item, report, passed, output, aiShortDescription | Outcome of one check in one report, with the JSON osquery returned and the model's reading of it |
+| `MacOsRelease` | productVersion, build, postingDate, publicRelease | One macOS release as Apple's feed described it — the catalog a report's version is judged against |
 
 ---
 
@@ -141,6 +142,48 @@ group leaves the index, its own page returns 404, and its name is free to be use
 again: the catalogue seeder matches groups by name among the ones still in force,
 so a check shipped in a later release is never filed into a group nobody can
 reach.
+
+---
+
+## macOS versions
+
+Every report says which macOS the device was running. The agent reads it from
+osquery's `os_version` table and sends it alongside the check results; it is not
+a check, because a check can only answer yes or no and the interesting question
+here is *how far behind*.
+
+The yardstick is Apple's own public asset metadata feed,
+[`gdmf.apple.com/v2/pmv`](https://gdmf.apple.com/v2/pmv) — unauthenticated, and
+the only outbound call the web app makes on a schedule. A background job pulls
+it every six hours into `MacOsRelease` rows, so the report page never waits on
+Apple, still knows the newest release while the feed is unreachable, and keeps
+a record of what shipped when. Only releases Apple lists publicly decide what
+"latest" means, so a seed build can never make the whole estate look out of
+date. Set `pruefstein.macos.feed-enabled=false` in a deployment with no outbound
+internet: reports then show the version without judging it.
+
+The report header shows the version and how it compares:
+
+| Difference | Mark | Meaning |
+|---|---|---|
+| none | `CURRENT` | at the newest release, or ahead of it on a beta |
+| patch | `FIX BEHIND`, amber | same feature update, missing a fix |
+| minor | `UPDATE BEHIND`, red | same major train, an older feature update |
+| major | `MAJOR BEHIND`, red, plus `USES A 2-YEAR-OLD VERSION` | an older train altogether |
+
+The age on that last mark comes from the major number, which says which year the
+train shipped: Apple numbered macOS sequentially from 11 (2020) to 15 (2024),
+then switched to naming a train after the year it ships into, so 26 shipped in
+2025 and 27 in 2026. Both runs are closed formulas, and a train released after
+this was written still dates correctly. Versions numbered 10.x carry no year in
+their major, so they get the red mark without an age.
+
+Each report is judged against the newest release that existed **when it was
+filed**, stamped onto the report at the time. A report is a statement about a
+machine on a day: re-judging it whenever Apple ships something would turn a
+clean report red months later without the machine having changed. Reports filed
+before this existed fall back to today's newest release, which is the best that
+can be said about them.
 
 ---
 

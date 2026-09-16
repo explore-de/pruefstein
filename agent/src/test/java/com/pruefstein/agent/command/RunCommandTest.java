@@ -112,7 +112,7 @@ class RunCommandTest
 
 	private static ReportPayload run()
 	{
-		return new ReportPayload("device", "user", Instant.now(), List.of(), List.of());
+		return new ReportPayload("device", "user", Instant.now(), List.of(), List.of(), null);
 	}
 
 	/** Stands in for the runner so nothing needs a server, or osquery. */

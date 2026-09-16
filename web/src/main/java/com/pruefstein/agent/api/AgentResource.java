@@ -16,6 +16,7 @@ import com.pruefstein.compliance.service.CheckResolver.ResolvedCheck;
 import com.pruefstein.device.domain.Device;
 import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.notification.ReportMailDispatcher;
+import com.pruefstein.osversion.service.MacOsReleaseCatalog;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
 import com.pruefstein.report.flow.PeriodicFlowTrigger;
@@ -62,6 +63,9 @@ public class AgentResource
 	ComplianceResultRepository resultRepository;
 
 	@Inject
+	MacOsReleaseCatalog releaseCatalog;
+
+	@Inject
 	ReportRepository reportRepository;
 
 	@Inject
@@ -103,8 +107,17 @@ public class AgentResource
 	{
 	}
 
+	/**
+	 * The operating system the device was running when it was checked. Absent
+	 * from agents older than this field, and from a machine whose osquery could
+	 * not answer, so every reader has to cope with {@code null}.
+	 */
+	public record OsVersionPayload(String name, String version, String build, String platform)
+	{
+	}
+
 	public record ReportPayload(String deviceId, String userId, Instant checkedAt, List<ResultPayload> results,
-		List<InstalledAppPayload> installedApps)
+		List<InstalledAppPayload> installedApps, OsVersionPayload osVersion)
 	{
 	}
 
@@ -174,6 +187,7 @@ public class AgentResource
 		AppUser reportingUser = syncReportingUser();
 		report.setAppUser(reportingUser);
 
+		recordOsVersion(report, payload.osVersion());
 		replaceInventory(report, payload.installedApps());
 		upsertDevice(payload, reportingUser);
 
@@ -281,6 +295,27 @@ public class AgentResource
 			// Calling the model here made the agent wait for one round trip per
 			// failure and time out on a device with several.
 		}
+	}
+
+	/**
+	 * Files what the device said it was running, along with the newest macOS
+	 * Apple had published at that moment.
+	 * <p>
+	 * The latter is stamped now rather than read back later so the report keeps
+	 * its own verdict: a machine that was current in March should not turn red
+	 * in October because Apple shipped something.
+	 */
+	private void recordOsVersion(Report report, OsVersionPayload os)
+	{
+		if (os == null)
+		{
+			return;
+		}
+		report.setOsName(os.name());
+		report.setOsVersion(os.version());
+		report.setOsBuild(os.build());
+		releaseCatalog.latestPublicVersion()
+			.ifPresent(latest -> report.setOsLatestVersion(latest.toString()));
 	}
 
 	/**

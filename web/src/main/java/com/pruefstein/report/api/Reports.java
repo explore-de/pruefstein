@@ -13,6 +13,8 @@ import com.pruefstein.compliance.repository.ComplianceResultRepository;
 import com.pruefstein.compliance.repository.InstalledAppRepository;
 import com.pruefstein.compliance.service.BlacklistMatcher;
 import com.pruefstein.compliance.service.CheckResolver;
+import com.pruefstein.osversion.service.OsVersionAssessment;
+import com.pruefstein.osversion.service.OsVersionAssessor;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
 import com.pruefstein.report.repository.ReportRepository;
@@ -52,6 +54,9 @@ public class Reports extends Controller
 	@Inject
 	BlacklistMatcher blacklistMatcher;
 
+	@Inject
+	OsVersionAssessor osVersionAssessor;
+
 	@CheckedTemplate
 	public static class Templates
 	{
@@ -64,7 +69,7 @@ public class Reports extends Controller
 
 		public static native TemplateInstance show(Report report, List<ResultRow> results,
 			ResultRow blacklistResult, List<InventoryRow> inventory, long blockedCount,
-			long waivedCount);
+			long waivedCount, OsVersionAssessment os);
 	}
 
 	/**
@@ -297,6 +302,7 @@ public class Reports extends Controller
 		// Counted over every row, blacklist check included, so the note at the
 		// top of the report accounts for the section below it too.
 		long waivedCount = rows.stream().filter(ResultRow::isWaived).count();
-		return Templates.show(report, results, blacklistResult, inventory, blockedCount, waivedCount);
+		return Templates.show(report, results, blacklistResult, inventory, blockedCount, waivedCount,
+			osVersionAssessor.assess(report));
 	}
 }

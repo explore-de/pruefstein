@@ -182,6 +182,7 @@ public class Startup
 		compliant.setStatus(ReportStatus.COMPLIANT);
 		compliant.setFinalizedAt(Instant.now().minus(1, ChronoUnit.DAYS).plusSeconds(5));
 		reportRepository.persist(compliant);
+		osVersion(compliant, "27.0", "26A428", "27.0");
 
 		addResult(compliant, fileVault, true, "[{\"filevault_status\":\"on\"}]");
 		addResult(compliant, firewall, true, "[{\"global_state\":\"1\"}]");
@@ -199,6 +200,7 @@ public class Startup
 		nonCompliant.setDeadline(Instant.now().plus(6, ChronoUnit.DAYS));
 		nonCompliant.setFinalizedAt(Instant.now().minus(1, ChronoUnit.HOURS).plusSeconds(5));
 		reportRepository.persist(nonCompliant);
+		osVersion(nonCompliant, "26.7", "25G229", "26.7.1");
 
 		addResult(nonCompliant, fileVault, false, "[]", FILEVAULT_FALLBACK);
 		addResult(nonCompliant, firewall, true, "[{\"global_state\":\"1\"}]");
@@ -215,6 +217,7 @@ public class Startup
 		userReport.setStatus(ReportStatus.COMPLIANT);
 		userReport.setFinalizedAt(Instant.now().minus(2, ChronoUnit.HOURS).plusSeconds(5));
 		reportRepository.persist(userReport);
+		osVersion(userReport, "26.5.1", "25F80", "26.7");
 
 		addResult(userReport, fileVault, true, "[{\"filevault_status\":\"on\"}]");
 		addResult(userReport, firewall, true, "[{\"global_state\":\"1\"}]");
@@ -233,6 +236,7 @@ public class Startup
 		aged.setStatus(ReportStatus.COMPLIANT);
 		aged.setFinalizedAt(Instant.now().minus(40, ChronoUnit.DAYS).plusSeconds(5));
 		reportRepository.persist(aged);
+		osVersion(aged, "15.7.9", "24G830", "26.7");
 
 		addResult(aged, fileVault, true, "[{\"filevault_status\":\"on\"}]");
 		addResult(aged, firewall, true, "[{\"global_state\":\"1\"}]");
@@ -252,6 +256,7 @@ public class Startup
 		userOpen.setStatus(ReportStatus.OPEN);
 		userOpen.setDeadline(Instant.now().plus(5, ChronoUnit.DAYS));
 		reportRepository.persist(userOpen);
+		osVersion(userOpen, "26.7.1", "25G231", "26.7.1");
 
 		addResult(userOpen, fileVault, false, "[]", FILEVAULT_FALLBACK);
 		addResult(userOpen, firewall, true, "[{\"global_state\":\"1\"}]");
@@ -332,6 +337,21 @@ public class Startup
 			result.setAiLongExplanation(exp.longExplanation());
 		}
 		resultRepository.persist(result);
+	}
+
+	/**
+	 * Gives a seeded report an operating system, and the newest one that
+	 * existed when it was filed. Between them the five dev reports cover every
+	 * state the report header can show — current, a missing fix, a missing
+	 * feature update, and a machine two trains behind — so the page can be
+	 * looked at without waiting for a real device to fall behind.
+	 */
+	private void osVersion(Report report, String version, String build, String latest)
+	{
+		report.setOsName("macOS");
+		report.setOsVersion(version);
+		report.setOsBuild(build);
+		report.setOsLatestVersion(latest);
 	}
 
 	private ComplianceResultExplanation explain(ComplianceItem item, String output,

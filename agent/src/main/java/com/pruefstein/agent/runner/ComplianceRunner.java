@@ -22,6 +22,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pruefstein.agent.client.CheckItem;
 import com.pruefstein.agent.client.InstalledAppPayload;
+import com.pruefstein.agent.client.OsVersionPayload;
 import com.pruefstein.agent.client.PruefsteinClient;
 import com.pruefstein.agent.client.ReportPayload;
 import com.pruefstein.agent.client.ReportResponse;
@@ -104,6 +105,7 @@ public class ComplianceRunner
 
 		List<ResultPayload> results = runChecks(checks, this::runCheck);
 		List<InstalledAppPayload> installedApps = collectInventory();
+		OsVersionPayload osVersion = collectOsVersion();
 
 		long passed = results.stream().filter(ResultPayload::passed).count();
 		System.out.println(ConsoleStyle.rule());
@@ -111,7 +113,7 @@ public class ComplianceRunner
 
 		// Stamped here rather than at submission: this is when the machine
 		// looked like this, and someone may sit on the question for a while.
-		return Optional.of(new ReportPayload(deviceId, userId, Instant.now(), results, installedApps));
+		return Optional.of(new ReportPayload(deviceId, userId, Instant.now(), results, installedApps, osVersion));
 	}
 
 	/** Files a run that has already happened. The report exists from here on. */
@@ -271,6 +273,37 @@ public class ComplianceRunner
 			// A missing inventory must not cost us the compliance results
 			LOG.warn("Could not collect installed-app inventory.", e);
 			return List.of();
+		}
+	}
+
+	/**
+	 * Which operating system the machine is running. Reported on its own rather
+	 * than inferred from a check, because the server compares it against
+	 * Apple's release feed and a check can only answer yes or no.
+	 */
+	private OsVersionPayload collectOsVersion()
+	{
+		try
+		{
+			String output = osquery("SELECT name, version, build, platform FROM os_version;");
+			List<Map<String, Object>> rows = objectMapper.readValue(
+				output, new TypeReference<>()
+				{
+				});
+			if (rows.isEmpty())
+			{
+				return null;
+			}
+			Map<String, Object> row = rows.getFirst();
+			return new OsVersionPayload(
+				string(row.get("name")), string(row.get("version")),
+				string(row.get("build")), string(row.get("platform")));
+		}
+		catch (Exception e)
+		{
+			// Same bargain as the inventory: worth having, never worth the run.
+			LOG.warn("Could not read the OS version.", e);
+			return null;
 		}
 	}
 
