@@ -14,7 +14,8 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "run", description = "Run all compliance checks, then offer to report them", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "run", description = "Run all compliance checks, then offer to report them",
+	mixinStandardHelpOptions = true, versionProvider = AgentVersionProvider.class)
 public class RunCommand implements Callable<Integer>
 {
 	/** Deep enough for any real wrapping, shallow enough to end a loop. */
