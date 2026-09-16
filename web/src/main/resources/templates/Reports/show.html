@@ -34,17 +34,17 @@
     </div>
 
     <div class="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 pt-4 border-t-2 border-black">
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">User</p>
-        <p class="text-sm font-bold mt-0.5">
+        <p class="text-sm font-bold mt-0.5 break-words">
           {#if report.keycloakUser != null}{report.keycloakUser}{#else}<span class="text-stone-400">—</span>{/if}
         </p>
       </div>
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">Host</p>
-        <p class="text-sm font-bold mt-0.5">{report.userId}</p>
+        <p class="text-sm font-bold mt-0.5 break-words">{report.userId}</p>
       </div>
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">{os.name}</p>
         {#if os.known}
         <p class="text-sm font-bold mt-0.5 tabular-nums flex items-center gap-1.5 flex-wrap">
@@ -61,6 +61,8 @@
         </p>
         {#if os.behind}
         <p class="text-[10px] font-medium text-stone-500 mt-0.5">latest was {os.latest}</p>
+        {#else if os.latest == null}
+        <p class="text-[10px] font-medium text-amber-700 mt-0.5">not compared — no release data</p>
         {#else if os.build != null}
         <p class="text-[10px] font-medium text-stone-400 mt-0.5 tabular-nums">{os.build}</p>
         {/if}
@@ -69,20 +71,20 @@
         <p class="text-[10px] font-medium text-stone-400 mt-0.5">not reported</p>
         {/if}
       </div>
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">Checked</p>
         <p class="text-sm font-bold mt-0.5 tabular-nums">
           {report.checkedAt.toString().substring(0, 16).replace('T', ' ')}
         </p>
       </div>
       {#if report.deadline != null}
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">Deadline</p>
         <p class="text-sm font-bold mt-0.5 tabular-nums">{report.deadline.toString().substring(0, 10)}</p>
       </div>
       {/if}
       {#if report.finalizedAt != null}
-      <div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">Finalized</p>
         <p class="text-sm font-bold mt-0.5 tabular-nums">
           {report.finalizedAt.toString().substring(0, 16).replace('T', ' ')}

@@ -1,7 +1,10 @@
 package com.pruefstein.report.api;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
+import com.pruefstein.osversion.domain.MacOsRelease;
+import com.pruefstein.osversion.repository.MacOsReleaseRepository;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
 import com.pruefstein.report.repository.ReportRepository;
@@ -32,6 +35,9 @@ class ReportOsVersionHeaderTest
 {
 	@Inject
 	ReportRepository reportRepository;
+
+	@Inject
+	MacOsReleaseRepository releaseRepository;
 
 	private Long reportId;
 
@@ -147,6 +153,45 @@ class ReportOsVersionHeaderTest
 			.body(not(containsString("MAJOR BEHIND")));
 	}
 
+	/**
+	 * A report filed while the catalog was still empty carries no yardstick of
+	 * its own. Once the catalog fills, the report has to start reading against
+	 * today's newest release rather than staying blank forever — which is what
+	 * it did on a real report until the feed could be reached at all.
+	 */
+	@Test
+	void fallsBackToTodaysLatestWhenTheReportWasFiledWithoutOne()
+	{
+		// given a report with no stamped latest, and a catalog that now has one
+		seed("26.6.2", "25G83", null);
+		QuarkusTransaction.requiringNew().run(() -> {
+			MacOsRelease release = new MacOsRelease();
+			release.setProductVersion("27.0");
+			release.setBuild("26A428");
+			release.setPostingDate(LocalDate.of(2026, 9, 15));
+			release.setPublicRelease(true);
+			release.setSeenAt(Instant.now());
+			releaseRepository.persist(release);
+		});
+
+		try
+		{
+			// when / then
+			given()
+				.when().get("/Reports/show/" + reportId)
+				.then()
+				.statusCode(200)
+				.body(containsString("MAJOR BEHIND"))
+				.body(containsString("USES A 1-YEAR-OLD VERSION"))
+				.body(not(containsString("no release data")));
+		}
+		finally
+		{
+			QuarkusTransaction.requiringNew()
+				.run(() -> releaseRepository.delete("productVersion = ?1", "27.0"));
+		}
+	}
+
 	@Test
 	void showsTheVersionUnjudgedWhenApplesFeedWasNeverReached()
 	{
@@ -160,6 +205,8 @@ class ReportOsVersionHeaderTest
 			.statusCode(200)
 			.body(containsString("15.7.9"))
 			.body(not(containsString("MAJOR BEHIND")))
-			.body(not(containsString("FIX BEHIND")));
+			.body(not(containsString("FIX BEHIND")))
+			// and says so, rather than showing a bare version that looks fine
+			.body(containsString("not compared — no release data"));
 	}
 }
