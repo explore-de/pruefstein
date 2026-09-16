@@ -130,8 +130,9 @@ public class AgentResource
 	{
 		// Generated checks are rendered per request rather than stored, so a
 		// blacklist edit takes effect on the next agent run with nothing to
-		// resync.
-		return itemRepository.listAll().stream()
+		// resync. Retired checks are left out for the same reason: the agent
+		// asks again on every run, so it simply stops asking this one.
+		return itemRepository.listActive().stream()
 			.map(item -> {
 				ResolvedCheck resolved = checkResolver.resolve(item);
 				return new CheckDto(item.id, item.getName(), resolved.query(), resolved.expression());
@@ -155,7 +156,13 @@ public class AgentResource
 	@Transactional
 	public Response pushReport(ReportPayload payload, @Context UriInfo uriInfo)
 	{
-		boolean allPassed = payload.results().stream().allMatch(ResultPayload::passed);
+		// An agent that fetched the catalogue before a check was retired still
+		// reports on it. Those answers are kept — they are what the device
+		// said — but a check no longer in force cannot open a report or hold
+		// one open, so the verdict is taken without them.
+		boolean allPassed = payload.results().stream()
+			.filter(this::stillInForce)
+			.allMatch(ResultPayload::passed);
 
 		Report report = reportRepository.findOpenByDeviceAndUser(payload.deviceId(), payload.userId())
 			.map(open -> anotherAttempt(open, payload, allPassed))
@@ -243,6 +250,16 @@ public class AgentResource
 			jwt.<String> claim("email").orElse(null),
 			jwt.<String> claim("given_name").orElse(null),
 			jwt.<String> claim("family_name").orElse(null));
+	}
+
+	/**
+	 * Whether the check this answer is about is still one the estate is
+	 * measured by. An answer to a retired check is recorded, not counted.
+	 */
+	private boolean stillInForce(ResultPayload result)
+	{
+		ComplianceItem item = itemRepository.findById(result.itemId());
+		return item != null && !item.isRetired();
 	}
 
 	private void persistResults(Report report, List<ResultPayload> results)

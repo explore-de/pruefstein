@@ -104,7 +104,8 @@ public class ReportMailDispatcher
 	private long unexplainedFailures(Report report)
 	{
 		return resultRepository.count(
-			"report = ?1 and passed = false and aiShortDescription is null and output is not null",
+			"report = ?1 and passed = false and item.retiredAt is null"
+				+ " and aiShortDescription is null and output is not null",
 			report);
 	}
 }

@@ -64,8 +64,10 @@ public class UserDashboard
 		List<ComplianceResult> results = resultRepository.list("report",
 			Sort.by("item.name").ascending(), report);
 
+		// A check retired since this run is not on anyone's to-do list any
+		// more, so it leaves the failures and joins the passed count.
 		List<FailingCheck> failures = results.stream()
-			.filter(result -> !result.isPassed())
+			.filter(ComplianceResult::isFailing)
 			.map(UserDashboard::failing)
 			.toList();
 		int passed = results.size() - failures.size();

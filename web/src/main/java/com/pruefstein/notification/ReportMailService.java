@@ -114,7 +114,8 @@ public class ReportMailService
 	private ReportMailData describe(Report report)
 	{
 		List<ReportMailData.Failure> failures = resultRepository
-			.list("report = ?1 and passed = false", Sort.by("item.name").ascending(), report)
+			.list("report = ?1 and passed = false and item.retiredAt is null",
+				Sort.by("item.name").ascending(), report)
 			.stream()
 			.map(ReportMailService::toFailure)
 			.toList();

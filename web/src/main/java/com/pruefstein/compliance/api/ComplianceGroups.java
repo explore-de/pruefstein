@@ -79,18 +79,18 @@ public class ComplianceGroups extends Controller
 
 	public TemplateInstance index()
 	{
-		return Templates.index(groupRepository.listAll());
+		return Templates.index(groupRepository.listActive());
 	}
 
 	public TemplateInstance show(@RestPath Long id)
 	{
 		ComplianceGroup group = groupRepository.findById(id);
-		if (group == null)
+		if (group == null || group.isRetired())
 		{
 			notFound();
 			return null;
 		}
-		List<CheckRow> items = itemRepository.list("group", group).stream()
+		List<CheckRow> items = itemRepository.listActive(group).stream()
 			.filter(check -> !(check instanceof AppBlacklistCheck))
 			.map(check -> {
 				ResolvedCheck resolved = checkResolver.resolve(check);
@@ -128,7 +128,7 @@ public class ComplianceGroups extends Controller
 			return;
 		}
 		ComplianceGroup group = groupRepository.findById(id);
-		if (group == null)
+		if (group == null || group.isRetired())
 		{
 			notFound();
 			return;
@@ -137,12 +137,32 @@ public class ComplianceGroups extends Controller
 		index();
 	}
 
+	/**
+	 * Retires a group rather than deleting it, and takes its checks with it.
+	 * <p>
+	 * Same reason as a single check: the results behind every report name their
+	 * check, and every check names this group, so a real delete broke the
+	 * foreign key and failed the request. The checks are retired alongside
+	 * because the group screen is the only place to manage them — leaving them
+	 * in force with nowhere to reach them would be worse than removing them.
+	 */
 	@POST
 	@Transactional
 	@RolesAllowed("${pruefstein.security.admin-role:admin}")
 	public void delete(@RestForm Long id)
 	{
-		groupRepository.deleteById(id);
+		ComplianceGroup group = groupRepository.findById(id);
+		if (group == null || group.isRetired())
+		{
+			notFound();
+			return;
+		}
+		// Counted before retiring, while they are still the ones in force.
+		int checks = itemRepository.listActive(group).size();
+		group.retire();
+		flash("message", "Retired \u201c" + group.getName() + "\u201d and "
+			+ checks + (checks == 1 ? " check" : " checks")
+			+ " in it. Past reports keep them, and now count them as passed.");
 		index();
 	}
 
@@ -164,7 +184,7 @@ public class ComplianceGroups extends Controller
 			return;
 		}
 		ComplianceGroup group = groupRepository.findById(groupId);
-		if (group == null)
+		if (group == null || group.isRetired())
 		{
 			notFound();
 			return;
@@ -192,8 +212,10 @@ public class ComplianceGroups extends Controller
 			index();
 			return;
 		}
+		// A retired check is out of force; editing it would put a check back
+		// into reports that were already judged without it.
 		ComplianceItem item = itemRepository.findById(id);
-		if (item == null)
+		if (item == null || item.isRetired())
 		{
 			notFound();
 			return;
@@ -211,19 +233,31 @@ public class ComplianceGroups extends Controller
 		show(item.getGroup().id);
 	}
 
+	/**
+	 * Retires a check rather than deleting it.
+	 * <p>
+	 * Every result the check ever produced points at it, so a real delete took
+	 * the foreign key with it and failed the request outright. Retiring takes
+	 * the check out of the catalogue, out of what the agent fetches and out of
+	 * every count, and leaves the reports that were judged against it intact —
+	 * where it now reads as passed, because a check no longer in force cannot
+	 * be held against a device.
+	 */
 	@POST
 	@Transactional
 	@RolesAllowed("${pruefstein.security.admin-role:admin}")
 	public void deleteItem(@RestForm Long id)
 	{
 		ComplianceItem item = itemRepository.findById(id);
-		if (item == null)
+		if (item == null || item.isRetired())
 		{
 			notFound();
 			return;
 		}
 		Long groupId = item.getGroup().id;
-		itemRepository.deleteById(id);
+		item.retire();
+		flash("message", "Retired \u201c" + item.getName()
+			+ "\u201d. Past reports keep it, and now count it as passed.");
 		show(groupId);
 	}
 }

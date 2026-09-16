@@ -74,7 +74,7 @@
                   @click="$dispatch('open-delete', $el.dataset); open = false"
                   data-id="{group.id}"
                   class="w-full text-left px-3 py-1.5 text-sm font-bold text-red-600 hover:bg-red-50 transition-none">
-                  Delete
+                  Retire
                 </button>
               </div>
             </div>
@@ -151,16 +151,23 @@
     </div>
   </div>
 
-  <!-- ── Delete Confirmation ───────────────────────────────── -->
+  <!-- ── Retire Group Confirmation ─────────────────────────── -->
   <div x-show="showDelete" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showDelete = false" @keydown.escape.window="showDelete = false">
     <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-sm" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
-        <h2 class="text-xl font-black">Delete Group</h2>
+        <h2 class="text-xl font-black">Retire Group</h2>
       </div>
-      <div class="px-6 pt-4 pb-2">
-        <p class="text-sm font-medium text-stone-600">Are you sure? All compliance items in this group will also be deleted.</p>
+      <div class="px-6 pt-4 pb-2 space-y-2">
+        <p class="text-sm font-medium text-stone-600">
+          The group and every check in it are retired together. Agents stop running them on their next run.
+        </p>
+        <p class="text-sm font-medium text-stone-600">
+          Reports already filed keep these checks. Because they are no longer enforced, they count as
+          <span class="font-black text-emerald-600">passed</span> there from now on — including on devices
+          that failed them — and they stop counting towards any open deadline.
+        </p>
       </div>
       <form method="post" action="{uri:ComplianceGroups.delete}" class="px-6 pb-6">
         {#authenticityToken /}
@@ -172,7 +179,7 @@
           </button>
           <button type="submit"
                   class="px-4 py-2 text-sm font-bold bg-red-600 text-white border-2 border-black shadow-brutal-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
-            Delete
+            Retire
           </button>
         </div>
       </form>
