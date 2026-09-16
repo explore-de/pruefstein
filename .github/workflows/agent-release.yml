@@ -69,6 +69,13 @@ jobs:
           test -n "$unpacked"
           "$unpacked" --help
           "$unpacked" login --help | grep -q -- --server
+          ## --help proves the binary starts, and nothing more. The agent once
+          ## shipped for months starting perfectly and evaluating every check
+          ## to an error, because JEXL reaches an expression's values by
+          ## reflection and the native image had dropped the metadata. Only
+          ## asking the packaged binary to evaluate something catches that,
+          ## and a JVM test run never can.
+          "$unpacked" selftest
 
       - name: Upload the archive
         uses: actions/upload-artifact@v7
