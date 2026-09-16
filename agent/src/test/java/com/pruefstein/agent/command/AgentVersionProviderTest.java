@@ -39,7 +39,8 @@ class AgentVersionProviderTest
 		// given — each subcommand mixes in the standard help options of its
 		// own, so each needs the provider; inheriting it is not a thing
 		for (Class<?> command : new Class<?>[] {
-			MainCommand.class, RunCommand.class, LoginCommand.class, LogoutCommand.class })
+			MainCommand.class, RunCommand.class, LoginCommand.class, LogoutCommand.class,
+			SelfTestCommand.class })
 		{
 			// when
 			CommandLine.Command annotation = command.getAnnotation(CommandLine.Command.class);
