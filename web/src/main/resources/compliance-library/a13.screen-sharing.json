@@ -1,0 +1,7 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.13 Communications Security",
+  "name": "Screen sharing disabled",
+  "query": "SELECT screen_sharing FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].screen_sharing == '0'"
+}

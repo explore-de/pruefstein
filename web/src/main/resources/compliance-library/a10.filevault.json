@@ -1,0 +1,7 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.10 Cryptography",
+  "name": "FileVault enabled",
+  "query": "SELECT filevault_status FROM disk_encryption WHERE filevault_status = 'on' LIMIT 1;",
+  "expression": "results.size() > 0"
+}

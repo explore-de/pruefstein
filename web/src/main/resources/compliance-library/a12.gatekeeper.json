@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.12 Operations Security",
+  "name": "Gatekeeper enabled",
+  "description": "A.12.2 — protection against malware.",
+  "query": "SELECT assessments_enabled FROM gatekeeper;",
+  "expression": "results.size() > 0 && results[0].assessments_enabled == '1'"
+}

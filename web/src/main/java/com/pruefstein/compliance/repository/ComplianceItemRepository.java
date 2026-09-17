@@ -32,6 +32,21 @@ public class ComplianceItemRepository implements PanacheRepository<ComplianceIte
 		return list(ACTIVE + " and group = ?1", group);
 	}
 
+	/**
+	 * The check in force that was created from a library entry, if any. The
+	 * library offers each entry at most once at a time.
+	 */
+	public Optional<ComplianceItem> findActiveByLibraryKey(String libraryKey)
+	{
+		return find(ACTIVE + " and libraryKey = ?1", libraryKey).firstResultOptional();
+	}
+
+	/** Checks written by hand, or created before the library tracked them. */
+	public List<ComplianceItem> listWithoutLibraryKey(String name)
+	{
+		return list("libraryKey is null and name = ?1", name);
+	}
+
 	public long countActive()
 	{
 		return count(ACTIVE);

@@ -1,12 +1,8 @@
 package com.pruefstein.compliance.bootstrap;
 
-import com.pruefstein.compliance.bootstrap.ComplianceCatalog.CheckDef;
-import com.pruefstein.compliance.domain.AppBlacklistCheck;
-import com.pruefstein.compliance.domain.ComplianceGroup;
-import com.pruefstein.compliance.domain.ComplianceItem;
-import com.pruefstein.compliance.domain.ExpressionCheck;
-import com.pruefstein.compliance.repository.ComplianceGroupRepository;
-import com.pruefstein.compliance.repository.ComplianceItemRepository;
+import com.pruefstein.compliance.library.ComplianceLibrary;
+import com.pruefstein.compliance.library.LibraryEntry;
+import com.pruefstein.compliance.library.LibraryInstantiator;
 import com.pruefstein.shared.bootstrap.SeedLedger;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.annotation.Priority;
@@ -19,16 +15,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Puts the baseline compliance checks into every deployment, production
- * included, so a fresh install has something to measure devices against instead
- * of an empty Groups &amp; Items screen.
+ * Puts every check in the built-in {@link ComplianceLibrary} into every
+ * deployment, production included, so a fresh install has something to measure
+ * devices against instead of an empty Groups &amp; Items screen.
  *
  * <p>
- * Each catalog entry is applied at most once per database, tracked by
+ * Each library entry is applied at most once per database, tracked by
  * {@link SeedLedger}. That is what makes this safe to run on every boot: an
- * administrator's edits are never reconciled away, a check they deleted is
- * never resurrected, and a check added to the catalog in a later release
- * appears on the next start without duplicating the ones already there.
+ * administrator's edits are never reconciled away, a check they retired is
+ * never resurrected, and an entry added to the library in a later release
+ * appears on the next start without duplicating the ones already there. A
+ * retired check comes back only when an admin adds it again from the Library
+ * screen.
  */
 @ApplicationScoped
 public class CatalogSeeder
@@ -45,10 +43,10 @@ public class CatalogSeeder
 	SeedLedger ledger;
 
 	@Inject
-	ComplianceGroupRepository groupRepository;
+	ComplianceLibrary library;
 
 	@Inject
-	ComplianceItemRepository itemRepository;
+	LibraryInstantiator instantiator;
 
 	@ConfigProperty(name = "pruefstein.compliance.seed-catalog", defaultValue = "true")
 	boolean seedingEnabled;
@@ -56,6 +54,11 @@ public class CatalogSeeder
 	@Transactional
 	void seedOnStartup(@Observes @Priority(PRIORITY) StartupEvent event)
 	{
+		int adopted = instantiator.adoptUntagged(library.entries());
+		if (adopted > 0)
+		{
+			LOG.info("Linked {} existing compliance check(s) to their library entries", adopted);
+		}
 		if (!seedingEnabled)
 		{
 			return;
@@ -73,55 +76,15 @@ public class CatalogSeeder
 	public int seed()
 	{
 		int applied = 0;
-		for (CheckDef def : ComplianceCatalog.CHECKS)
+		for (LibraryEntry entry : library.entries())
 		{
-			if (!ledger.claim(def.key()))
+			if (!ledger.claim(entry.key()))
 			{
 				continue;
 			}
-			itemRepository.persist(toItem(def));
+			instantiator.instantiate(entry);
 			applied++;
 		}
 		return applied;
-	}
-
-	private ComplianceItem toItem(CheckDef def)
-	{
-		ComplianceItem item;
-		if (def.generated())
-		{
-			item = new AppBlacklistCheck();
-		}
-		else
-		{
-			ExpressionCheck check = new ExpressionCheck();
-			check.setQuery(def.query());
-			check.setExpectedExpression(def.expression());
-			item = check;
-		}
-		item.setName(def.name());
-		if (def.groupKey() != null)
-		{
-			item.setGroup(group(def.groupKey()));
-		}
-		return item;
-	}
-
-	/**
-	 * Groups are matched by name rather than ledgered: a check being created
-	 * needs somewhere to live, so if its group is gone it is recreated with it.
-	 * A retired group counts as gone — a check added by a later release must
-	 * not land somewhere no one can reach it.
-	 */
-	private ComplianceGroup group(String groupKey)
-	{
-		String name = ComplianceCatalog.groupName(groupKey);
-		return groupRepository.findActiveByName(name)
-			.orElseGet(() -> {
-				ComplianceGroup group = new ComplianceGroup();
-				group.setName(name);
-				groupRepository.persist(group);
-				return group;
-			});
 	}
 }

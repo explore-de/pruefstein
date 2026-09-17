@@ -1,0 +1,21 @@
+[
+  "a10.filevault",
+  "a12.firewall",
+  "a12.auto-updates",
+  "a12.critical-updates",
+  "a12.macos-updates",
+  "a12.gatekeeper",
+  "a12.sip",
+  "a12.time-machine",
+  "a12.firewall-logging",
+  "a12.blocked-apps",
+  "a9.screen-lock-timeout",
+  "a9.screen-lock-password",
+  "a9.auto-login",
+  "a9.guest-account",
+  "a13.remote-login",
+  "a13.screen-sharing",
+  "a13.file-sharing",
+  "a13.internet-sharing",
+  "a13.stealth-mode"
+]

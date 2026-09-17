@@ -1,0 +1,7 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.9 Access Control",
+  "name": "Screen lock timeout ≤ 300 seconds",
+  "query": "SELECT value FROM preferences WHERE domain = 'com.apple.screensaver' AND key = 'idleTime';",
+  "expression": "results.size() > 0 && results[0].value <= 300"
+}
