@@ -2,6 +2,7 @@ package com.pruefstein.dashboard.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.pruefstein.compliance.domain.ComplianceGroup;
@@ -21,6 +22,7 @@ import com.pruefstein.report.repository.ReportRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +47,31 @@ class UserDashboardTest
 
 	@Inject
 	ComplianceResultRepository resultRepository;
+
+	private final List<Long> devices = new ArrayList<>();
+	private final List<Long> reports = new ArrayList<>();
+	private final List<Long> items = new ArrayList<>();
+	private final List<Long> groups = new ArrayList<>();
+
+	/**
+	 * Nothing here runs inside a rolled-back transaction, so what a test
+	 * creates it has to remove itself — a group named like a real one, left
+	 * behind with checks in it, trips up whichever class runs next.
+	 */
+	@AfterEach
+	void tearDown()
+	{
+		QuarkusTransaction.requiringNew().run(() -> {
+			for (Long id : reports)
+			{
+				resultRepository.delete("report.id = ?1", id);
+				reportRepository.deleteById(id);
+			}
+			items.forEach(itemRepository::deleteById);
+			groups.forEach(groupRepository::deleteById);
+			devices.forEach(deviceRepository::deleteById);
+		});
+	}
 
 	@Test
 	void showsOnlyTheReadersOwnDevices()
@@ -126,6 +153,7 @@ class UserDashboardTest
 			device.setKeycloakUser(keycloakUser);
 			device.setLastReportAt(Instant.now().minus(1, ChronoUnit.DAYS));
 			deviceRepository.persist(device);
+			devices.add(device.id);
 		});
 	}
 
@@ -138,6 +166,7 @@ class UserDashboardTest
 			ComplianceGroup group = new ComplianceGroup();
 			group.setName("A.10 Cryptography");
 			groupRepository.persist(group);
+			groups.add(group.id);
 
 			Report report = new Report();
 			report.setDeviceId(deviceId);
@@ -147,6 +176,7 @@ class UserDashboardTest
 			report.setStatus(status);
 			report.setDeadline(deadline);
 			reportRepository.persist(report);
+			reports.add(report.id);
 
 			addResult(report, item("Dash Passes", group), true, null, null);
 			if (status != ReportStatus.COMPLIANT)
@@ -164,6 +194,7 @@ class UserDashboardTest
 		check.setQuery("SELECT 1");
 		check.setExpectedExpression("results.size() > 0");
 		itemRepository.persist(check);
+		items.add(check.id);
 		return check;
 	}
 
