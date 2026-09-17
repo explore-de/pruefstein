@@ -34,6 +34,18 @@ public abstract class ComplianceItem extends PanacheEntity
 {
 	private String name;
 
+	/**
+	 * The ISO/IEC 27001:2022 Annex A control this check evidences, such as
+	 * {@code A.8.8} — the group holds only the broader theme.
+	 *
+	 * <p>
+	 * Null for a check an administrator wrote themselves: we know which theme
+	 * they filed it under, and inventing a control number on their behalf would
+	 * put a claim in front of an auditor that nobody made.
+	 */
+	@Column(length = 16)
+	private String control;
+
 	@ManyToOne
 	private ComplianceGroup group;
 
@@ -63,6 +75,16 @@ public abstract class ComplianceItem extends PanacheEntity
 	public void setName(String name)
 	{
 		this.name = name;
+	}
+
+	public String getControl()
+	{
+		return control;
+	}
+
+	public void setControl(String control)
+	{
+		this.control = control;
 	}
 
 	public ComplianceGroup getGroup()

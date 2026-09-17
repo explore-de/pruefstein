@@ -430,15 +430,35 @@ Try it without consequences first:
 
 ## ISO 27001 mapping
 
-Compliance Groups map to ISO 27001 Annex A control families. Suggested groups:
+The checks ship as JSON in `web/src/main/resources/compliance-library/`, one
+file per check. Each entry names the ISO/IEC 27001:2022 Annex A theme it is
+filed under, which is the group an administrator sees, and the control it
+evidences, which is what an auditor traces. Every entry is seeded on install,
+and the Library screen offers any entry not currently in force.
 
-| Group | Controls |
-|---|---|
-| A.8 Asset Management | Inventory, software install policy |
-| A.9 Access Control | Screen lock, password policy, MFA presence |
-| A.10 Cryptography | Disk encryption |
-| A.12 Operations Security | Auto-update, AV, firewall |
-| A.13 Network Security | VPN, DNS-over-HTTPS |
+| Theme | Control | Seeded checks |
+|---|---|---|
+| A.5 Organizational | A.5.15 Access control | Guest account disabled |
+| A.7 Physical | A.7.7 Clear desk and clear screen | Screen lock timeout, screen lock requires a password |
+| A.8 Technological | A.8.5 Secure authentication | Automatic login disabled |
+| | A.8.7 Protection against malware | Gatekeeper, System Integrity Protection, XProtect and security data updates |
+| | A.8.8 Management of technical vulnerabilities | Automatic update check, critical security updates, macOS updates |
+| | A.8.13 Information backup | Time Machine backup destination |
+| | A.8.15 Logging | Firewall logging |
+| | A.8.19 Installation of software on operational systems | No blacklisted applications |
+| | A.8.20 Networks security | Firewall, stealth mode, remote login, remote management, remote Apple events, screen/file/internet/printer/Bluetooth/DVD sharing, content caching |
+| | A.8.24 Use of cryptography | FileVault |
+
+A.6 People has no row because nothing in it is measurable on an endpoint, and
+the seeder only creates a group that some check asks for.
+
+The library keys are the JSON file names, and they are permanent identifiers:
+the seed ledger remembers them, and every check created from an entry carries
+its key. They deliberately carry no standard's numbering, because a
+classification can move — the guest-account check went from a 2013
+access-control domain to A.5.15 — and the first keys, which were named after
+the 2013 domains, had to be renamed by a one-time migration when it did. Name a
+new entry after what it checks, not where it is filed.
 
 ---
 

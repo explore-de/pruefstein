@@ -1,7 +1,9 @@
 {
   "type": "EXPRESSION",
-  "group": "A.13 Communications Security",
+  "group": "A.8 Technological controls",
+  "control": "A.8.20",
   "name": "Firewall stealth mode enabled",
+  "description": "Networks security.",
   "query": "SELECT stealth_enabled FROM alf;",
   "expression": "results.size() > 0 && results[0].stealth_enabled == '1'"
 }

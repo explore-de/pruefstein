@@ -1,0 +1,9 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.8 Technological controls",
+  "control": "A.8.15",
+  "name": "Firewall logging enabled",
+  "description": "Logging. macOS 15 removed the switch and logs permanently, and the alf table cannot read the setting there any more, so from that version on the check answers from the OS version.",
+  "query": "SELECT (SELECT major FROM os_version) AS major, (SELECT logging_enabled FROM alf) AS logging_enabled;",
+  "expression": "results.size() > 0 && (results[0].major >= 15 || results[0].logging_enabled == '1')"
+}

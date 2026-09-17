@@ -1,5 +1,0 @@
-{
-  "type": "APP_BLACKLIST",
-  "name": "No blacklisted applications installed",
-  "description": "A.12.6.2 — restrictions on software installation. Deliberately group-less: it lives on the Blocked Apps screen and in its own report section, and its SQL comes from the rules kept there."
-}

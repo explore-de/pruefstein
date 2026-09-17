@@ -26,6 +26,8 @@
         <tr class="border-b-2 border-black last:border-0 hover:bg-accent transition-colors align-top">
           <td class="px-4 py-3">
             <span class="font-bold">{row.entry.name}</span>
+            <span title="ISO/IEC 27001:2022 Annex A control"
+                  class="ml-2 text-[10px] font-black tracking-widest border-2 border-black px-1.5 py-0.5 bg-accent align-middle">{row.entry.control}</span>
             {#if row.entry.description}
             <p class="text-xs font-medium text-stone-500 mt-1">{row.entry.description}</p>
             {/if}

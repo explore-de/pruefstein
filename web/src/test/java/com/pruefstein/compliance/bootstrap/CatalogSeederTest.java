@@ -3,6 +3,7 @@ package com.pruefstein.compliance.bootstrap;
 import java.util.List;
 
 import com.pruefstein.compliance.domain.AppBlacklistCheck;
+import com.pruefstein.compliance.domain.ComplianceGroup;
 import com.pruefstein.compliance.domain.ComplianceItem;
 import com.pruefstein.compliance.domain.ExpressionCheck;
 import com.pruefstein.compliance.library.ComplianceLibrary;
@@ -77,6 +78,7 @@ class CatalogSeederTest
 			ComplianceItem item = find(entry.name());
 			assertNotNull(item, entry.name() + " should have been seeded");
 			assertEquals(entry.key(), item.getLibraryKey(), entry.name() + " should remember its library entry");
+			assertEquals(entry.control(), item.getControl(), entry.name() + " should carry its control");
 			if (entry.group() != null)
 			{
 				assertTrue(groupRepository.find("name", entry.group()).firstResultOptional().isPresent(),
@@ -155,7 +157,7 @@ class CatalogSeederTest
 
 		// when — the next release adds an entry, which is a key the ledger has
 		// never seen
-		QuarkusTransaction.requiringNew().run(() -> ledger.deleteById("a12.gatekeeper"));
+		QuarkusTransaction.requiringNew().run(() -> ledger.deleteById("gatekeeper"));
 		QuarkusTransaction.requiringNew().run(() -> itemRepository.delete("name", "Gatekeeper enabled"));
 		int applied = seed();
 
@@ -168,20 +170,28 @@ class CatalogSeederTest
 	void aDeletedGroupIsRecreatedForTheCheckThatNeedsIt()
 	{
 		// given — the group is gone along with the ledger entry of one of its
-		// checks
+		// checks. Taken from the library rather than written out, so filing an
+		// entry under another theme does not fail this test.
+		LibraryEntry filevault = library.find("filevault").orElseThrow();
+		String groupName = filevault.group();
 		seed();
 		QuarkusTransaction.requiringNew().run(() -> {
-			itemRepository.delete("name", "FileVault enabled");
-			ledger.deleteById("a10.filevault");
-			groupRepository.delete("name", "A.10 Cryptography");
+			// A theme holds many checks, and the group cannot go while any of
+			// them still points at it
+			for (ComplianceGroup group : groupRepository.list("name", groupName))
+			{
+				itemRepository.delete("group", group);
+				groupRepository.delete(group);
+			}
+			ledger.deleteById(filevault.key());
 		});
 
 		// when
 		seed();
 
 		// then — a check has to live somewhere
-		assertNotNull(find("FileVault enabled").getGroup());
-		assertEquals("A.10 Cryptography", find("FileVault enabled").getGroup().getName());
+		assertNotNull(find(filevault.name()).getGroup());
+		assertEquals(groupName, find(filevault.name()).getGroup().getName());
 	}
 
 	@Test
@@ -196,7 +206,7 @@ class CatalogSeederTest
 
 		// then — the Library screen sees them as in use and does not offer them
 		assertEquals(library.entries().size(), adopted);
-		assertEquals("a10.filevault", find("FileVault enabled").getLibraryKey());
+		assertEquals("filevault", find("FileVault enabled").getLibraryKey());
 	}
 
 	private int seed()

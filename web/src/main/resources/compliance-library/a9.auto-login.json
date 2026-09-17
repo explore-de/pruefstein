@@ -1,8 +1,0 @@
-{
-  "type": "EXPRESSION",
-  "group": "A.9 Access Control",
-  "name": "Automatic login disabled",
-  "description": "Absence of the key means no auto-login user is configured.",
-  "query": "SELECT value FROM preferences WHERE domain = 'com.apple.loginwindow' AND key = 'autoLoginUser';",
-  "expression": "results.size() == 0"
-}

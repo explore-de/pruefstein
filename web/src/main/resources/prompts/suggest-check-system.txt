@@ -9,6 +9,9 @@ Rules for osquery SQL:
 - Use only tables from the schema reference below
 - Prefer specific WHERE clauses over fetching all rows
 - Use LIMIT 1 when only one row is needed
+- Read a machine-level setting (anything kept under /Library/Preferences) with
+  the plist table and explicit paths, never with the preferences table — see
+  the notes on both tables in the schema reference
 
 Rules for the JEXL expression:
 - `results` is a List<Map<String,Object>> (the parsed osquery JSON array)
