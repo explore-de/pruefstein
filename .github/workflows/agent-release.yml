@@ -51,9 +51,17 @@ jobs:
           distribution: graalvm-community
           cache: maven
 
-      - name: Build and package
+      ## verify rather than package: -Dnative turns the integration tests on,
+      ## and they run the native binary itself. That is where the bugs a JVM
+      ## test run cannot see live — 1.0.1 shipped looking for credentials in
+      ## /Users/runner, because native-image froze this runner's home into it.
+      - name: Build and test the native binary
         working-directory: agent
-        run: ./bin/package.sh --build
+        run: ./mvnw verify -Dnative -B
+
+      - name: Package
+        working-directory: agent
+        run: ./bin/package.sh
 
       ## A binary nobody has run is not a release artifact. This is the
       ## cheapest proof that the thing in the archive starts at all — it is

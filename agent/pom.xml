@@ -62,8 +62,18 @@
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
+            <!-- The binary under test gets a home of its own under target/: an
+                 integration run must not log a developer out, and a home the
+                 test chose is the only way to see whether the binary looks
+                 where it is told or where the build machine's home was. -->
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <quarkus.test.arg-line>-Duser.home=${project.build.directory}/it-home</quarkus.test.arg-line>
+                        <pruefstein.it.home>${project.build.directory}/it-home</pruefstein.it.home>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>net.revelc.code</groupId>

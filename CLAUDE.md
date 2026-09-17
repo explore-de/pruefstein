@@ -49,6 +49,9 @@ cd web && ./mvnw quarkus:dev
 
 # Native build (requires GraalVM on JAVA_HOME)
 ./mvnw package -pl agent -Dnative
+
+# Native build plus AgentBinaryIT against the binary itself
+./mvnw verify -pl agent -Dnative
 ```
 
 Releases go through `maven-release-plugin` from the root: `./mvnw
