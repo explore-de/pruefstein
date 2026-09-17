@@ -58,6 +58,11 @@ public class ComplianceGroups extends Controller
 			return check.getName();
 		}
 
+		public String getControl()
+		{
+			return check.getControl();
+		}
+
 		public boolean isEditable()
 		{
 			return check.isEditable();

@@ -1,8 +1,0 @@
-{
-  "type": "EXPRESSION",
-  "group": "A.12 Operations Security",
-  "name": "Firewall logging enabled",
-  "description": "A.12.4 — logging and monitoring.",
-  "query": "SELECT logging_enabled FROM alf;",
-  "expression": "results.size() > 0 && results[0].logging_enabled == '1'"
-}

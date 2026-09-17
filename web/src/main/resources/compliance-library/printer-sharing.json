@@ -1,0 +1,9 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.8 Technological controls",
+  "control": "A.8.20",
+  "name": "Printer sharing disabled",
+  "description": "Networks security: an inbound network service an endpoint need not offer (Richtlinie zum sicheren IT-Betrieb: Minimalbetrieb).",
+  "query": "SELECT printer_sharing FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].printer_sharing == '0'"
+}

@@ -1,7 +1,9 @@
 {
   "type": "EXPRESSION",
-  "group": "A.10 Cryptography",
+  "group": "A.8 Technological controls",
+  "control": "A.8.24",
   "name": "FileVault enabled",
+  "description": "Use of cryptography.",
   "query": "SELECT filevault_status FROM disk_encryption WHERE filevault_status = 'on' LIMIT 1;",
   "expression": "results.size() > 0"
 }

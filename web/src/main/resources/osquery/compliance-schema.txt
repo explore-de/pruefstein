@@ -37,9 +37,30 @@ logged_in_users: type TEXT, user TEXT, tty TEXT, host TEXT, time BIGINT, pid INT
 os_version: name TEXT, version TEXT, major INTEGER, minor INTEGER, patch INTEGER, build TEXT, platform TEXT, arch TEXT
 
 plist: key TEXT, subkey TEXT, value TEXT, path TEXT (required)
+  The dependable way to read a machine-level setting. Read the managed and the
+  local copy together and ORDER BY path, so a profile-enforced value (under
+  /Library/Managed Preferences/) sorts ahead of the local one (under
+  /Library/Preferences/) and results[0] is the value actually in effect:
+    SELECT path, key, value FROM plist
+    WHERE path IN ('/Library/Managed Preferences/com.apple.Foo.plist',
+                   '/Library/Preferences/com.apple.Foo.plist')
+      AND key = 'SomeKey' ORDER BY path;
+  A plist boolean comes back as '1'/'0' or as 'true'/'false' depending on how
+  it was written — accept either.
 
 preferences: domain TEXT, key TEXT, subkey TEXT, value TEXT, forced INTEGER, username TEXT, host TEXT
-  Common domains: com.apple.SoftwareUpdate, com.apple.screensaver, com.apple.loginwindow, com.apple.security
+  Per-user settings, and only for the user the agent runs as.
+  Do NOT use this table for a setting stored machine-wide in
+  /Library/Preferences — com.apple.SoftwareUpdate and the machine-level keys
+  of com.apple.loginwindow among them. The agent runs osqueryi as the invoking
+  user rather than as root, so a system-domain read returns no rows on a
+  machine that has the setting switched on; the check then fails and reports a
+  compliant device as non-compliant. This table also ignores by-host values
+  (osquery#3501). Read machine-level settings through the plist table instead.
+  It is unreliable for by-host settings too, which is where macOS keeps much
+  of com.apple.screensaver. Prefer a dedicated table wherever one exists —
+  screenlock, alf, gatekeeper, sip_config, sharing_preferences, disk_encryption
+  all read the effective value and have none of these gaps.
 
 processes: pid BIGINT, name TEXT, path TEXT, cmdline TEXT, state TEXT, uid BIGINT, gid BIGINT, euid BIGINT, on_disk INTEGER, start_time BIGINT, parent BIGINT
 

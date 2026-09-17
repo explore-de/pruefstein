@@ -1,7 +1,9 @@
 {
   "type": "EXPRESSION",
-  "group": "A.13 Communications Security",
+  "group": "A.8 Technological controls",
+  "control": "A.8.20",
   "name": "Internet sharing disabled",
+  "description": "Networks security.",
   "query": "SELECT internet_sharing FROM sharing_preferences;",
   "expression": "results.size() > 0 && results[0].internet_sharing == '0'"
 }

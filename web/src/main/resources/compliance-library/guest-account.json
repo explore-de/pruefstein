@@ -1,0 +1,9 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.5 Organizational controls",
+  "control": "A.5.15",
+  "name": "Guest account disabled",
+  "description": "Access control. An account nobody owns cannot be granted or revoked, so this sits with access control as a rule rather than with the technological controls.",
+  "query": "SELECT (SELECT count(*) FROM file WHERE path IN ('/Library/Managed Preferences/com.apple.loginwindow.plist', '/Library/Preferences/com.apple.loginwindow.plist')) AS file_present, (SELECT count(*) FROM plist WHERE path IN ('/Library/Managed Preferences/com.apple.loginwindow.plist', '/Library/Preferences/com.apple.loginwindow.plist')) AS keys_read, (SELECT count(*) FROM plist WHERE key = 'GuestEnabled' AND value IN ('1', 'true') AND path = COALESCE((SELECT '/Library/Managed Preferences/com.apple.loginwindow.plist' FROM plist WHERE path = '/Library/Managed Preferences/com.apple.loginwindow.plist' AND key = 'GuestEnabled' LIMIT 1), '/Library/Preferences/com.apple.loginwindow.plist')) AS switched_on;",
+  "expression": "results.size() > 0 && results[0].switched_on == 0 && (results[0].file_present == 0 || results[0].keys_read > 0)"
+}

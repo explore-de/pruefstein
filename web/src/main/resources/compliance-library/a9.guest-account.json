@@ -1,7 +1,0 @@
-{
-  "type": "EXPRESSION",
-  "group": "A.9 Access Control",
-  "name": "Guest account disabled",
-  "query": "SELECT value FROM preferences WHERE domain = 'com.apple.loginwindow' AND key = 'GuestEnabled';",
-  "expression": "results.size() == 0 || results[0].value == '0'"
-}

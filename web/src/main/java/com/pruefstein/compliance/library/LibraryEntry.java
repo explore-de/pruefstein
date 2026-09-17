@@ -10,14 +10,21 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * The key is the file name and is permanent: the seed ledger remembers it, and
  * every check created from this entry carries it, so renaming the file makes
  * both believe it is a different check. Add entries freely; never repurpose a
- * key.
+ * key. Name one after what it checks and nothing about where it is filed — the
+ * first keys carried the 2013 Annex A domains, the classification moved, and
+ * {@code LibraryKeyMigration} is what renaming them cost.
  *
  * @param key
  *            the file name without {@code .json}; not part of the file itself,
  *            so the two can never disagree
  * @param group
- *            the name of the compliance group a new check goes into, or
- *            {@code null} for a check that lives outside the group screen
+ *            the name of the compliance group a new check goes into — the
+ *            ISO/IEC 27001:2022 Annex A theme it belongs to — or {@code null}
+ *            for a check that lives outside the group screen
+ * @param control
+ *            the Annex A control the check evidences, as numbered in ISO/IEC
+ *            27001:2022, such as {@code A.8.8}. The theme is what an
+ *            administrator navigates; the control is what an auditor traces
  * @param description
  *            why the check exists, typically the control it serves
  * @param query
@@ -30,6 +37,7 @@ public record LibraryEntry(
 	String key,
 	Type type,
 	String group,
+	String control,
 	String name,
 	String description,
 	String query,
@@ -47,7 +55,7 @@ public record LibraryEntry(
 
 	LibraryEntry withKey(String key)
 	{
-		return new LibraryEntry(key, type, group, name, description, query, expression);
+		return new LibraryEntry(key, type, group, control, name, description, query, expression);
 	}
 
 	@JsonIgnore

@@ -1,0 +1,9 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.8 Technological controls",
+  "control": "A.8.20",
+  "name": "Content caching disabled",
+  "description": "Networks security: turns the endpoint into a download cache serving other devices on the network (Richtlinie zum sicheren IT-Betrieb: Minimalbetrieb).",
+  "query": "SELECT content_caching FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].content_caching == '0'"
+}

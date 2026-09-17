@@ -1,7 +1,6 @@
 package com.pruefstein.compliance.library;
 
 import com.pruefstein.compliance.domain.AppBlacklistCheck;
-import com.pruefstein.compliance.domain.ComplianceGroup;
 import com.pruefstein.compliance.domain.ComplianceItem;
 import com.pruefstein.compliance.domain.ExpressionCheck;
 import com.pruefstein.compliance.repository.ComplianceGroupRepository;
@@ -50,10 +49,11 @@ public class LibraryInstantiator
 			item = check;
 		}
 		item.setName(entry.name());
+		item.setControl(entry.control());
 		item.setLibraryKey(entry.key());
 		if (entry.group() != null)
 		{
-			item.setGroup(group(entry.group()));
+			item.setGroup(groupRepository.findOrCreateByName(entry.group()));
 		}
 		itemRepository.persist(item);
 		return item;
@@ -79,21 +79,5 @@ public class LibraryInstantiator
 			}
 		}
 		return adopted;
-	}
-
-	/**
-	 * Groups are matched by name: a check being created needs somewhere to
-	 * live, so if its group is gone it is recreated with it. A retired group
-	 * counts as gone — a check must not land somewhere no one can reach it.
-	 */
-	private ComplianceGroup group(String name)
-	{
-		return groupRepository.findActiveByName(name)
-			.orElseGet(() -> {
-				ComplianceGroup group = new ComplianceGroup();
-				group.setName(name);
-				groupRepository.persist(group);
-				return group;
-			});
 	}
 }

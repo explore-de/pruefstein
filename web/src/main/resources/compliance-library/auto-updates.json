@@ -1,6 +1,7 @@
 {
   "type": "EXPRESSION",
-  "group": "A.12 Operations Security",
+  "group": "A.8 Technological controls",
+  "control": "A.8.8",
   "name": "Automatic updates enabled",
   "description": "macOS does not write this key while the setting is on, which is the default, so a missing key passes.",
   "query": "SELECT value FROM plist WHERE path = '/Library/Preferences/com.apple.SoftwareUpdate.plist' AND key = 'AutomaticCheckEnabled';",

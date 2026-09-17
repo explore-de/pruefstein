@@ -23,7 +23,9 @@ import jakarta.inject.Inject;
  * ever disagree.
  * <p>
  * The library is read-only and independent of the database: it is what a
- * deployment can create checks from, not what it currently enforces.
+ * deployment can create checks from, not what it currently enforces. Every
+ * entry names the ISO/IEC 27001:2022 Annex A theme it is filed under and the
+ * control it evidences.
  */
 @ApplicationScoped
 public class ComplianceLibrary
@@ -88,6 +90,10 @@ public class ComplianceLibrary
 		if (isBlank(entry.name()))
 		{
 			problems.add("name is missing");
+		}
+		if (isBlank(entry.control()))
+		{
+			problems.add("control is missing");
 		}
 		if (entry.type() == LibraryEntry.Type.EXPRESSION)
 		{

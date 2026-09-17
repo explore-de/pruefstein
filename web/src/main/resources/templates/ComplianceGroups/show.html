@@ -36,6 +36,7 @@
       <thead>
         <tr class="border-b-2 border-black bg-black text-white">
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs w-1/4">Name</th>
+          <th class="text-left px-4 py-3 font-black tracking-wide text-xs w-20">Control</th>
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs w-5/12">Query</th>
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs w-5/12">Expression</th>
           <th class="px-4 py-3 w-10"></th>
@@ -51,6 +52,14 @@
                class="block text-[10px] font-black tracking-widest text-stone-400 hover:text-black mt-1">
               GENERATED — MANAGE IN BLOCKED APPS
             </a>
+            {/if}
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            {#if item.control}
+            <span title="ISO/IEC 27001:2022 Annex A control"
+                  class="text-[10px] font-black tracking-widest border-2 border-black px-1.5 py-0.5 bg-accent">{item.control}</span>
+            {#else}
+            <span class="text-[10px] font-black tracking-widest text-stone-300">—</span>
             {/if}
           </td>
           <td class="px-4 py-3">
@@ -123,7 +132,7 @@
         </tr>
         {#else}
         <tr>
-          <td colspan="4" class="px-4 py-16 text-center text-sm font-medium text-stone-400">
+          <td colspan="5" class="px-4 py-16 text-center text-sm font-medium text-stone-400">
             No items yet — click <span class="font-bold text-black">Add Item</span> to create the first check.
           </td>
         </tr>

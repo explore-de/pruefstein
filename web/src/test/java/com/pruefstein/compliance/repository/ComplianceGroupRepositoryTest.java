@@ -79,6 +79,39 @@ class ComplianceGroupRepositoryTest
 	}
 
 	@Test
+	void findOrCreateByNameReusesTheActiveGroup()
+	{
+		// given
+		ComplianceGroup active = new ComplianceGroup();
+		active.setName("A.8 Technological controls");
+		repository.persist(active);
+
+		// when
+		ComplianceGroup found = repository.findOrCreateByName("A.8 Technological controls");
+
+		// then
+		assertEquals(active.id, found.id);
+	}
+
+	@Test
+	void findOrCreateByNameSkipsARetiredGroup()
+	{
+		// given — a group of this name existed, and an admin retired it
+		ComplianceGroup retired = new ComplianceGroup();
+		retired.setName("A.8 Technological controls");
+		retired.retire();
+		repository.persist(retired);
+
+		// when
+		ComplianceGroup found = repository.findOrCreateByName("A.8 Technological controls");
+
+		// then — a check filed here has to be reachable, so it gets a fresh one
+		assertNotEquals(retired.id, found.id);
+		assertFalse(found.isRetired());
+		assertEquals("A.8 Technological controls", found.getName());
+	}
+
+	@Test
 	void testUpdateName()
 	{
 		// given

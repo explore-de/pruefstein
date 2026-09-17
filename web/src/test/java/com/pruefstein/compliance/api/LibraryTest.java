@@ -25,9 +25,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestSecurity(user = "admin", roles = { "admin" })
 class LibraryTest
 {
-	private static final String KEY = "a12.gatekeeper";
+	private static final String KEY = "gatekeeper";
 	private static final String NAME = "Gatekeeper enabled";
-	private static final String GROUP = "A.12 Operations Security";
+	private static final String GROUP = "A.8 Technological controls";
 
 	@Inject
 	ComplianceItemRepository itemRepository;
@@ -54,6 +54,7 @@ class LibraryTest
 			.statusCode(200)
 			.body(containsString("Library"))
 			.body(containsString(NAME))
+			.body(containsString("A.8.7"))
 			.body(containsString("SELECT assessments_enabled FROM gatekeeper;"));
 	}
 
@@ -68,6 +69,7 @@ class LibraryTest
 		assertEquals(1, created.size());
 		ExpressionCheck check = (ExpressionCheck)created.get(0);
 		assertEquals(NAME, check.getName());
+		assertEquals("A.8.7", check.getControl());
 		assertEquals("results.size() > 0 && results[0].assessments_enabled == '1'", check.getExpectedExpression());
 		assertEquals(GROUP, QuarkusTransaction.requiringNew()
 			.call(() -> itemRepository.findById(check.id).getGroup().getName()));

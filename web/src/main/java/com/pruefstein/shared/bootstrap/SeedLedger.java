@@ -28,4 +28,26 @@ public class SeedLedger implements PanacheRepositoryBase<SeedLedgerEntry, String
 		persist(new SeedLedgerEntry(entryKey, Instant.now()));
 		return true;
 	}
+
+	/**
+	 * Moves an entry to a new key, keeping when it was applied. The old row
+	 * goes even if the new key is already there, so a database that somehow has
+	 * both ends up with one.
+	 *
+	 * @return {@code 1} if the old key existed and was moved, else {@code 0}
+	 */
+	public int rename(String oldKey, String newKey)
+	{
+		SeedLedgerEntry old = findById(oldKey);
+		if (old == null)
+		{
+			return 0;
+		}
+		if (findByIdOptional(newKey).isEmpty())
+		{
+			persist(new SeedLedgerEntry(newKey, old.getAppliedAt()));
+		}
+		delete(old);
+		return 1;
+	}
 }

@@ -27,8 +27,28 @@ public class ComplianceGroupRepository implements PanacheRepository<ComplianceGr
 	 * A group still in force, by name. Retired groups are deliberately not
 	 * matched: a name that has been withdrawn is free to be used again.
 	 */
-	public Optional<ComplianceGroup> findActiveByName(String name)
+	private Optional<ComplianceGroup> findActiveByName(String name)
 	{
 		return find(ACTIVE + " and name = ?1", name).firstResultOptional();
+	}
+
+	/**
+	 * The active group of this name, created if there is none.
+	 *
+	 * <p>
+	 * Groups are matched by name rather than ledgered: a check being seeded or
+	 * re-filed needs somewhere to live, so if its group is gone it is recreated
+	 * along with it. A retired group counts as gone: a check must not land
+	 * somewhere no one can reach it.
+	 */
+	public ComplianceGroup findOrCreateByName(String name)
+	{
+		return findActiveByName(name)
+			.orElseGet(() -> {
+				ComplianceGroup group = new ComplianceGroup();
+				group.setName(name);
+				persist(group);
+				return group;
+			});
 	}
 }

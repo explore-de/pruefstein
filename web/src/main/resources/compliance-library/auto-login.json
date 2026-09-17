@@ -1,0 +1,9 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.8 Technological controls",
+  "control": "A.8.5",
+  "name": "Automatic login disabled",
+  "description": "Secure authentication. Automatic login bypasses authentication outright, which is why this is authentication rather than access control. The check also requires that the login window settings were actually read, so an unreadable file cannot pass as compliant.",
+  "query": "SELECT (SELECT count(*) FROM file WHERE path IN ('/Library/Managed Preferences/com.apple.loginwindow.plist', '/Library/Preferences/com.apple.loginwindow.plist')) AS file_present, (SELECT count(*) FROM plist WHERE path IN ('/Library/Managed Preferences/com.apple.loginwindow.plist', '/Library/Preferences/com.apple.loginwindow.plist')) AS keys_read, (SELECT count(*) FROM plist WHERE key = 'autoLoginUser' AND value != '' AND path = COALESCE((SELECT '/Library/Managed Preferences/com.apple.loginwindow.plist' FROM plist WHERE path = '/Library/Managed Preferences/com.apple.loginwindow.plist' AND key = 'autoLoginUser' LIMIT 1), '/Library/Preferences/com.apple.loginwindow.plist')) AS switched_on;",
+  "expression": "results.size() > 0 && results[0].switched_on == 0 && (results[0].file_present == 0 || results[0].keys_read > 0)"
+}
