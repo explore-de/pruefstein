@@ -61,6 +61,16 @@ public class AppUser extends PanacheEntity
 		this.mail = mail;
 	}
 
+	/**
+	 * First and last name as a person reads them, or {@code null} when neither
+	 * is known — callers fall back to whatever else identifies the user.
+	 */
+	public String getFullName()
+	{
+		String name = ((firstname != null ? firstname : "") + " " + (lastname != null ? lastname : "")).strip();
+		return name.isEmpty() ? null : name;
+	}
+
 	public List<Report> getReports()
 	{
 		return reports;

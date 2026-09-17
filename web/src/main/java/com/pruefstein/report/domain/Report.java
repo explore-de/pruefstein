@@ -175,6 +175,24 @@ public class Report extends PanacheEntity
 		this.appUser = appUser;
 	}
 
+	/**
+	 * Who ran this, the way a person recognises them: their name. The login it
+	 * came in with — usually an email address — is only the fallback, for a run
+	 * nobody could be matched to or a person with no name on record.
+	 */
+	public String getUserName()
+	{
+		String name = appUser != null ? appUser.getFullName() : null;
+		return name != null ? name : keycloakUser;
+	}
+
+	/** The address behind {@link #getUserName()}, for a tooltip. */
+	public String getUserMail()
+	{
+		String mail = appUser != null ? appUser.getMail() : null;
+		return mail != null && !mail.isBlank() ? mail : keycloakUser;
+	}
+
 	public String getOsName()
 	{
 		return osName;
