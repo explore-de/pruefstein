@@ -56,7 +56,7 @@ public class RunCommand implements Callable<Integer>
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException("Authentication failed: " + e.getMessage(), e);
+			throw new RuntimeException("Authentication failed.", e);
 		}
 
 		Optional<ReportPayload> run = withFreshCredentials(runner::check);
@@ -160,7 +160,7 @@ public class RunCommand implements Callable<Integer>
 			{
 				throw new RuntimeException(
 					"Could not authenticate again after the server rejected the stored credentials. "
-						+ "Run 'pruefstein-agent login'. Cause: " + failure.getMessage(),
+						+ "Run 'pruefstein-agent login'.",
 					failure);
 			}
 			try

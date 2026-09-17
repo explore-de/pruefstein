@@ -28,7 +28,7 @@ public class LoginCommand implements Runnable
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException("Login failed: " + e.getMessage(), e);
+			throw new RuntimeException("Login failed.", e);
 		}
 	}
 }

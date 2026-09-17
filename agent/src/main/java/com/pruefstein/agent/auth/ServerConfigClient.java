@@ -1,6 +1,7 @@
 package com.pruefstein.agent.auth;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -35,7 +36,20 @@ public class ServerConfigClient
 			.GET()
 			.build();
 
-		HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+		HttpResponse<String> response;
+		try
+		{
+			response = http.send(request, HttpResponse.BodyHandlers.ofString());
+		}
+		catch (ConnectException e)
+		{
+			// Thrown without a message of its own, so the URL is the only
+			// thing that can make it say anything.
+			ConnectException described = new ConnectException(
+				"Could not connect to the Prüfstein server at " + serverUrl + ".");
+			described.initCause(e);
+			throw described;
+		}
 		if (response.statusCode() != 200)
 		{
 			throw new IllegalStateException(
