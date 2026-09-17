@@ -1,0 +1,7 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.13 Communications Security",
+  "name": "File sharing disabled",
+  "query": "SELECT file_sharing FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].file_sharing == '0'"
+}

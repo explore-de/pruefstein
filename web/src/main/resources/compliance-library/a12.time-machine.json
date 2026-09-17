@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.12 Operations Security",
+  "name": "Time Machine backup destination configured",
+  "description": "A.12.3 — backup.",
+  "query": "SELECT destination_id FROM time_machine_destinations;",
+  "expression": "results.size() > 0"
+}

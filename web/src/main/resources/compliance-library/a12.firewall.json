@@ -1,0 +1,7 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.12 Operations Security",
+  "name": "Firewall enabled",
+  "query": "SELECT global_state FROM alf;",
+  "expression": "results.size() > 0 && results[0].global_state == '1'"
+}

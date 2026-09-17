@@ -2,11 +2,12 @@ package com.pruefstein.compliance.bootstrap;
 
 import java.util.List;
 
-import com.pruefstein.compliance.bootstrap.ComplianceCatalog.CheckDef;
-import com.pruefstein.compliance.bootstrap.ComplianceCatalog.GroupDef;
 import com.pruefstein.compliance.domain.AppBlacklistCheck;
 import com.pruefstein.compliance.domain.ComplianceItem;
 import com.pruefstein.compliance.domain.ExpressionCheck;
+import com.pruefstein.compliance.library.ComplianceLibrary;
+import com.pruefstein.compliance.library.LibraryEntry;
+import com.pruefstein.compliance.library.LibraryInstantiator;
 import com.pruefstein.compliance.repository.ComplianceGroupRepository;
 import com.pruefstein.compliance.repository.ComplianceItemRepository;
 import com.pruefstein.shared.bootstrap.SeedLedger;
@@ -29,6 +30,12 @@ class CatalogSeederTest
 	CatalogSeeder seeder;
 
 	@Inject
+	ComplianceLibrary library;
+
+	@Inject
+	LibraryInstantiator instantiator;
+
+	@Inject
 	SeedLedger ledger;
 
 	@Inject
@@ -41,14 +48,18 @@ class CatalogSeederTest
 	void tearDown()
 	{
 		QuarkusTransaction.requiringNew().run(() -> {
-			for (CheckDef def : ComplianceCatalog.CHECKS)
+			for (LibraryEntry entry : library.entries())
 			{
-				itemRepository.delete("name", def.name());
-				ledger.deleteById(def.key());
+				itemRepository.delete("name", entry.name());
+				ledger.deleteById(entry.key());
 			}
-			for (GroupDef group : ComplianceCatalog.GROUPS)
+			// Only once every check is gone, or the group is still referenced
+			for (LibraryEntry entry : library.entries())
 			{
-				groupRepository.delete("name", group.name());
+				if (entry.group() != null)
+				{
+					groupRepository.delete("name", entry.group());
+				}
 			}
 		});
 	}
@@ -60,15 +71,17 @@ class CatalogSeederTest
 		int applied = seed();
 
 		// then
-		assertEquals(ComplianceCatalog.CHECKS.size(), applied);
-		for (CheckDef def : ComplianceCatalog.CHECKS)
+		assertEquals(library.entries().size(), applied);
+		for (LibraryEntry entry : library.entries())
 		{
-			assertNotNull(find(def.name()), def.name() + " should have been seeded");
-		}
-		for (GroupDef group : ComplianceCatalog.GROUPS)
-		{
-			assertTrue(groupRepository.find("name", group.name()).firstResultOptional().isPresent(),
-				group.name() + " should have been created");
+			ComplianceItem item = find(entry.name());
+			assertNotNull(item, entry.name() + " should have been seeded");
+			assertEquals(entry.key(), item.getLibraryKey(), entry.name() + " should remember its library entry");
+			if (entry.group() != null)
+			{
+				assertTrue(groupRepository.find("name", entry.group()).firstResultOptional().isPresent(),
+					entry.group() + " should have been created");
+			}
 		}
 	}
 
@@ -169,6 +182,21 @@ class CatalogSeederTest
 		// then — a check has to live somewhere
 		assertNotNull(find("FileVault enabled").getGroup());
 		assertEquals("A.10 Cryptography", find("FileVault enabled").getGroup().getName());
+	}
+
+	@Test
+	void checksSeededBeforeTheLibraryAreLinkedToTheirEntry()
+	{
+		// given — an install seeded before checks remembered their entry
+		seed();
+		QuarkusTransaction.requiringNew().run(() -> itemRepository.update("libraryKey = null"));
+
+		// when
+		int adopted = QuarkusTransaction.requiringNew().call(() -> instantiator.adoptUntagged(library.entries()));
+
+		// then — the Library screen sees them as in use and does not offer them
+		assertEquals(library.entries().size(), adopted);
+		assertEquals("a10.filevault", find("FileVault enabled").getLibraryKey());
 	}
 
 	private int seed()

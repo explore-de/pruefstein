@@ -1,0 +1,75 @@
+{#include main.html}
+{#title}Library — Prüfstein{/title}
+
+<div class="max-w-5xl">
+
+  <!-- Page header -->
+  <div class="mb-8">
+    <h1 class="text-4xl font-black tracking-tight">Library</h1>
+    <p class="text-sm font-medium text-stone-500 mt-1">
+      Built-in checks that ship with Prüfstein. Every one is added on install; add one again here after retiring it.
+    </p>
+  </div>
+
+  {#for section in sections}
+  <div class="bg-white border-2 border-black shadow-brutal overflow-hidden mb-8">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b-2 border-black bg-black text-white">
+          <th class="text-left px-4 py-3 font-black tracking-wide text-xs w-1/3">{section.name}</th>
+          <th class="text-left px-4 py-3 font-black tracking-wide text-xs">Query &amp; expression</th>
+          <th class="px-4 py-3 w-32"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {#for row in section.rows}
+        <tr class="border-b-2 border-black last:border-0 hover:bg-accent transition-colors align-top">
+          <td class="px-4 py-3">
+            <span class="font-bold">{row.entry.name}</span>
+            {#if row.entry.description}
+            <p class="text-xs font-medium text-stone-500 mt-1">{row.entry.description}</p>
+            {/if}
+          </td>
+          <td class="px-4 py-3">
+            {#if row.entry.generated}
+            <p class="text-[10px] font-black tracking-widest text-stone-400">GENERATED FROM BLOCKED APPS</p>
+            {#else}
+            <code class="block text-xs font-mono text-stone-500 whitespace-pre-wrap break-all">{row.entry.query}</code>
+            <code class="block text-xs font-mono text-stone-400 whitespace-pre-wrap break-all mt-1">{row.entry.expression}</code>
+            {/if}
+          </td>
+          <td class="px-4 py-3 text-right">
+            {#if row.available}
+              {#if inject:currentUser.admin}
+              <form method="post" action="{uri:Library.add}">
+                {#authenticityToken /}
+                <input type="hidden" name="key" value="{row.entry.key}">
+                <button type="submit"
+                        class="inline-flex items-center gap-1.5 bg-black text-white text-xs font-bold px-3 py-1.5 border-2 border-black shadow-brutal-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                  </svg>
+                  Add
+                </button>
+              </form>
+              {#else}
+              <span class="text-[10px] font-black tracking-widest text-stone-400">NOT IN USE</span>
+              {/if}
+            {#else if row.inGroup}
+            <a href="{uri:ComplianceGroups.show(row.inUse.group.id)}"
+               class="text-[10px] font-black tracking-widest text-emerald-600 hover:text-black">IN USE →</a>
+            {#else}
+            <a href="{uri:BlockedApps.index}"
+               class="text-[10px] font-black tracking-widest text-emerald-600 hover:text-black">IN USE →</a>
+            {/if}
+          </td>
+        </tr>
+        {/for}
+      </tbody>
+    </table>
+  </div>
+  {/for}
+
+</div>
+
+{/include}

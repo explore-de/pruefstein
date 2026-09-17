@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.13 Communications Security",
+  "name": "Remote login (SSH) disabled",
+  "description": "A.13.1 — network security management: every inbound sharing service is attack surface on an endpoint that need not serve anything.",
+  "query": "SELECT remote_login FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].remote_login == '0'"
+}

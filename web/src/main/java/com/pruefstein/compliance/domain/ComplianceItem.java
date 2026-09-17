@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Inheritance;
@@ -46,6 +47,14 @@ public abstract class ComplianceItem extends PanacheEntity
 	 */
 	private Instant retiredAt;
 
+	/**
+	 * The library entry this check was created from, or {@code null} for one an
+	 * admin wrote. Provenance only — the check is free to be edited away from
+	 * the entry, and nothing reconciles it back.
+	 */
+	@Column(length = 96)
+	private String libraryKey;
+
 	public String getName()
 	{
 		return name;
@@ -79,6 +88,16 @@ public abstract class ComplianceItem extends PanacheEntity
 	public Instant getRetiredAt()
 	{
 		return retiredAt;
+	}
+
+	public String getLibraryKey()
+	{
+		return libraryKey;
+	}
+
+	public void setLibraryKey(String libraryKey)
+	{
+		this.libraryKey = libraryKey;
 	}
 
 	public boolean isRetired()
