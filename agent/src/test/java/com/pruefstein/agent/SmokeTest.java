@@ -70,11 +70,11 @@ class SmokeTest
 	{
 		tokenStore.save(new Credentials("http://localhost:8080", "http://localhost:8180/realms/pruefstein",
 			"pruefstein-web", "openid offline_access", "tok", "ref", Instant.now().plusSeconds(300)));
-		assertTrue(Files.exists(TokenStore.CREDENTIALS_FILE), "credentials file should exist after save");
+		assertTrue(Files.exists(TokenStore.credentialsFile()), "credentials file should exist after save");
 
 		logoutCommand.run();
 
-		assertFalse(Files.exists(TokenStore.CREDENTIALS_FILE), "credentials file should be deleted after logout");
+		assertFalse(Files.exists(TokenStore.credentialsFile()), "credentials file should be deleted after logout");
 	}
 
 	@Test

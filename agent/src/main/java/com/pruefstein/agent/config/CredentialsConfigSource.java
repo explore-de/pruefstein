@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pruefstein.agent.auth.TokenStore;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
 /**
@@ -26,9 +27,6 @@ public class CredentialsConfigSource implements ConfigSource
 
 	/** Between application.properties (250) and environment variables (300). */
 	private static final int ORDINAL = 260;
-
-	private static final Path CREDENTIALS_FILE = Path.of(
-		System.getProperty("user.home"), ".config", "pruefstein", "credentials.json");
 
 	@Override
 	public Set<String> getPropertyNames()
@@ -68,13 +66,14 @@ public class CredentialsConfigSource implements ConfigSource
 	 */
 	private static String serverUrl()
 	{
-		if (!Files.exists(CREDENTIALS_FILE))
+		Path file = TokenStore.credentialsFile();
+		if (!Files.exists(file))
 		{
 			return null;
 		}
 		try
 		{
-			JsonNode root = new ObjectMapper().readTree(CREDENTIALS_FILE.toFile());
+			JsonNode root = new ObjectMapper().readTree(file.toFile());
 			JsonNode serverUrl = root.get("serverUrl");
 			if (serverUrl == null || serverUrl.isNull() || serverUrl.asText().isBlank())
 			{

@@ -17,10 +17,17 @@ public class TokenStore
 {
 	/**
 	 * Also read by {@code CredentialsConfigSource} before CDI exists, which is
-	 * why the path lives in a constant both can reach.
+	 * why the path is a static both can reach.
+	 * <p>
+	 * A method rather than a constant on purpose: a native-image build
+	 * initialises static fields at build time, and a constant froze the home
+	 * directory of the CI runner that built the binary — every login on a real
+	 * machine then tried to write to {@code /Users/runner}.
 	 */
-	public static final Path CREDENTIALS_FILE = Path.of(
-		System.getProperty("user.home"), ".config", "pruefstein", "credentials.json");
+	public static Path credentialsFile()
+	{
+		return Path.of(System.getProperty("user.home"), ".config", "pruefstein", "credentials.json");
+	}
 
 	private static final Logger LOG = getLogger(TokenStore.class);
 
@@ -29,13 +36,14 @@ public class TokenStore
 
 	public Optional<Credentials> load()
 	{
-		if (!Files.exists(CREDENTIALS_FILE))
+		Path file = credentialsFile();
+		if (!Files.exists(file))
 		{
 			return Optional.empty();
 		}
 		try
 		{
-			return Optional.of(objectMapper.readValue(CREDENTIALS_FILE.toFile(), Credentials.class));
+			return Optional.of(objectMapper.readValue(file.toFile(), Credentials.class));
 		}
 		catch (IOException e)
 		{
@@ -46,26 +54,28 @@ public class TokenStore
 
 	public void save(Credentials credentials)
 	{
+		Path file = credentialsFile();
 		try
 		{
-			Files.createDirectories(CREDENTIALS_FILE.getParent());
-			objectMapper.writeValue(CREDENTIALS_FILE.toFile(), credentials);
+			Files.createDirectories(file.getParent());
+			objectMapper.writeValue(file.toFile(), credentials);
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException("Could not save credentials to " + CREDENTIALS_FILE, e);
+			throw new RuntimeException("Could not save credentials to " + file, e);
 		}
 	}
 
 	public void clear()
 	{
+		Path file = credentialsFile();
 		try
 		{
-			Files.deleteIfExists(CREDENTIALS_FILE);
+			Files.deleteIfExists(file);
 		}
 		catch (IOException e)
 		{
-			throw new RuntimeException("Could not clear credentials at " + CREDENTIALS_FILE, e);
+			throw new RuntimeException("Could not clear credentials at " + file, e);
 		}
 	}
 }
