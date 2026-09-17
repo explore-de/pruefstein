@@ -37,7 +37,7 @@
       <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">User</p>
         <p class="text-sm font-bold mt-0.5 break-words">
-          {#if report.keycloakUser != null}{report.keycloakUser}{#else}<span class="text-stone-400">—</span>{/if}
+          {#if report.userName != null}<span title="{report.userMail}">{report.userName}</span>{#else}<span class="text-stone-400">—</span>{/if}
         </p>
       </div>
       <div class="min-w-0">

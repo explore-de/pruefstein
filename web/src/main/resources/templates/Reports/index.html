@@ -74,7 +74,7 @@
       <!-- Search -->
       <div class="flex ml-auto">
         <input type="text" name="q" value="{q}"
-          placeholder="Filter by device, user…"
+          placeholder="Filter by user, device…"
           class="border-2 border-black px-3 py-1.5 text-sm font-medium bg-white focus:outline-none focus:bg-yellow-50 w-64">
         <button type="submit"
           class="border-2 border-l-0 border-black px-3 py-1.5 text-[10px] font-black tracking-widest bg-white hover:bg-accent transition-none">
@@ -113,10 +113,10 @@
         <tr class="border-b-2 border-black bg-black text-white">
 
           <th class="text-left px-4 py-3">
-            <button type="button" @click="setSort('deviceId')"
+            <button type="button" @click="setSort('user')"
               class="text-[10px] font-black tracking-widest hover:text-accent flex items-center gap-1">
-              DEVICE ID
-              {#if sort == 'deviceId'}
+              USER
+              {#if sort == 'user'}
                 {#if dir == 'asc'}↑{#else}↓{/if}
               {#else}
                 <span class="opacity-30">↕</span>
@@ -125,10 +125,10 @@
           </th>
 
           <th class="text-left px-4 py-3">
-            <button type="button" @click="setSort('user')"
+            <button type="button" @click="setSort('deviceId')"
               class="text-[10px] font-black tracking-widest hover:text-accent flex items-center gap-1">
-              USER
-              {#if sort == 'user'}
+              DEVICE ID
+              {#if sort == 'deviceId'}
                 {#if dir == 'asc'}↑{#else}↓{/if}
               {#else}
                 <span class="opacity-30">↕</span>
@@ -178,17 +178,14 @@
         <tr {#if row.older}data-older-run x-show="openGroups['{group.key}']" style="display: none"{/if}
           class="border-b-2 border-black last:border-0 transition-colors
           {#if row.older}bg-stone-50/70 hover:bg-stone-100{#else}hover:bg-stone-50{/if}">
-          <td class="px-4 py-3 font-mono text-xs text-stone-500 whitespace-nowrap">
-            {#if row.older}<span class="text-stone-300 mr-1">&#8627;</span>{/if}{row.report.deviceId}
-          </td>
           <td class="px-4 py-3 font-medium">
             {#if row.older}
             <!-- The name is already on the row above; repeating it down the
                  group just makes the fold harder to see. -->
-            <span class="text-stone-400 text-xs">earlier run</span>
+            <span class="text-stone-400 text-xs"><span class="text-stone-300 mr-1">&#8627;</span>earlier run</span>
             {#else}
-            {#if row.report.keycloakUser != null}
-            {row.report.keycloakUser}
+            {#if row.report.userName != null}
+            <span title="{row.report.userMail}">{row.report.userName}</span>
             {#else}
             <span class="text-stone-400">—</span>
             {/if}
@@ -203,6 +200,7 @@
             {/if}
             {/if}
           </td>
+          <td class="px-4 py-3 font-mono text-xs text-stone-500 whitespace-nowrap">{row.report.deviceId}</td>
           <td class="px-4 py-3 text-stone-500 whitespace-nowrap">{row.report.userId}</td>
           <td class="px-4 py-3">
             {#if row.report.status.name() == "COMPLIANT"}

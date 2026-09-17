@@ -3,6 +3,7 @@ package com.pruefstein.report.repository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,13 @@ public class ReportRepository implements PanacheRepository<Report>
 			String like = "%" + q.toLowerCase() + "%";
 			query.append("(lower(deviceId) like ?").append(p)
 				.append(" or lower(userId) like ?").append(p)
-				.append(" or lower(keycloakUser) like ?").append(p).append(")");
+				.append(" or lower(keycloakUser) like ?").append(p)
+				// A subquery rather than a path: appUser.firstname would inner
+				// join, and every run nobody was matched to would drop out of
+				// the search
+				.append(" or appUser.id in (select u.id from AppUser u where")
+				.append(" lower(concat(coalesce(u.firstname, ''), ' ', coalesce(u.lastname, ''))) like ?").append(p)
+				.append(" or lower(u.mail) like ?").append(p).append("))");
 			params.add(like);
 			p++;
 		}
@@ -116,11 +123,32 @@ public class ReportRepository implements PanacheRepository<Report>
 
 		Sort panacheSort = buildSort(sort, dir);
 
-		if (query.isEmpty())
+		List<Report> reports = query.isEmpty()
+			? listAll(panacheSort)
+			: list(query.toString(), panacheSort, params.toArray());
+		if ("user".equals(sort))
 		{
-			return listAll(panacheSort);
+			reports = sortByUserName(reports, !"asc".equals(dir));
 		}
-		return list(query.toString(), panacheSort, params.toArray());
+		return reports;
+	}
+
+	/**
+	 * The user column shows a name that is the person's when one is known and
+	 * the login otherwise, which no single column holds — so it is sorted here,
+	 * on exactly what the reader sees. Stable, so runs of one person keep the
+	 * newest-first order the query gave them. Unnamed runs go last either way.
+	 */
+	private static List<Report> sortByUserName(List<Report> reports, boolean descending)
+	{
+		Comparator<String> byName = String.CASE_INSENSITIVE_ORDER;
+		if (descending)
+		{
+			byName = byName.reversed();
+		}
+		List<Report> sorted = new ArrayList<>(reports);
+		sorted.sort(Comparator.comparing(Report::getUserName, Comparator.nullsLast(byName)));
+		return sorted;
 	}
 
 	private Sort buildSort(String col, String dir)
@@ -129,10 +157,11 @@ public class ReportRepository implements PanacheRepository<Report>
 		{
 			case "status" -> "status";
 			case "deviceId" -> "deviceId";
-			case "user" -> "keycloakUser";
+			// Ordered in memory by the displayed name; newest first within one
+			case "user" -> "checkedAt";
 			default -> "checkedAt";
 		};
-		boolean desc = !"asc".equals(dir);
+		boolean desc = "user".equals(col) || !"asc".equals(dir);
 		return desc ? Sort.by(column).descending() : Sort.by(column).ascending();
 	}
 }
