@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.13 Communications Security",
+  "name": "Remote Apple Events disabled",
+  "description": "A.13.1 — lets other machines script applications on this one; not needed on an endpoint (Richtlinie zum sicheren IT-Betrieb: Minimalbetrieb).",
+  "query": "SELECT remote_apple_events FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].remote_apple_events == '0'"
+}

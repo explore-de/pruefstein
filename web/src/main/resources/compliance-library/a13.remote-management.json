@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.13 Communications Security",
+  "name": "Remote management (ARD) disabled",
+  "description": "A.13.1 — remote maintenance software gives full control of the device and must not run unapproved (Richtlinie zum sicheren IT-Betrieb: Einsatz von Fernwartungssoftware).",
+  "query": "SELECT remote_management FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].remote_management == '0'"
+}
