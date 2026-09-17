@@ -244,23 +244,30 @@ label idiom used throughout the site and the application.
 
 ## Icons
 
-The faceted mark does not survive a 16px favicon: the facet lines collapse into
-grey noise, and no amount of cropping or background colour rescues them. So the
-icons split in two.
+Every icon is the faceted mark, the same art the nav and the application
+sidebar inline, cut out as a sticker: the accent follows the stone's outline
+at a small distance and everything outside that rim is transparent, so one
+file sits on light and dark browser chrome alike.
+
+The mark's facet lines are about 50 units wide on a 1075-unit tile, half a
+pixel at 16px, where they collapse into grey. So the small sizes are rendered
+from a variant with every facet pulled inward, which widens the lines between
+them and leaves the outline alone, and with a wider rim, so the sticker edge
+survives too: the smaller the size, the further both go. The values are in
+the table. There is no build step behind this: the two favicon files are
+artwork, and regenerating them means redoing the above from `logo.svg`.
 
 | File | Art | Used at |
 | --- | --- | --- |
-| `favicon.ico` | silhouette, black on accent | 16 / 32 / 48 px, declared first so browsers that rasterise at 16px pick it |
-| `favicon.svg` | silhouette, black on accent | any size, for browsers that prefer SVG |
-| `apple-touch-icon.png` | full faceted mark on accent | 180px, where the facets are legible and worth having |
+| `favicon.ico` | the sticker; facets pulled in 25 / 12 / 0 units and the rim 120 / 100 / 90 units wide at 16 / 32 / 48 px | 16 / 32 / 48 px, declared first so browsers that rasterise at 16px pick it |
+| `favicon.svg` | the sticker; facets pulled in 20 units, rim 100 units | any size, for browsers that prefer SVG |
+| `apple-touch-icon.png` | full faceted mark on a solid accent tile, since iOS paints transparency black | 180px |
 | `logo.svg` | full faceted mark, black on white | the source file; inlined by `LogoMark.svelte` and by the app sidebar |
 
-The tile is square (`viewBox="90 85 1075 1075"`) because the artwork is wider
-than tall and a favicon must not be squashed to fit. The accent ground is a
-deliberate choice over white: it is the one colour that identifies the project
-in a crowded tab strip, and it works in light and dark browser chrome alike. To
-go back to black-on-white, change the `<rect>` fill in `favicon.svg` and
-regenerate the `.ico` from it.
+The tile is square, centred on the sticker, because the artwork is wider than
+tall and a favicon must not be squashed to fit. The accent is the one colour
+that identifies the project in a crowded tab strip; changing it means changing
+the fill and stroke in `favicon.svg` and re-rasterising the `.ico`.
 
 The same four files exist under
 `web/src/main/resources/web/public/static/` for the application, which declares
