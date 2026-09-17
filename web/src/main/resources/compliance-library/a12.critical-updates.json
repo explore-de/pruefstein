@@ -3,6 +3,6 @@
   "group": "A.12 Operations Security",
   "name": "Critical security updates installed automatically",
   "description": "A.12.6 — technical vulnerability management: checking for updates is not enough, they have to be installed as well.",
-  "query": "SELECT value FROM preferences WHERE domain = 'com.apple.SoftwareUpdate' AND key = 'CriticalUpdateInstall';",
+  "query": "SELECT value FROM plist WHERE path = '/Library/Preferences/com.apple.SoftwareUpdate.plist' AND key = 'CriticalUpdateInstall';",
   "expression": "results.size() > 0 && results[0].value == '1'"
 }

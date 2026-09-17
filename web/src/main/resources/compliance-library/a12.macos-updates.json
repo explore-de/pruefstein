@@ -2,6 +2,6 @@
   "type": "EXPRESSION",
   "group": "A.12 Operations Security",
   "name": "macOS updates installed automatically",
-  "query": "SELECT value FROM preferences WHERE domain = 'com.apple.SoftwareUpdate' AND key = 'AutomaticallyInstallMacOSUpdates';",
+  "query": "SELECT value FROM plist WHERE path = '/Library/Preferences/com.apple.SoftwareUpdate.plist' AND key = 'AutomaticallyInstallMacOSUpdates';",
   "expression": "results.size() > 0 && results[0].value == '1'"
 }
