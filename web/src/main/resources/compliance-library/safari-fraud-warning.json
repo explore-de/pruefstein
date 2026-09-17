@@ -1,0 +1,9 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.8 Technological controls",
+  "control": "A.8.23",
+  "name": "Safari fraudulent website warning enforced",
+  "description": "Web filtering. Safari has no enhanced tier, so the warning is the most it can enforce, and it has to come from a configuration profile. The user's own setting sits in Safari's sandbox container, which the agent cannot read without Full Disk Access.",
+  "query": "SELECT (SELECT count(*) FROM (SELECT value FROM plist WHERE path = '/Library/Managed Preferences/com.apple.Safari.plist' AND key = 'WarnAboutFraudulentWebsites' UNION ALL SELECT value FROM plist WHERE path LIKE '/Library/Managed Preferences/%/com.apple.Safari.plist' AND key = 'WarnAboutFraudulentWebsites')) AS enforced, (SELECT count(*) FROM (SELECT value FROM plist WHERE path = '/Library/Managed Preferences/com.apple.Safari.plist' AND key = 'WarnAboutFraudulentWebsites' UNION ALL SELECT value FROM plist WHERE path LIKE '/Library/Managed Preferences/%/com.apple.Safari.plist' AND key = 'WarnAboutFraudulentWebsites') WHERE value NOT IN ('1', 'true')) AS switched_off;",
+  "expression": "results.size() > 0 && results[0].enforced > 0 && results[0].switched_off == 0"
+}

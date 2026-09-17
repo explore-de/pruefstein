@@ -24,5 +24,8 @@
   "printer-sharing",
   "bluetooth-sharing",
   "content-caching",
-  "disc-sharing"
+  "disc-sharing",
+  "chrome-enhanced-safe-browsing",
+  "safari-fraud-warning",
+  "unmanaged-browsers"
 ]
