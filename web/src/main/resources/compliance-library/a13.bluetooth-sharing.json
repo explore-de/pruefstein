@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.13 Communications Security",
+  "name": "Bluetooth sharing disabled",
+  "description": "A.13.1 — lets nearby devices browse and push files over Bluetooth (Richtlinie zum sicheren IT-Betrieb: Minimalbetrieb).",
+  "query": "SELECT bluetooth_sharing FROM sharing_preferences;",
+  "expression": "results.size() > 0 && results[0].bluetooth_sharing == '0'"
+}

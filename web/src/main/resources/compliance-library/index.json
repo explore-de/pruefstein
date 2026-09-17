@@ -8,6 +8,7 @@
   "a12.sip",
   "a12.time-machine",
   "a12.firewall-logging",
+  "a12.security-data-updates",
   "a12.blocked-apps",
   "a9.screen-lock-timeout",
   "a9.screen-lock-password",
@@ -17,5 +18,11 @@
   "a13.screen-sharing",
   "a13.file-sharing",
   "a13.internet-sharing",
-  "a13.stealth-mode"
+  "a13.stealth-mode",
+  "a13.remote-management",
+  "a13.remote-apple-events",
+  "a13.printer-sharing",
+  "a13.bluetooth-sharing",
+  "a13.content-caching",
+  "a13.disc-sharing"
 ]

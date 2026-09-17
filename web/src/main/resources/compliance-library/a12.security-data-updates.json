@@ -1,0 +1,8 @@
+{
+  "type": "EXPRESSION",
+  "group": "A.12 Operations Security",
+  "name": "XProtect and security data updates installed automatically",
+  "description": "A.12.2 — protection against malware. XProtect is macOS's built-in malware protection; its signatures only help while they are current (Richtlinie zum sicheren IT-Betrieb: Virenschutz, operative Threat Intelligence).",
+  "query": "SELECT value FROM plist WHERE path = '/Library/Preferences/com.apple.SoftwareUpdate.plist' AND key = 'ConfigDataInstall';",
+  "expression": "results.size() > 0 && results[0].value == '1'"
+}
