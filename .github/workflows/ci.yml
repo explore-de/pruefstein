@@ -31,8 +31,8 @@ jobs:
       - name: Test
         run: ./mvnw verify -B
 
-      ## Only web: the agent's native binaries are built per architecture in
-      ## agent-release.yml, on macOS runners, and a Linux one cannot make them.
+      ## Only web: the agent is a macOS binary, which a Linux runner cannot
+      ## make. The agent-native job below builds and tests it.
       - name: Package native
         run: ./mvnw package -pl web -Dnative -DskipTests
 
@@ -124,3 +124,22 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/pruefstein-web:latest
             ghcr.io/${{ github.repository_owner }}/pruefstein-web:${{ github.sha }}
+
+  ## The same native build and AgentBinaryIT run the release does, on one of
+  ## its two architectures. Without it, the first build to run the native
+  ## binary was the one for a release tag, already pushed.
+  agent-native:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: graalvm-community
+          cache: maven
+
+      - name: Build and test the native binary
+        working-directory: agent
+        run: ./mvnw verify -Dnative -B

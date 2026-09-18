@@ -3,8 +3,9 @@
 ## URL and a checksum to point at.
 ##
 ## Kept out of ci.yml on purpose: a native build per architecture costs far
-## more than a pull request should have to wait for, and nothing here needs to
-## run on every push.
+## more than a pull request should have to wait for. ci.yml builds and tests
+## the arm64 binary on every push; packaging both and releasing them is all
+## that is left for a tag.
 
 name: Agent release
 
