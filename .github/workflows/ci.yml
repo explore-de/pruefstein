@@ -36,6 +36,74 @@ jobs:
       - name: Package native
         run: ./mvnw package -pl web -Dnative -DskipTests
 
+      ## Built into the runner's own Docker first, so the next step can start
+      ## it. Pushing happens further down, from this same builder's cache.
+      - name: Build Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./web
+          file: ./web/src/main/docker/Dockerfile.native-micro
+          load: true
+          push: false
+          ## Owner read from the repository rather than written down: the
+          ## hardcoded one went stale the day this moved to the org, and the
+          ## build failed on a push it had no business failing on.
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/pruefstein-web:latest
+            ghcr.io/${{ github.repository_owner }}/pruefstein-web:${{ github.sha }}
+
+      ## The native image was built with -DskipTests and has no integration
+      ## test, so until this step nothing had ever started it — a native image
+      ## that fails on a missing reflection registration starts and dies at
+      ## runtime, and `latest` was being published on that hope.
+      ##
+      ## Against a real PostgreSQL: the health endpoint reports the datasource,
+      ## and the catalog seeder builds every library check from its JSON on
+      ## first boot, which is exactly the reflection a native image drops.
+      - name: Check the image serves
+        run: |
+          set -eux
+          docker network create pruefstein-smoke
+          docker run -d --name smoke-db --network pruefstein-smoke \
+            -e POSTGRES_USER=pruefstein \
+            -e POSTGRES_PASSWORD=smoke \
+            -e POSTGRES_DB=pruefstein \
+            postgres:17
+          docker run -d --name smoke-web --network pruefstein-smoke -p 8080:8080 \
+            -e QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://smoke-db:5432/pruefstein \
+            -e QUARKUS_DATASOURCE_USERNAME=pruefstein \
+            -e QUARKUS_DATASOURCE_PASSWORD=smoke \
+            -e QUARKUS_OIDC_TENANT_ENABLED=false \
+            -e QUARKUS_OIDC_API_TENANT_ENABLED=false \
+            -e ENTRA_TENANT_ID=smoke \
+            -e ENTRA_CLIENT_ID=smoke \
+            -e ENTRA_CLIENT_SECRET=smoke \
+            -e QUARKUS_LANGCHAIN4J_OPENAI_ENABLE_INTEGRATION=false \
+            -e QUARKUS_LANGCHAIN4J_OPENAI_API_KEY=smoke \
+            -e PRUEFSTEIN_MACOS_FEED_ENABLED=false \
+            ghcr.io/${{ github.repository_owner }}/pruefstein-web:${{ github.sha }}
+          ok=
+          for _ in $(seq 1 45); do
+            if curl -fsS http://localhost:8080/q/health > health.json; then
+              ok=1
+              break
+            fi
+            sleep 2
+          done
+          if [ -z "$ok" ]; then
+            docker logs smoke-web
+            echo "The image never reported healthy." >&2
+            exit 1
+          fi
+          cat health.json
+          docker logs smoke-web 2>&1 | grep -q 'baseline compliance check'
+
+      - name: Stop the containers
+        if: always()
+        run: |
+          docker rm -f smoke-web smoke-db || true
+          docker network rm pruefstein-smoke || true
+
       - name: Log in to GHCR
         if: github.event_name == 'push'
         uses: docker/login-action@v4
@@ -44,15 +112,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      ## The same build again, so it comes from the layers the step above
+      ## already made rather than being built a second time.
+      - name: Push Docker image
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v7
         with:
           context: ./web
           file: ./web/src/main/docker/Dockerfile.native-micro
-          push: ${{ github.event_name == 'push' }}
-          ## Owner read from the repository rather than written down: the
-          ## hardcoded one went stale the day this moved to the org, and the
-          ## build failed on a push it had no business failing on.
+          push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/pruefstein-web:latest
             ghcr.io/${{ github.repository_owner }}/pruefstein-web:${{ github.sha }}
