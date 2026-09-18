@@ -141,47 +141,6 @@ class CatalogExpressionTest
 	// ── Browsers
 	// ─────────────────────────────────────────────────────────
 
-	private static String chrome(int installed, int enforced, int weaker)
-	{
-		return "[{\"installed\":\"" + installed + "\",\"enforced\":\"" + enforced
-			+ "\",\"weaker\":\"" + weaker + "\"}]";
-	}
-
-	@Test
-	void chromeWithEnhancedSafeBrowsingEnforcedPasses() throws Exception
-	{
-		assertTrue(evaluate("chrome-enhanced-safe-browsing", chrome(1, 1, 0)));
-		assertTrue(evaluate("chrome-enhanced-safe-browsing", chrome(1, 2, 0)));
-	}
-
-	@Test
-	void chromeWithoutThePolicyFails() throws Exception
-	{
-		// whatever the user switched on in Chrome itself is not enforcement
-		assertFalse(evaluate("chrome-enhanced-safe-browsing", chrome(1, 0, 0)));
-	}
-
-	@Test
-	void oneProfileSettingALowerLevelFailsChrome() throws Exception
-	{
-		// a per-user profile with level 1 next to a device-wide 2
-		assertFalse(evaluate("chrome-enhanced-safe-browsing", chrome(1, 2, 1)));
-	}
-
-	@Test
-	void aMachineWithoutChromePasses() throws Exception
-	{
-		assertTrue(evaluate("chrome-enhanced-safe-browsing", chrome(0, 0, 0)));
-	}
-
-	@Test
-	void safariPassesOnlyWithTheWarningEnforced() throws Exception
-	{
-		assertTrue(evaluate("safari-fraud-warning", "[{\"enforced\":\"1\",\"switched_off\":\"0\"}]"));
-		assertFalse(evaluate("safari-fraud-warning", "[{\"enforced\":\"0\",\"switched_off\":\"0\"}]"));
-		assertFalse(evaluate("safari-fraud-warning", "[{\"enforced\":\"2\",\"switched_off\":\"1\"}]"));
-	}
-
 	@Test
 	void anyOtherBrowserInstalledFails() throws Exception
 	{

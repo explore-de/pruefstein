@@ -1,9 +1,0 @@
-{
-  "type": "EXPRESSION",
-  "group": "A.8 Technological controls",
-  "control": "A.8.23",
-  "name": "Chrome enforces Enhanced Safe Browsing",
-  "description": "Web filtering. Only a policy counts: the SafeBrowsingProtectionLevel of 2 has to come from a configuration profile, device-wide or per user, and no profile may set it lower. A setting the user chose lives in Chrome's own profile, which cannot be read here and could be switched off again. A machine without Chrome passes.",
-  "query": "SELECT (SELECT count(*) FROM apps WHERE bundle_identifier = 'com.google.Chrome') AS installed, (SELECT count(*) FROM (SELECT value FROM plist WHERE path = '/Library/Managed Preferences/com.google.Chrome.plist' AND key = 'SafeBrowsingProtectionLevel' UNION ALL SELECT value FROM plist WHERE path LIKE '/Library/Managed Preferences/%/com.google.Chrome.plist' AND key = 'SafeBrowsingProtectionLevel')) AS enforced, (SELECT count(*) FROM (SELECT value FROM plist WHERE path = '/Library/Managed Preferences/com.google.Chrome.plist' AND key = 'SafeBrowsingProtectionLevel' UNION ALL SELECT value FROM plist WHERE path LIKE '/Library/Managed Preferences/%/com.google.Chrome.plist' AND key = 'SafeBrowsingProtectionLevel') WHERE value != '2') AS weaker;",
-  "expression": "results.size() > 0 && (results[0].installed == 0 || (results[0].enforced > 0 && results[0].weaker == 0))"
-}

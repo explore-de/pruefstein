@@ -2,8 +2,8 @@
   "type": "EXPRESSION",
   "group": "A.8 Technological controls",
   "control": "A.8.23",
-  "name": "No browser without enforceable Enhanced Safe Browsing",
-  "description": "Web filtering. Enhanced Safe Browsing can only be enforced in Chrome, so every other browser that is installed is a way around it. Safari is exempt because it cannot be removed and has its own check. Each row names a browser that was found.",
+  "name": "No browser beyond Chrome and Safari",
+  "description": "Web filtering. Enhanced Safe Browsing can only be enforced in Chrome, and Safari cannot be removed, so every other browser that is installed is a way around whatever web filtering is in place. Each row names a browser that was found.",
   "query": "SELECT name, bundle_identifier, path FROM apps WHERE bundle_identifier IN ('org.mozilla.firefox', 'org.mozilla.firefoxdeveloperedition', 'org.mozilla.nightly', 'com.vivaldi.Vivaldi', 'com.brave.Browser', 'company.thebrowser.Browser', 'com.operasoftware.Opera', 'com.microsoft.edgemac', 'org.chromium.Chromium', 'app.zen-browser.zen', 'com.kagi.kagimacOS', 'com.duckduckgo.macos.browser');",
   "expression": "results.size() == 0"
 }
