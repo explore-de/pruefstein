@@ -25,13 +25,16 @@ jobs:
           distribution: graalvm-community
           cache: maven
 
+      ## From the root, so both modules are tested. Run per module, this only
+      ## ever built web, and the agent's tests first ran on a release tag —
+      ## the one build where a failure costs the most.
       - name: Test
-        working-directory: web
         run: ./mvnw verify -B
 
+      ## Only web: the agent's native binaries are built per architecture in
+      ## agent-release.yml, on macOS runners, and a Linux one cannot make them.
       - name: Package native
-        working-directory: web
-        run: ./mvnw package -Dnative -DskipTests
+        run: ./mvnw package -pl web -Dnative -DskipTests
 
       - name: Log in to GHCR
         if: github.event_name == 'push'
