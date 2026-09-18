@@ -10,7 +10,6 @@
   "firewall-logging",
   "security-data-updates",
   "blocked-apps",
-  "screen-lock-timeout",
   "screen-lock-password",
   "auto-login",
   "guest-account",

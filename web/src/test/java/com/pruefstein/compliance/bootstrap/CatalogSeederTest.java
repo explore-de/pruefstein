@@ -132,20 +132,20 @@ class CatalogSeederTest
 	@Test
 	void anEditedCheckIsLeftAlone()
 	{
-		// given — an administrator tightens the screen lock timeout
+		// given — an administrator tightens the screen lock grace period
 		seed();
 		QuarkusTransaction.requiringNew().run(() -> {
 			ExpressionCheck check = (ExpressionCheck)itemRepository
-				.list("name", "Screen lock timeout ≤ 300 seconds").get(0);
-			check.setExpectedExpression("results.size() > 0 && results[0].value <= 60");
+				.list("name", "Screen lock requires a password").get(0);
+			check.setExpectedExpression("results.size() > 0 && results[0].grace_period <= 60");
 		});
 
 		// when
 		seed();
 
 		// then
-		ExpressionCheck check = (ExpressionCheck)find("Screen lock timeout ≤ 300 seconds");
-		assertEquals("results.size() > 0 && results[0].value <= 60", check.getExpectedExpression());
+		ExpressionCheck check = (ExpressionCheck)find("Screen lock requires a password");
+		assertEquals("results.size() > 0 && results[0].grace_period <= 60", check.getExpectedExpression());
 	}
 
 	@Test

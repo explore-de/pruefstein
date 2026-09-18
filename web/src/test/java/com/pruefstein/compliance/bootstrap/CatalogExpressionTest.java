@@ -13,11 +13,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * would.
  *
  * <p>
- * These pin the two things the {@code preferences}-table versions of these
- * checks got wrong: passing a machine whose setting was never actually read,
- * and reading a timeout of 0 — the screen saver never starting — as being
- * comfortably under the limit. Expressions are taken from the library rather
- * than written out, so the check and its test cannot drift apart.
+ * These pin what the {@code preferences}-table versions of these checks got
+ * wrong: passing a machine whose setting was never actually read. Expressions
+ * are taken from the library rather than written out, so the check and its test
+ * cannot drift apart.
  */
 @QuarkusTest
 class CatalogExpressionTest
@@ -32,12 +31,6 @@ class CatalogExpressionTest
 	{
 		return "[{\"file_present\":\"" + filePresent + "\",\"keys_read\":\"" + keysRead
 			+ "\",\"switched_on\":\"" + switchedOn + "\"}]";
-	}
-
-	private static String idle(int configured, String shortest, String longest)
-	{
-		return "[{\"configured\":\"" + configured + "\",\"shortest\":\"" + shortest
-			+ "\",\"longest\":\"" + longest + "\"}]";
 	}
 
 	private boolean evaluate(String checkKey, String json) throws Exception
@@ -84,38 +77,6 @@ class CatalogExpressionTest
 		assertTrue(evaluate("guest-account", loginWindow(0, 0, 0)));
 	}
 
-	// ── Screen lock timeout
-	// ───────────────────────────────────────────────
-
-	@Test
-	void aTimeoutInsideThePolicyPasses() throws Exception
-	{
-		assertTrue(evaluate("screen-lock-timeout", idle(1, "300", "300")));
-		assertTrue(evaluate("screen-lock-timeout", idle(2, "60", "300")));
-	}
-
-	@Test
-	void aTimeoutOverThePolicyFails() throws Exception
-	{
-		assertFalse(evaluate("screen-lock-timeout", idle(1, "600", "600")));
-	}
-
-	@Test
-	void oneAccountOverThePolicyFailsTheMachine() throws Exception
-	{
-		// The check is about the endpoint, not about whichever account happens
-		// to be tidiest
-		assertFalse(evaluate("screen-lock-timeout", idle(2, "60", "600")));
-	}
-
-	@Test
-	void aScreenSaverThatNeverStartsFails() throws Exception
-	{
-		// An idleTime of 0 means never, which the old `value <= 300` passed
-		assertFalse(evaluate("screen-lock-timeout", idle(1, "0", "0")));
-		assertFalse(evaluate("screen-lock-timeout", idle(2, "0", "300")));
-	}
-
 	// ── Firewall logging
 	// ─────────────────────────────────────────────────
 
@@ -149,13 +110,4 @@ class CatalogExpressionTest
 			"[{\"name\":\"Firefox.app\",\"bundle_identifier\":\"org.mozilla.firefox\",\"path\":\"/Applications/Firefox.app\"}]"));
 	}
 
-	@Test
-	void noTimeoutConfiguredAnywhereFails() throws Exception
-	{
-		// count(*) over no rows still yields a row, with nulls in the
-		// aggregates — the expression has to short-circuit before touching them
-		assertFalse(evaluator.evaluate(
-			"[{\"configured\":\"0\",\"shortest\":null,\"longest\":null}]",
-			expression("screen-lock-timeout")));
-	}
 }

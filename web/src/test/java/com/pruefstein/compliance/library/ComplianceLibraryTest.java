@@ -99,7 +99,7 @@ class ComplianceLibraryTest
 	 * they did when they were written, and a profile is expected to have set
 	 * that file's value as well.
 	 */
-	private static final List<String> PLIST_BACKED = List.of("screen-lock-timeout", "auto-login", "guest-account");
+	private static final List<String> PLIST_BACKED = List.of("auto-login", "guest-account");
 
 	@Test
 	void theEntriesThatReadAFileConsultTheManagedProfile()

@@ -1,9 +1,0 @@
-{
-  "type": "EXPRESSION",
-  "group": "A.7 Physical controls",
-  "control": "A.7.7",
-  "name": "Screen lock timeout ≤ 300 seconds",
-  "description": "Clear desk and clear screen. Every account on the machine has to lock within five minutes, and a timeout of 0, the screen saver never starting, fails. A profile-enforced value decides alone where one exists, because it overrides whatever the accounts set. The paths are read in separate UNION ALL branches: the plist table honours one path constraint per query, so an OR over three path shapes silently reported on one of them — macOS keeps most of com.apple.screensaver by host, which was the branch being dropped.",
-  "query": "WITH managed AS (SELECT value FROM plist WHERE path = '/Library/Managed Preferences/com.apple.screensaver.plist' AND key = 'idleTime'), local AS (SELECT value FROM plist WHERE path LIKE '/Users/%/Library/Preferences/com.apple.screensaver.plist' AND key = 'idleTime' UNION ALL SELECT value FROM plist WHERE path LIKE '/Users/%/Library/Preferences/ByHost/com.apple.screensaver.%' AND key = 'idleTime'), effective AS (SELECT value FROM managed UNION ALL SELECT value FROM local WHERE NOT EXISTS (SELECT 1 FROM managed)) SELECT count(*) AS configured, min(cast(value AS integer)) AS shortest, max(cast(value AS integer)) AS longest FROM effective;",
-  "expression": "results.size() > 0 && results[0].configured > 0 && results[0].shortest > 0 && results[0].longest <= 300"
-}

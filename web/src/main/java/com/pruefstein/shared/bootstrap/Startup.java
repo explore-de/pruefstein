@@ -104,7 +104,7 @@ public class Startup
 			requireItem("FileVault enabled"),
 			requireItem("Firewall enabled"),
 			requireItem("Automatic updates enabled"),
-			requireItem("Screen lock timeout \u2264 300 seconds"));
+			requireItem("Screen lock requires a password"));
 	}
 
 	private ComplianceItem requireItem(String name)

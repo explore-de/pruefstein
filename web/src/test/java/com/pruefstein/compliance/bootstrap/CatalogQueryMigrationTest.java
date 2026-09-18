@@ -75,18 +75,6 @@ class CatalogQueryMigrationTest
 	}
 
 	@Test
-	void theScreenLockTimeoutQueryIsReplacedToo()
-	{
-		// The one rewrite here that is not a preferences-table mistake, and the
-		// only place the shipped SQL is written out byte for byte
-		LibraryEntry def = entry("screen-lock-timeout");
-		givenSeededCheck(def.name(), outdatedQuery("screen-lock-timeout"), def.expression());
-
-		assertEquals(1, migrate());
-		assertEquals(def.query(), find(def.name()).getQuery());
-	}
-
-	@Test
 	void aQueryTheAdministratorRewroteIsLeftAlone()
 	{
 		// given — someone already worked around the bug themselves

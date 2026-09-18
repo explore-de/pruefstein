@@ -143,6 +143,23 @@ again: the catalogue seeder matches groups by name among the ones still in force
 so a check shipped in a later release is never filed into a group nobody can
 reach.
 
+### Withdrawn: the screen lock timeout
+
+`screen-lock-timeout` is gone, and `RetiredCheckMigration` retires it in every
+database that seeded it — a check cannot be deleted, so the reports naming it
+keep their rows. It demanded an `idleTime` under `com.apple.screensaver`, and
+macOS no longer keeps one there: on a current machine the domain does not exist
+at all, and the sandboxed screen saver container osquery would have to read
+instead needs Full Disk Access the agent does not have. It therefore failed
+devices that lock perfectly well — the reference Mac this was checked against
+has no `idleTime` anywhere, a display that sleeps after two minutes (`pmset -g
+custom`, which no osquery table exposes) and a 300-second grace period.
+
+What is left measurable is the `screenlock` table, `enabled` and `grace_period`,
+which is what `screen-lock-password` already reads. Anything wanting the real
+idle time needs a source outside osquery's schema, or a profile that writes
+`idleTime` where the old check could see it.
+
 ### Not built: Enhanced Safe Browsing
 
 Left out on purpose, and worth reading before trying again. Chrome's Enhanced
@@ -165,10 +182,11 @@ What was learned on the way, so the next attempt need not rediscover it:
 - **`plist` drops rows when a query mixes `path =` and `path LIKE`.** Both
   constraints reach the table, and it honours one of them. Reading a device-wide
   and a per-user managed plist together therefore needs `UNION ALL`, one branch
-  per path shape. `screen-lock-timeout` shipped with the older pattern and was
-  corrected (`CatalogQueryMigration`, ledger key `screen-lock-timeout#union`):
-  it had been reading one of its three path shapes, and by-host — where macOS
-  keeps most of `com.apple.screensaver` — was the one being dropped.
+  per path shape. `screen-lock-timeout` shipped with the older pattern and read
+  one of its three path shapes — by-host, where macOS keeps most of
+  `com.apple.screensaver`, was the one being dropped. That check has since been
+  withdrawn for the reason below, so the trap is documented rather than fixed in
+  place.
 - **`%` in a `LIKE` path does not cross a `/`.** `'/Library/Managed
   Preferences/%/com.google.Chrome.plist'` matches the per-user copies and only
   those; `%%` is what spans directories.

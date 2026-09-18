@@ -1,6 +1,7 @@
 package com.pruefstein.compliance.bootstrap;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.pruefstein.compliance.domain.ComplianceItem;
 import com.pruefstein.compliance.domain.ExpressionCheck;
@@ -132,8 +133,14 @@ class LibraryKeyMigrationTest
 	{
 		// then — a mapping onto a key that no longer exists would move a check
 		// onto an entry the Library screen cannot show, and an old key without
-		// a prefix would mean the map is not what it says it is
-		List<String> keys = library.entries().stream().map(LibraryEntry::key).toList();
+		// a prefix would mean the map is not what it says it is. A key that was
+		// withdrawn from the library is the one exception: the rename still has
+		// to happen, so that the check it names can be retired under its modern
+		// key rather than seeded again under the old one
+		List<String> keys = Stream
+			.concat(library.entries().stream().map(LibraryEntry::key),
+				RetiredCheckMigration.WITHDRAWN_KEYS.stream())
+			.toList();
 		LibraryKeyMigration.RENAMES.forEach((old, renamed) -> {
 			assertTrue(old.matches("a(9|10|12|13)\\..+"), old + " does not carry a 2013 prefix");
 			String entryKey = renamed.contains("#") ? renamed.substring(0, renamed.indexOf('#')) : renamed;
