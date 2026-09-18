@@ -143,6 +143,43 @@ again: the catalogue seeder matches groups by name among the ones still in force
 so a check shipped in a later release is never filed into a group nobody can
 reach.
 
+### Not built: Enhanced Safe Browsing
+
+Left out on purpose, and worth reading before trying again. Chrome's Enhanced
+Safe Browsing is enforceable — `SafeBrowsingProtectionLevel` set to 2 by a
+configuration profile, device-wide or per user — and Safari has no comparable
+tier at all, only `WarnAboutFraudulentWebsites`. No other browser can be held to
+either. Checks for both were written, shipped and removed again (`844ef87`),
+because without an MDM they reported fail on every device, and a check that can
+never pass teaches people to skip the report.
+
+What was learned on the way, so the next attempt need not rediscover it:
+
+- **Only the managed copy is readable.** A setting the user chose in Chrome
+  lives in a JSON file inside their Chrome profile, which has no osquery table,
+  and Safari's equivalent sits in its sandbox container — `file` sees that
+  plist, `plist` returns nothing for it, because reading it needs Full Disk
+  Access the agent does not have. So "enforced by a profile" is the only state
+  that can be measured, and a profile installed by hand lands in
+  `/Library/Managed Preferences/` exactly like a pushed one.
+- **`plist` drops rows when a query mixes `path =` and `path LIKE`.** Both
+  constraints reach the table, and it honours one of them. Reading a device-wide
+  and a per-user managed plist together therefore needs `UNION ALL`, one branch
+  per path shape. `screen-lock-timeout` still has the older pattern: once a
+  managed screensaver profile exists, its per-user rows silently disappear. That
+  happens to leave the value in force, but by luck rather than design.
+- **`%` in a `LIKE` path does not cross a `/`.** `'/Library/Managed
+  Preferences/%/com.google.Chrome.plist'` matches the per-user copies and only
+  those; `%%` is what spans directories.
+- **The keys are spent.** `chrome-enhanced-safe-browsing` and
+  `safari-fraud-warning` were seeded once, so the ledger in any database that
+  booted on `9b5bab6` has already claimed them. Reuse them for the same two
+  checks or take fresh names, but do not point them at anything else.
+
+`unmanaged-browsers` is what stayed: it reads the `apps` table alone, needs no
+profile, and names every browser that is neither Chrome nor Safari — the ones
+that put whatever web filtering is in place out of reach.
+
 ---
 
 ## macOS versions
