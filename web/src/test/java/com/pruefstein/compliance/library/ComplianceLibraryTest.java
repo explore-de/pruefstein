@@ -137,4 +137,24 @@ class ComplianceLibraryTest
 		// then
 		assertEquals("filevault", keys.get(0));
 	}
+
+	/**
+	 * The plist table honours one path constraint per query, so an OR over
+	 * several path shapes reports on one of them and reads the rest as empty.
+	 * Each shape needs its own UNION ALL branch — a query shaped the other way
+	 * is a check that cannot see what it claims to.
+	 */
+	@Test
+	void noQueryOrsPathConstraintsTogether()
+	{
+		for (LibraryEntry entry : library.entries())
+		{
+			if (entry.query() == null)
+			{
+				continue;
+			}
+			assertFalse(entry.query().contains("OR path"),
+				entry.key() + " ORs path constraints together, which the plist table cannot honour");
+		}
+	}
 }

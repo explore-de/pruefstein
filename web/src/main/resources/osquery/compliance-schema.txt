@@ -47,6 +47,12 @@ plist: key TEXT, subkey TEXT, value TEXT, path TEXT (required)
       AND key = 'SomeKey' ORDER BY path;
   A plist boolean comes back as '1'/'0' or as 'true'/'false' depending on how
   it was written — accept either.
+  One path constraint per query is all this table honours. `path = ... OR path
+  LIKE ...` reaches it as two constraints and one of them decides, so the other
+  paths are read as if they held nothing. Give each path shape its own UNION ALL
+  branch instead. A `%` in a LIKE path does not cross a `/` either: use
+  '/Library/Managed Preferences/%/com.google.Chrome.plist' for the per-user
+  managed copies, and `%%` where the pattern has to span directories.
 
 preferences: domain TEXT, key TEXT, subkey TEXT, value TEXT, forced INTEGER, username TEXT, host TEXT
   Per-user settings, and only for the user the agent runs as.

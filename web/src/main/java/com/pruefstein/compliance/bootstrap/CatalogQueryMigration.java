@@ -95,7 +95,19 @@ public class CatalogQueryMigration
 		new Rewrite("guest-account#plist", "guest-account",
 			"SELECT value FROM preferences WHERE domain = 'com.apple.loginwindow' AND key = 'GuestEnabled';"),
 		new Rewrite("firewall-logging#os-version", "firewall-logging",
-			"SELECT logging_enabled FROM alf;"));
+			"SELECT logging_enabled FROM alf;"),
+		// Not a preferences-table mistake but the same kind of lie: the plist
+		// table honours one path constraint per query, so an OR over three
+		// path shapes read one of them. macOS keeps most of
+		// com.apple.screensaver by host, and that was the branch dropped — a
+		// machine whose only timeout was a by-host 900 passed.
+		new Rewrite("screen-lock-timeout#union", "screen-lock-timeout",
+			"SELECT count(*) AS configured, min(cast(value AS integer)) AS shortest,"
+				+ " max(cast(value AS integer)) AS longest FROM plist WHERE (path ="
+				+ " '/Library/Managed Preferences/com.apple.screensaver.plist' OR path LIKE"
+				+ " '/Users/%/Library/Preferences/com.apple.screensaver.plist' OR path LIKE"
+				+ " '/Users/%/Library/Preferences/ByHost/com.apple.screensaver.%') AND key ="
+				+ " 'idleTime';"));
 
 	@Inject
 	SeedLedger ledger;

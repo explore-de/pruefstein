@@ -165,9 +165,10 @@ What was learned on the way, so the next attempt need not rediscover it:
 - **`plist` drops rows when a query mixes `path =` and `path LIKE`.** Both
   constraints reach the table, and it honours one of them. Reading a device-wide
   and a per-user managed plist together therefore needs `UNION ALL`, one branch
-  per path shape. `screen-lock-timeout` still has the older pattern: once a
-  managed screensaver profile exists, its per-user rows silently disappear. That
-  happens to leave the value in force, but by luck rather than design.
+  per path shape. `screen-lock-timeout` shipped with the older pattern and was
+  corrected (`CatalogQueryMigration`, ledger key `screen-lock-timeout#union`):
+  it had been reading one of its three path shapes, and by-host — where macOS
+  keeps most of `com.apple.screensaver` — was the one being dropped.
 - **`%` in a `LIKE` path does not cross a `/`.** `'/Library/Managed
   Preferences/%/com.google.Chrome.plist'` matches the per-user copies and only
   those; `%%` is what spans directories.
