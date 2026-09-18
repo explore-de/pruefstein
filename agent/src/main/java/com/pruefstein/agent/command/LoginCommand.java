@@ -15,6 +15,7 @@ public class LoginCommand implements Runnable
 		names = {"-s", "--server"},
 		paramLabel = "URL",
 		description = "Prüfstein server to report to, e.g. https://pruefstein.example.com. "
+			+ "A URL without a scheme is read as https. "
 			+ "Stored with the credentials and reused by every later run.")
 	String server;
 

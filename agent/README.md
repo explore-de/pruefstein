@@ -52,7 +52,10 @@ Every command accepts `--help`.
 
 `--server` (`-s`) names the Prüfstein server to report to. It is only needed
 the first time: the URL is stored alongside the credentials and reused by every
-later run. Naming a *different* server discards the cached token — it was
+later run. A URL without a scheme is read as `https://`, so `--server
+pruefstein.example.com` and `--server https://pruefstein.example.com` are the
+same thing; plain HTTP has to be spelled out. Naming a *different* server
+discards the cached token — it was
 issued by the previous server's identity provider and means nothing to the new
 one.
 

@@ -123,14 +123,20 @@ public class AuthResolver
 		tokenHolder.setAccessToken(fresh.accessToken());
 	}
 
+	/**
+	 * Normalised here rather than at the option: this is the one place every
+	 * server URL passes through on its way into the credentials file, whether
+	 * it came from {@code --server}, from an earlier login or from
+	 * configuration.
+	 */
 	private String resolveServerUrl(String serverOverride, Optional<Credentials> stored)
 	{
 		if (serverOverride != null && !serverOverride.isBlank())
 		{
-			return serverOverride;
+			return ServerUrl.normalize(serverOverride);
 		}
-		return stored.map(Credentials::serverUrl)
+		return ServerUrl.normalize(stored.map(Credentials::serverUrl)
 			.filter(url -> url != null && !url.isBlank())
-			.orElse(configuredServerUrl);
+			.orElse(configuredServerUrl));
 	}
 }

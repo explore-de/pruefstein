@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pruefstein.agent.auth.ServerUrl;
 import com.pruefstein.agent.auth.TokenStore;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 
@@ -79,7 +80,9 @@ public class CredentialsConfigSource implements ConfigSource
 			{
 				return null;
 			}
-			return serverUrl.asText();
+			// Credentials written before the agent normalised the URL can
+			// still be schemeless, and the REST client would fail on them.
+			return ServerUrl.normalize(serverUrl.asText());
 		}
 		catch (Exception e)
 		{
