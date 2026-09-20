@@ -7,9 +7,9 @@
      class="max-w-3xl">
 
   <!-- Page header -->
-  <div class="flex items-start justify-between mb-8">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
     <div>
-      <h1 class="text-4xl font-black tracking-tight">Compliance Groups</h1>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Compliance Groups</h1>
       <p class="text-sm font-medium text-stone-500 mt-1">ISO 27001 control families and their checks.</p>
     </div>
     {#if inject:currentUser.admin}
@@ -96,7 +96,7 @@
   <div x-show="showCreate" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showCreate = false" @keydown.escape.window="showCreate = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-md" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-md max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
         <h2 class="text-xl font-black">Add Group</h2>
       </div>
@@ -125,7 +125,7 @@
   <div x-show="showEdit" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showEdit = false" @keydown.escape.window="showEdit = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-md" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-md max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
         <h2 class="text-xl font-black">Edit Group</h2>
       </div>
@@ -155,7 +155,7 @@
   <div x-show="showDelete" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showDelete = false" @keydown.escape.window="showDelete = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-sm" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-sm max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
         <h2 class="text-xl font-black">Retire Group</h2>
       </div>

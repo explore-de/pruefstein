@@ -14,9 +14,9 @@
   </div>
 
   <!-- Page header -->
-  <div class="flex items-start justify-between mb-8">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
     <div>
-      <h1 class="text-4xl font-black tracking-tight">{group.name}</h1>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight">{group.name}</h1>
       <p class="text-sm font-medium text-stone-500 mt-1">Compliance checks in this group.</p>
     </div>
     {#if inject:currentUser.admin}
@@ -31,8 +31,8 @@
   </div>
 
   <!-- Table -->
-  <div class="bg-white border-2 border-black shadow-brutal overflow-hidden">
-    <table class="w-full text-sm">
+  <div class="bg-white border-2 border-black shadow-brutal overflow-x-auto">
+    <table class="w-full min-w-[64rem] text-sm">
       <thead>
         <tr class="border-b-2 border-black bg-black text-white">
           <th class="text-left px-4 py-3 font-black tracking-wide text-xs w-1/4">Name</th>
@@ -145,7 +145,7 @@
   <div x-show="showCreate" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showCreate = false" @keydown.escape.window="showCreate = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-2xl" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
         <h2 class="text-xl font-black">Add Compliance Item</h2>
         <p class="text-xs font-medium text-stone-500 mt-0.5">osquery SQL + JEXL pass/fail expression.</p>
@@ -221,7 +221,7 @@
   <div x-show="showEdit" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showEdit = false" @keydown.escape.window="showEdit = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-2xl" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
         <h2 class="text-xl font-black">Edit Compliance Item</h2>
       </div>
@@ -297,7 +297,7 @@
   <div x-show="showTest" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showTest = false" @keydown.escape.window="showTest = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-2xl" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black flex items-center justify-between">
         <div>
           <h2 class="text-xl font-black">Test locally</h2>
@@ -371,7 +371,7 @@
   <div x-show="showDelete" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
        @click.self="showDelete = false" @keydown.escape.window="showDelete = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-sm" @click.stop>
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-sm max-h-[90vh] overflow-y-auto" @click.stop>
       <div class="px-6 pt-5 pb-4 border-b-2 border-black">
         <h2 class="text-xl font-black">Retire Check</h2>
       </div>

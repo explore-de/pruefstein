@@ -122,8 +122,8 @@
   </div>
   {/if}
 
-  <div class="bg-white border-2 border-black shadow-brutal overflow-hidden">
-    <table class="w-full border-collapse text-sm">
+  <div class="bg-white border-2 border-black shadow-brutal overflow-x-auto">
+    <table class="w-full min-w-[44rem] border-collapse text-sm">
       <thead>
         <tr class="border-b-2 border-black bg-black text-white">
           <th class="text-left px-4 py-3 font-black text-xs tracking-widest w-8"></th>
@@ -271,79 +271,83 @@
   </div>
   {/if}
 
-  <div class="bg-white border-2 border-black shadow-brutal overflow-hidden"
+  <!-- The filter sits outside the scroller on purpose: scrolled sideways to
+       reach the Status column, a filter bar inside would slide off with it. -->
+  <div class="bg-white border-2 border-black shadow-brutal"
        x-data="{ filter: '', blockedOnly: false }">
-    <div class="px-4 py-3 border-b-2 border-black flex items-center gap-3">
+    <div class="px-4 py-3 border-b-2 border-black flex flex-wrap items-center gap-3">
       <input type="search" x-model="filter" placeholder="Filter applications…"
-             class="flex-1 px-3 py-1.5 text-sm border-2 border-black focus:outline-none focus:bg-accent">
+             class="flex-1 min-w-0 basis-48 px-3 py-1.5 text-sm border-2 border-black focus:outline-none focus:bg-accent">
       <label class="flex items-center gap-1.5 text-xs font-bold whitespace-nowrap">
         <input type="checkbox" x-model="blockedOnly" class="w-4 h-4 border-2 border-black">
         Blocked only
       </label>
     </div>
-    <table class="w-full border-collapse text-sm">
-      <thead>
-        <tr class="border-b-2 border-black bg-black text-white">
-          <th class="text-left px-4 py-3 font-black text-xs tracking-widest">Application</th>
-          <th class="text-left px-4 py-3 font-black text-xs tracking-widest w-24">Source</th>
-          <th class="text-left px-4 py-3 font-black text-xs tracking-widest w-28">Version</th>
-          <th class="px-4 py-3 font-black text-xs tracking-widest text-right w-56">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {#for row in inventory}
-        <tr class="border-b-2 border-black last:border-0 hover:bg-stone-50 transition-colors"
-            data-blocked="{row.blocked}"
-            data-search="{row.searchText}"
-            x-show="(!blockedOnly || $el.dataset.blocked === 'true') &amp;&amp; $el.dataset.search.includes(filter.toLowerCase())">
-          <td class="px-4 py-3">
-            <p class="font-medium">{row.name}</p>
-            <code class="text-[11px] font-mono text-stone-400 break-all">{row.subtitle}</code>
-          </td>
-          <td class="px-4 py-3">
-            <span class="text-[10px] font-black tracking-wide border-2 border-black px-1 py-0.5 bg-accent">{row.source}</span>
-          </td>
-          <td class="px-4 py-3 text-stone-500 text-xs font-mono">{row.displayVersion}</td>
-          <!--
-            Nowrap, because the two block buttons are one control each and
-            reading "BLOCK" alone on a line above "BLOCK WITH AI" invites the
-            wrong one. The column is wide enough to hold them side by side, so
-            the table gives the room here rather than the reader guessing.
-          -->
-          <td class="px-4 py-3 text-right whitespace-nowrap">
-            {#if row.blocked}
-            <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-red-400 text-white"
-                  title="{row.ruleLabel}">BLOCKED</span>
-            {#else if inject:currentUser.admin}
-            <form method="post" action="{uri:BlockedApps.blockFromReport}" class="inline-flex items-center justify-end gap-1">
-              {#authenticityToken /}
-              <input type="hidden" name="label" value="{row.name}">
-              <input type="hidden" name="matcherType" value="{row.suggestedMatcherType}">
-              <input type="hidden" name="pattern" value="{row.suggestedPattern}">
-              <input type="hidden" name="reportId" value="{report.id}">
-              <button type="submit"
-                      title="Block just this identifier"
-                      class="text-[10px] font-black tracking-widest border-2 border-black px-2 py-1 hover:bg-red-400 hover:text-white transition-none">
-                BLOCK
-              </button>
-              <button type="submit" name="useAi" value="true"
-                      title="Block, and let AI find the other install routes for this app"
-                      class="text-[10px] font-black tracking-widest border-2 border-black px-2 py-1 whitespace-nowrap hover:bg-accent transition-none">
-                ✦ BLOCK WITH AI
-              </button>
-            </form>
-            {/if}
-          </td>
-        </tr>
-        {#else}
-        <tr>
-          <td colspan="4" class="px-4 py-10 text-center text-sm text-stone-400 font-medium">
-            This device did not report an application inventory.
-          </td>
-        </tr>
-        {/for}
-      </tbody>
-    </table>
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[52rem] border-collapse text-sm">
+        <thead>
+          <tr class="border-b-2 border-black bg-black text-white">
+            <th class="text-left px-4 py-3 font-black text-xs tracking-widest">Application</th>
+            <th class="text-left px-4 py-3 font-black text-xs tracking-widest w-24">Source</th>
+            <th class="text-left px-4 py-3 font-black text-xs tracking-widest w-28">Version</th>
+            <th class="px-4 py-3 font-black text-xs tracking-widest text-right w-56">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#for row in inventory}
+          <tr class="border-b-2 border-black last:border-0 hover:bg-stone-50 transition-colors"
+              data-blocked="{row.blocked}"
+              data-search="{row.searchText}"
+              x-show="(!blockedOnly || $el.dataset.blocked === 'true') &amp;&amp; $el.dataset.search.includes(filter.toLowerCase())">
+            <td class="px-4 py-3">
+              <p class="font-medium">{row.name}</p>
+              <code class="text-[11px] font-mono text-stone-400 break-all">{row.subtitle}</code>
+            </td>
+            <td class="px-4 py-3">
+              <span class="text-[10px] font-black tracking-wide border-2 border-black px-1 py-0.5 bg-accent">{row.source}</span>
+            </td>
+            <td class="px-4 py-3 text-stone-500 text-xs font-mono">{row.displayVersion}</td>
+            <!--
+              Nowrap, because the two block buttons are one control each and
+              reading "BLOCK" alone on a line above "BLOCK WITH AI" invites the
+              wrong one. The column is wide enough to hold them side by side, so
+              the table gives the room here rather than the reader guessing.
+            -->
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              {#if row.blocked}
+              <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-red-400 text-white"
+                    title="{row.ruleLabel}">BLOCKED</span>
+              {#else if inject:currentUser.admin}
+              <form method="post" action="{uri:BlockedApps.blockFromReport}" class="inline-flex items-center justify-end gap-1">
+                {#authenticityToken /}
+                <input type="hidden" name="label" value="{row.name}">
+                <input type="hidden" name="matcherType" value="{row.suggestedMatcherType}">
+                <input type="hidden" name="pattern" value="{row.suggestedPattern}">
+                <input type="hidden" name="reportId" value="{report.id}">
+                <button type="submit"
+                        title="Block just this identifier"
+                        class="text-[10px] font-black tracking-widest border-2 border-black px-2 py-1 hover:bg-red-400 hover:text-white transition-none">
+                  BLOCK
+                </button>
+                <button type="submit" name="useAi" value="true"
+                        title="Block, and let AI find the other install routes for this app"
+                        class="text-[10px] font-black tracking-widest border-2 border-black px-2 py-1 whitespace-nowrap hover:bg-accent transition-none">
+                  ✦ BLOCK WITH AI
+                </button>
+              </form>
+              {/if}
+            </td>
+          </tr>
+          {#else}
+          <tr>
+            <td colspan="4" class="px-4 py-10 text-center text-sm text-stone-400 font-medium">
+              This device did not report an application inventory.
+            </td>
+          </tr>
+          {/for}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ── Blacklist explanation modal ──────────────────────────────── -->
@@ -351,7 +355,7 @@
   <div x-show="blacklistModal" x-cloak
        class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6"
        @click.self="blacklistModal = false">
-    <div class="bg-white border-2 border-black shadow-brutal-lg max-w-lg w-full p-6 relative">
+    <div class="bg-white border-2 border-black shadow-brutal-lg max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
       <button @click="blacklistModal = false"
         class="absolute top-3 right-3 text-xs font-black border-2 border-black px-2 py-1 hover:bg-accent transition-none">
         ✕
@@ -370,7 +374,7 @@
   <div x-show="modal !== null" x-cloak
        class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-6"
        @click.self="modal = null">
-    <div class="bg-white border-2 border-black shadow-brutal-lg max-w-lg w-full p-6 relative">
+    <div class="bg-white border-2 border-black shadow-brutal-lg max-w-lg w-full p-6 relative max-h-[90vh] overflow-y-auto">
       <button @click="modal = null"
         class="absolute top-3 right-3 text-xs font-black border-2 border-black px-2 py-1 hover:bg-accent transition-none">
         ✕
