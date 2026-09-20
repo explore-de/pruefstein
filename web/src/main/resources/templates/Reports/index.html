@@ -24,7 +24,7 @@
 }">
 
   <div class="mb-8">
-    <h1 class="text-4xl font-black tracking-tight">Reports</h1>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Reports</h1>
     <p class="text-sm font-medium text-stone-500 mt-1">Agent compliance runs, newest first.</p>
   </div>
 
@@ -72,10 +72,10 @@
       </div>
 
       <!-- Search -->
-      <div class="flex ml-auto">
+      <div class="flex w-full sm:w-auto sm:ml-auto">
         <input type="text" name="q" value="{q}"
           placeholder="Filter by user, device…"
-          class="border-2 border-black px-3 py-1.5 text-sm font-medium bg-white focus:outline-none focus:bg-yellow-50 w-64">
+          class="border-2 border-black px-3 py-1.5 text-sm font-medium bg-white focus:outline-none focus:bg-yellow-50 min-w-0 flex-1 sm:flex-none sm:w-64">
         <button type="submit"
           class="border-2 border-l-0 border-black px-3 py-1.5 text-[10px] font-black tracking-widest bg-white hover:bg-accent transition-none">
           SEARCH
@@ -108,7 +108,7 @@
 
   <!-- ── Table ─────────────────────────────────────────────────────── -->
   <div class="bg-white border-2 border-black shadow-brutal overflow-x-auto">
-    <table class="w-full border-collapse text-sm">
+    <table class="w-full min-w-[56rem] border-collapse text-sm">
       <thead>
         <tr class="border-b-2 border-black bg-black text-white">
 
