@@ -300,7 +300,12 @@
               data-search="{row.searchText}"
               x-show="(!blockedOnly || $el.dataset.blocked === 'true') &amp;&amp; $el.dataset.search.includes(filter.toLowerCase())">
             <td class="px-4 py-3">
+              {#if row.link}
+              <a href="{row.link}" target="_blank" rel="noopener noreferrer"
+                 class="font-medium underline decoration-2 decoration-stone-300 underline-offset-2 hover:decoration-black">{row.name}</a>
+              {#else}
               <p class="font-medium">{row.name}</p>
+              {/if}
               <code class="text-[11px] font-mono text-stone-400 break-all">{row.subtitle}</code>
             </td>
             <td class="px-4 py-3">

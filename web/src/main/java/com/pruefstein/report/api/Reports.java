@@ -13,6 +13,7 @@ import com.pruefstein.compliance.repository.ComplianceResultRepository;
 import com.pruefstein.compliance.repository.InstalledAppRepository;
 import com.pruefstein.compliance.service.BlacklistMatcher;
 import com.pruefstein.compliance.service.CheckResolver;
+import com.pruefstein.homebrew.service.HomebrewCatalog;
 import com.pruefstein.osversion.service.OsVersionAssessment;
 import com.pruefstein.osversion.service.OsVersionAssessor;
 import com.pruefstein.report.domain.Report;
@@ -49,6 +50,9 @@ public class Reports extends Controller
 	InstalledAppRepository installedAppRepository;
 
 	@Inject
+	HomebrewCatalog homebrewCatalog;
+
+	@Inject
 	BlockedAppRepository blockedAppRepository;
 
 	@Inject
@@ -77,9 +81,10 @@ public class Reports extends Controller
 	 * resolved here because generated checks hold no expression of their own.
 	 */
 	/**
-	 * One installed application paired with the rule that forbids it, if any.
+	 * One installed application paired with the rule that forbids it, if any,
+	 * and where to read up on it, if anywhere.
 	 */
-	public record InventoryRow(InstalledApp app, BlockedApp rule)
+	public record InventoryRow(InstalledApp app, BlockedApp rule, String link)
 	{
 		public String getSource()
 		{
@@ -295,7 +300,8 @@ public class Reports extends Controller
 		List<BlockedApp> rules = blockedAppRepository.listEnabled();
 		List<InventoryRow> inventory = installedAppRepository.listForReport(report).stream()
 			.map(app -> new InventoryRow(app,
-				blacklistMatcher.ruleFor(app.getSource(), app.getName(), app.getIdentifier(), rules)))
+				blacklistMatcher.ruleFor(app.getSource(), app.getName(), app.getIdentifier(), rules),
+				homebrewCatalog.linkFor(app.getSource(), app.getName()).orElse(null)))
 			.toList();
 
 		long blockedCount = inventory.stream().filter(InventoryRow::isBlocked).count();

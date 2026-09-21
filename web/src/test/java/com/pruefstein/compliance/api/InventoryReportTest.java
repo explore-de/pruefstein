@@ -168,6 +168,8 @@ class InventoryReportTest
 				containsString("Installed Applications"),
 				containsString("Nextcloud.app"),
 				containsString("wget"),
+				// the catalogue is not loaded in tests, so the fallback link
+				containsString("href=\"https://formulae.brew.sh/formula/wget\""),
 				containsString("BLOCKED"),
 				containsString("BLOCK")));
 	}
