@@ -1,7 +1,10 @@
 package com.pruefstein.agent.runner;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -44,6 +47,7 @@ public class ComplianceRunner
 {
 	private static final Logger LOG = LoggerFactory.getLogger(ComplianceRunner.class);
 	private static final JexlEngine JEXL = new JexlBuilder().strict(true).silent(false).create();
+	private static final long OSQUERY_TIMEOUT_SECONDS = 30;
 
 	/** The same date the server's mails print, so the two never disagree. */
 	private static final DateTimeFormatter DEADLINE_DATE = DateTimeFormatter
@@ -317,12 +321,28 @@ public class ComplianceRunner
 		ProcessBuilder pb = new ProcessBuilder("osqueryi", "--json", query);
 		pb.redirectErrorStream(true);
 		Process process = pb.start();
-		if (!process.waitFor(10, TimeUnit.SECONDS))
+		// Read while it runs: a result bigger than the pipe buffer would
+		// otherwise leave osqueryi blocked on its write, which looks exactly
+		// like a hang and ends in the timeout below.
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		Thread reader = Thread.ofVirtual().start(() ->
+		{
+			try (InputStream in = process.getInputStream())
+			{
+				in.transferTo(buffer);
+			}
+			catch (IOException e)
+			{
+				// Only happens when the process is killed, and that is reported below.
+			}
+		});
+		if (!process.waitFor(OSQUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS))
 		{
 			process.destroyForcibly();
-			throw new RuntimeException("osqueryi timed out after 10 seconds");
+			throw new RuntimeException("osqueryi timed out after " + OSQUERY_TIMEOUT_SECONDS + " seconds");
 		}
-		String output = new String(process.getInputStream().readAllBytes()).strip();
+		reader.join();
+		String output = buffer.toString(StandardCharsets.UTF_8).strip();
 		if (process.exitValue() != 0)
 		{
 			throw new RuntimeException("osqueryi exited with code " + process.exitValue() + ": " + output);
@@ -371,7 +391,7 @@ public class ComplianceRunner
 		}
 		catch (Exception e)
 		{
-			LOG.warn("Could not fetch device UUID from osquery, falling back to hostname", e);
+			LOG.warn("Could not fetch device UUID from osquery, falling back to hostname: {}", e.getMessage());
 		}
 		return hostname();
 	}
