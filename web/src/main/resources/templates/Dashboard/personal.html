@@ -127,7 +127,7 @@
               </span>
             </summary>
             {#if check.hasExplanation}
-            <div class="border-t-2 border-black px-4 py-4 text-sm leading-relaxed text-stone-700 whitespace-pre-line">{check.explanation}</div>
+            <div class="border-t-2 border-black px-4 py-4 text-sm leading-relaxed text-stone-700 md">{check.explanation.markdown}</div>
             {#else}
             <div class="border-t-2 border-black px-4 py-4 text-sm text-stone-500">
               No explanation was generated for this one. The

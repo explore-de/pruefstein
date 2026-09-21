@@ -370,7 +370,7 @@
         <span class="text-[9px] font-black tracking-widest border border-stone-300 px-1 py-0.5 text-stone-400">✦ AI</span>
       </div>
       <p class="text-sm font-black mb-3">{blacklistResult.item.name}</p>
-      <p class="text-sm leading-relaxed whitespace-pre-wrap">{blacklistResult.aiLongExplanation}</p>
+      <div class="md text-sm leading-relaxed">{blacklistResult.aiLongExplanation.markdown}</div>
     </div>
   </div>
   {/if}
@@ -392,7 +392,7 @@
       <div x-show="modal === {result_index}" x-cloak>
         <p class="text-sm font-black mb-3">{result.item.name}</p>
         {#if result.aiLongExplanation != null}
-        <p class="text-sm leading-relaxed whitespace-pre-wrap">{result.aiLongExplanation}</p>
+        <div class="md text-sm leading-relaxed">{result.aiLongExplanation.markdown}</div>
         {/if}
       </div>
       {/for}

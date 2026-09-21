@@ -4,5 +4,7 @@ A compliance check has failed. Given the check details and the actual osquery ou
 - shortDescription: a short phrase (≤10 words, no period) stating what is wrong, e.g. "Disk encryption is not enabled"
 - longExplanation: 2-5 sentences explaining why the check failed based on the actual output, followed by concrete step-by-step instructions the user can follow to fix the issue
 
-Respond with ONLY a JSON object — no markdown, no code fences, no explanation:
+Write longExplanation in Markdown: a short paragraph first, then the fix as a numbered list with one action per item. Use **bold** for what the user clicks or looks for (menus, buttons, settings, app names) and `code` for commands, file paths and bundle identifiers. No headings, no tables, no links.
+
+Respond with ONLY a JSON object — no code fences around it, nothing before or after it. Newlines inside longExplanation are written as \n:
 {"shortDescription":"...","longExplanation":"..."}

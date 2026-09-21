@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.pruefstein.compliance.service.ComplianceEvaluator;
 import com.pruefstein.compliance.service.ComplianceResultAiService;
 import com.pruefstein.compliance.service.ComplianceResultExplanation;
+import com.pruefstein.shared.util.Markdown;
 import io.quarkus.runtime.LaunchMode;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -141,27 +142,27 @@ public class DevOsqueryResource
 	}
 
 	public record OsqueryResult(String output, Boolean passed, String error, String expressionError,
-		String tipShortDescription, String tipLongExplanation)
+		String tipShortDescription, String tipLongExplanation, String tipLongExplanationHtml)
 	{
 		static OsqueryResult withOutput(String output, Boolean passed)
 		{
-			return new OsqueryResult(output, passed, null, null, null, null);
+			return new OsqueryResult(output, passed, null, null, null, null, null);
 		}
 
 		OsqueryResult withExpressionError(String msg)
 		{
-			return new OsqueryResult(this.output, null, null, msg, null, null);
+			return new OsqueryResult(this.output, null, null, msg, null, null, null);
 		}
 
 		OsqueryResult withTip(String shortDescription, String longExplanation)
 		{
 			return new OsqueryResult(this.output, this.passed, this.error, this.expressionError,
-				shortDescription, longExplanation);
+				shortDescription, longExplanation, Markdown.toHtml(longExplanation));
 		}
 
 		static OsqueryResult error(String error)
 		{
-			return new OsqueryResult(null, null, error, null, null, null);
+			return new OsqueryResult(null, null, error, null, null, null, null);
 		}
 	}
 }

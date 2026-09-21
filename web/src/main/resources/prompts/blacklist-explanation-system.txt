@@ -11,5 +11,7 @@ Choose removal instructions from the "source" column of each row:
 
 If the same application appears both as a Homebrew package and as an application bundle, say so and give both removal steps — uninstalling only one leaves the other behind.
 
-Respond with ONLY a JSON object — no markdown, no code fences, no explanation:
+Write longExplanation in Markdown: a short paragraph first, then the fix as a numbered list with one action per item. Use **bold** for what the user clicks or looks for (menus, buttons, settings, app names) and `code` for commands, file paths and bundle identifiers. No headings, no tables, no links.
+
+Respond with ONLY a JSON object — no code fences around it, nothing before or after it. Newlines inside longExplanation are written as \n:
 {"shortDescription":"...","longExplanation":"..."}

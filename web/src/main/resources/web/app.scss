@@ -2,3 +2,33 @@
 [x-cloak] {
   display: none !important;
 }
+
+// Markdown the AI writes its fix instructions in, rendered by Markdown.java.
+// Tailwind's reset strips lists and code of any look, so they get it back here.
+.md {
+  > * + * { margin-top: 0.75em; }
+  ol, ul { padding-left: 1.5em; }
+  ol { list-style: decimal; }
+  ul { list-style: square; }
+  li + li { margin-top: 0.35em; }
+  li::marker { font-weight: 700; }
+  strong { font-weight: 700; }
+  em { font-style: italic; }
+  a { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 2px; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.85em;
+    background: #f5f5f4; // stone-100
+    border: 1px solid #d6d3d1; // stone-300
+    padding: 0.05em 0.3em;
+    overflow-wrap: anywhere;
+  }
+  pre {
+    background: #000;
+    color: #fff;
+    padding: 0.75em 1em;
+    overflow-x: auto;
+    code { background: none; border: 0; padding: 0; color: inherit; }
+  }
+  h1, h2, h3, h4 { font-weight: 900; }
+}

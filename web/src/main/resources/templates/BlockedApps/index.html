@@ -194,7 +194,7 @@
               <div class="border-2 border-black bg-accent p-3">
                 <p class="text-xs font-black text-stone-500 mb-1.5">How to fix</p>
                 <p class="text-sm font-bold" x-text="testTipShort"></p>
-                <p class="text-sm leading-relaxed whitespace-pre-wrap mt-1.5" x-text="testTipLong"></p>
+                <div class="md text-sm leading-relaxed mt-1.5" x-html="testTipLong"></div>
               </div>
             </template>
             <div>
@@ -416,7 +416,7 @@ function blockedAppsPage() {
           this.testOutput = JSON.stringify(JSON.parse(data.output), null, 2);
           this.testPassed = data.passed;
           this.testTipShort = data.tipShortDescription;
-          this.testTipLong = data.tipLongExplanation;
+          this.testTipLong = data.tipLongExplanationHtml;
         }
       } catch (e) {
         this.testError = e.message;
