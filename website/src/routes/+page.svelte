@@ -8,6 +8,7 @@
 	import Catalog from '$lib/components/Catalog.svelte';
 	import AiAssist from '$lib/components/AiAssist.svelte';
 	import OpenSource from '$lib/components/OpenSource.svelte';
+	import SelfHost from '$lib/components/SelfHost.svelte';
 	import Contribute from '$lib/components/Contribute.svelte';
 	import { site } from '$lib/data/site.js';
 
@@ -59,4 +60,5 @@
 <Catalog />
 <AiAssist />
 <OpenSource />
+<SelfHost />
 <Contribute />

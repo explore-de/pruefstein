@@ -426,12 +426,120 @@ your people should be reading the agent's source before they run it.
 
 ### Production
 
-A ready-to-use Compose stack (Postgres, Kafka, and the web image from `ghcr.io/explore-de/pruefstein-web`) lives in `deploy/`. Copy `deploy/.env.example` to `deploy/.env`, fill in the required values (database credentials, Entra tenant/client IDs, OpenAI key), then run:
+See [Hosting with Docker Compose](#hosting-with-docker-compose).
+
+---
+
+## Hosting with Docker Compose
+
+`deploy/` holds the whole production stack: PostgreSQL and the web app, as
+the native image CI publishes to `ghcr.io/explore-de/pruefstein-web`. No JDK
+or build is needed on the host.
+
+### What you need first
+
+- **Docker with Compose v2** on a Linux host.
+- **Traefik in front of it**, owning an external Docker network called
+  `proxy`, with an entrypoint `websecure` and a certificate resolver `le`. The
+  compose file routes to the app through Traefik labels and publishes no port
+  of its own. Other names mean editing the labels; no Traefik at all, see
+  [Without Traefik](#without-traefik).
+- **A DNS name** pointing at that host, e.g. `pruefstein.example.com`.
+- **An Entra ID app registration**, set up as below.
+- **An SMTP account** for the invitation, reminder and outcome mails.
+- Optionally an **OpenAI API key** — without one the app runs the same, minus
+  the explanations (see [The AI part](#the-ai-part-and-why-it-is-optional)).
+
+### The Entra ID app registration
+
+One registration serves both the browser login and the agent:
+
+1. **Authentication → Add a platform → Web**, redirect URI
+   `https://<your host>/oidc-callback`. That one fixed callback is all the app
+   ever redirects to.
+2. **Authentication → Allow public client flows → Yes.** The agent logs in with
+   the device code flow, which needs it.
+3. **Certificates & secrets → New client secret.** This is `ENTRA_CLIENT_SECRET`.
+4. **Expose an API → Application ID URI → Add**, keeping the suggested
+   `api://<client-id>`. Without it the agent's token is audienced to Microsoft
+   Graph and the API rejects it.
+5. **App roles → Create app role** with the value `admin`, then assign it to
+   the admins under **Enterprise applications → Users and groups**. Everybody
+   else needs no role.
+
+The tenant id and the application (client) id from the overview page are
+`ENTRA_TENANT_ID` and `ENTRA_CLIENT_ID`. To grant admin by group rather than by
+app role, see `PRUEFSTEIN_SECURITY_ROLE_CLAIM_PATH` in `deploy/.env.example`.
+
+### Starting it
 
 ```bash
-cd deploy
+git clone https://github.com/explore-de/pruefstein.git
+cd pruefstein/deploy
+cp .env.example .env
+$EDITOR .env           # every CHANGE_ME, the host, the Entra ids
+docker compose up -d
+docker compose logs -f web
+```
+
+Only `deploy/` is needed; copying `docker-compose.yml` and `.env.example`
+anywhere works just as well. On first boot the app creates its schema and seeds
+the baseline checks — the log says `baseline compliance check` when it has.
+`https://<your host>/q/health` should then answer `UP`, and signing in there
+with an account holding `admin` gives you the fleet dashboard.
+
+| Variable | Required | What it is |
+|---|---|---|
+| `PRUEFSTEIN_HOST` | yes | The host Traefik routes to the app |
+| `PRUEFSTEIN_BASE_URL` | yes | `https://` plus that host. Mails and the setup page link to it |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | yes | Used both to create the database and to connect to it |
+| `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET` | yes | From the app registration above |
+| `MAIL_FROM`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | yes | STARTTLS is required, so port 587 is the usual one |
+| `OPENAI_API_KEY` | no | Turns on the AI explanations |
+| `PRUEFSTEIN_SECURITY_ROLE_CLAIM_PATH`, `PRUEFSTEIN_SECURITY_ADMIN_ROLE` | no | Default to `roles` and `admin` |
+
+Then point the agents at it:
+
+```bash
+pruefstein-agent login --server https://pruefstein.example.com
+```
+
+### Updating
+
+```bash
+docker compose pull
 docker compose up -d
 ```
+
+`latest` follows `main`. Every image is also tagged with the commit it was
+built from, so pinning `image:` to `ghcr.io/explore-de/pruefstein-web:<sha>`
+gives you updates only when you change that line. Schema changes are applied
+on boot; there is no migration step to run by hand.
+
+### Backups
+
+Everything worth keeping is in PostgreSQL, in the `postgres_data` volume:
+
+```bash
+docker compose exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > pruefstein.sql
+```
+
+### Without Traefik
+
+The app trusts the `X-Forwarded-*` headers to know its own public URL, which is
+what the redirect URI Entra checks is built from. Those headers are whatever the
+caller sends, so port 8080 must never be reachable by anything but your proxy.
+To use nginx, Caddy or another proxy on the same host, edit the `web` service:
+remove `labels` and `networks`, add
+
+```yaml
+    ports:
+      - "127.0.0.1:8080:8080"
+```
+
+and delete the `proxy` network at the bottom of the file. Then proxy
+`https://<your host>` to `http://127.0.0.1:8080`, passing `X-Forwarded-Proto`
+and `X-Forwarded-Host` on.
 
 ---
 
