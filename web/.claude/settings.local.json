@@ -55,8 +55,5 @@
   },
   "enabledMcpjsonServers": [
     "quarkus-dev"
-  ],
-  "disabledMcpjsonServers": [
-    "carbon-mcp"
   ]
 }

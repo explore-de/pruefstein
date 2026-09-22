@@ -1,9 +1,5 @@
 {
   "mcpServers": {
-    "carbon-mcp": {
-      "type": "http",
-      "url": "https://mcp.carbondesignsystem.com/mcp"
-    },
     "quarkus-dev": {
       "type": "http",
       "url": "http://localhost:8080/q/dev-mcp"
