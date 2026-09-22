@@ -22,8 +22,10 @@
 
     <!-- The web app and the agent ship as one thing and are versioned as one
          thing. Before this pom they each carried their own copy of the same
-         number, the same Quarkus platform, and the same eight plugins, and
-         nothing but habit kept the copies equal. -->
+         number and the same eight plugins, and nothing but habit kept the
+         copies equal. The Quarkus platform is the exception: it stays in each
+         module, because `quarkus update` only rewrites the pom of the module
+         it runs in and cannot bump a version inherited from here. -->
     <modules>
         <module>web</module>
         <module>agent</module>
@@ -36,9 +38,6 @@
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
-        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
-        <quarkus.platform.version>3.39.3</quarkus.platform.version>
         <quarkus-banner.version>1.6.0</quarkus-banner.version>
         <release-plugin.version>3.3.1</release-plugin.version>
         <skipITs>true</skipITs>
@@ -47,13 +46,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>${quarkus.platform.group-id}</groupId>
-                <artifactId>${quarkus.platform.artifact-id}</artifactId>
-                <version>${quarkus.platform.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <!-- Both modules print the same banner; neither should be the one
                  that quietly falls a version behind. -->
             <dependency>
@@ -70,12 +62,6 @@
              level, so the parent itself builds nothing. -->
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>${quarkus.platform.group-id}</groupId>
-                    <artifactId>quarkus-maven-plugin</artifactId>
-                    <version>${quarkus.platform.version}</version>
-                    <extensions>true</extensions>
-                </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler-plugin.version}</version>
