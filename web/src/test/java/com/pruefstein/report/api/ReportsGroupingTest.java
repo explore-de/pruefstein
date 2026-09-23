@@ -133,17 +133,71 @@ class ReportsGroupingTest
 	}
 
 	@Test
-	void filteringNarrowsWhatIsGrouped()
+	void theScopeBoxOpensTicked()
+	{
+		// given — a plain page, with nothing said about scope
+
+		// when / then — the control has to show the default it is actually
+		// running under, or the table is narrower than it looks
+		given()
+			.when().get("/Reports/index")
+			.then()
+			.statusCode(200)
+			.body(containsString("LATEST ONLY"))
+			.body(containsString("aria-checked=\"true\""));
+		given()
+			.when().get("/Reports/index?all=1")
+			.then()
+			.statusCode(200)
+			.body(containsString("aria-checked=\"false\""));
+	}
+
+	@Test
+	void filteringNarrowsWhatIsGroupedWhenEveryRunCounts()
 	{
 		// given — only one of grouping-user's three runs is NON_COMPLIANT
 
-		// when / then — the group is built from what the filter left, so a
-		// single surviving run has nothing to fold away
+		// when / then — with the box off the group is built from what the
+		// filter left, so a single surviving run has nothing to fold away
 		given()
-			.when().get("/Reports/index?q=grouping-&status=NON_COMPLIANT")
+			.when().get("/Reports/index?q=grouping-&status=NON_COMPLIANT&all=1")
 			.then()
 			.statusCode(200)
 			.body(containsString("grouping-device-b"))
 			.body(not(containsString("OLDER")));
+	}
+
+	@Test
+	void aStatusFilterReadsTheLatestRunByDefault()
+	{
+		// given — grouping-user's middle run failed, but the one after it
+		// passed: the machine was put right
+
+		// when / then — so they are not on the non-compliant list, and the
+		// failing run is not dragged onto it either
+		given()
+			.when().get("/Reports/index?q=grouping-&status=NON_COMPLIANT")
+			.then()
+			.statusCode(200)
+			.body(not(containsString("grouping-device-b")))
+			.body(containsString("No reports match"));
+	}
+
+	@Test
+	void theEarlierRunsStayInTheFoldOfAGroupThatMatches()
+	{
+		// given — grouping-user's latest run is COMPLIANT, the two before it
+		// are one COMPLIANT and one NON_COMPLIANT
+
+		// when — filtered to the status the latest run has
+		given()
+			.when().get("/Reports/index?q=grouping-&status=COMPLIANT")
+			.then()
+			.statusCode(200)
+			// then — the group survives whole, history and all: the filter
+			// picks which users are listed, not which of their runs exist
+			.body(containsString("grouping-device-c"))
+			.body(containsString("2 OLDER"))
+			.body(containsString("grouping-device-b"));
 	}
 }

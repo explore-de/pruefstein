@@ -14,6 +14,11 @@
   // remembered across a request: a reload is a fresh look at the table.
   openGroups: {},
   toggleGroup(key) { this.openGroups[key] = !this.openGroups[key]; },
+  toggleLatestOnly() {
+    var f = document.getElementById('ff-all');
+    f.value = f.value === '1' ? '' : '1';
+    document.getElementById('ff').submit();
+  },
   setSort(col) {
     var sf = document.getElementById('ff-sort');
     var df = document.getElementById('ff-dir');
@@ -35,6 +40,11 @@
       <input id="ff-status" type="hidden" name="status" value="{statusFilter}">
       <input id="ff-sort"   type="hidden" name="sort"   value="{sort}">
       <input id="ff-dir"    type="hidden" name="dir"    value="{dir}">
+      <!--
+        Empty is the default, so a hand-written /Reports/index means the same
+        thing as the page's own opening state: one run per user.
+      -->
+      <input id="ff-all"    type="hidden" name="all"    value="{#if allRuns}1{/if}">
 
       <!-- Status pills -->
       <div class="flex gap-1.5 flex-wrap">
@@ -71,6 +81,21 @@
 
       </div>
 
+      <!--
+        Scope, not a status: it decides which run each user is judged by,
+        which is why it sits apart from the pills rather than among them.
+        A box rather than a pill, because it is on by default and a pill that
+        starts lit reads as a filter someone already applied.
+      -->
+      <button type="button" role="checkbox" @click="toggleLatestOnly()"
+        aria-checked="{#if allRuns}false{#else}true{/if}"
+        title="Judge each user by their newest run only. Off, a user shows up for any run that matches — including one they have since put right."
+        class="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-accent transition-none">
+        <span class="w-3.5 h-3.5 border-2 border-black flex items-center justify-center text-[9px] font-black leading-none
+          {#if allRuns}bg-white{#else}bg-black text-white{/if}">{#if !allRuns}&#10003;{/if}</span>
+        <span class="text-[10px] font-black tracking-widest">LATEST ONLY</span>
+      </button>
+
       <!-- Search -->
       <div class="flex w-full sm:w-auto sm:ml-auto">
         <input type="text" name="q" value="{q}"
@@ -96,7 +121,7 @@
         labelled for the filters, and someone who sorted by device did not
         ask for that to be undone.
       -->
-      <a href="{uri:Reports.index}?sort={sort}&amp;dir={dir}"
+      <a href="{uri:Reports.index}?sort={sort}&amp;dir={dir}{#if allRuns}&amp;all=1{/if}"
         title="Clear the status filter and the search box"
         class="flex items-center border-2 border-black px-3 py-1.5 text-[10px] font-black tracking-widest bg-white hover:bg-red-100 transition-none">
         RESET FILTERS
