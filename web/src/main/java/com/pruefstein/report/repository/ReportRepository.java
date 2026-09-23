@@ -93,19 +93,29 @@ public class ReportRepository implements PanacheRepository<Report>
 	 * The reduce keeps the first row seen per device, which the ordering makes
 	 * the newest — the same tie-break as {@link #findLatestByUser}, so a device
 	 * and its owner never disagree about which run is current.
+	 *
+	 * <p>
+	 * The columns are selected plainly and assembled here rather than through
+	 * an HQL {@code select new ...} constructor expression. That form names the
+	 * class only inside a string, which the native-image build cannot see, so
+	 * the class is left unregistered and the query dies at runtime with "Could
+	 * not resolve class ... named for instantiation" — on the native image
+	 * production runs, while every JVM test passes. Registering it for
+	 * reflection would also work; not needing reflection at all is better,
+	 * because then the tests exercise what production executes.
 	 */
 	public List<LatestRun> findLatestPerDevice()
 	{
-		List<LatestRun> rows = getEntityManager()
-			.createQuery("select new com.pruefstein.report.repository.LatestRun("
-				+ "r.id, r.deviceId, r.osVersion) from Report r"
-				+ " order by r.checkedAt desc, r.id desc", LatestRun.class)
+		List<Object[]> rows = getEntityManager()
+			.createQuery("select r.id, r.deviceId, r.osVersion from Report r"
+				+ " order by r.checkedAt desc, r.id desc", Object[].class)
 			.getResultList();
 
 		Map<String, LatestRun> latest = new LinkedHashMap<>();
-		for (LatestRun run : rows)
+		for (Object[] row : rows)
 		{
-			latest.putIfAbsent(run.deviceId(), run);
+			String deviceId = (String)row[1];
+			latest.putIfAbsent(deviceId, new LatestRun((Long)row[0], deviceId, (String)row[2]));
 		}
 		return List.copyOf(latest.values());
 	}
