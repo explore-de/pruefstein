@@ -3,7 +3,11 @@ package com.pruefstein.shared.bootstrap;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.pruefstein.compliance.bootstrap.CatalogSeeder;
 import com.pruefstein.compliance.domain.AppMatcher;
@@ -59,6 +63,54 @@ public class Startup
 			+ "To fix: System Settings → General → Software Update → Automatic Updates → enable all options. "
 			+ "Alternatively, run: sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true");
 
+	/**
+	 * What the generated fleet is running, one entry per machine. Weighted so
+	 * the estate reads the way a real one does — a plurality current, a long
+	 * tail behind, and a couple that never said — and ordered here only for
+	 * reading; the chart sorts it by version itself. A {@code null} is a
+	 * machine that reported no version at all.
+	 */
+	private static final List<String> FLEET_VERSIONS = Arrays.asList(
+		"27.0", "27.0", "27.0", "27.0",
+		"26.7.1", "26.7.1", "26.7.1",
+		"26.7", "26.7",
+		"26.5", "26.5",
+		"15.8", "15.8",
+		"15.7.9",
+		null, null);
+
+	private static final Map<String, String> FLEET_BUILDS = Map.of(
+		"27.0", "26A428",
+		"26.7.1", "25G231",
+		"26.7", "25G229",
+		"26.5", "25F74",
+		"15.8", "24H23",
+		"15.7.9", "24G830");
+
+	/**
+	 * How many of the fleet fail each check. This is the violations chart's
+	 * ranking, written down rather than emerging from the data, so that
+	 * changing what the chart demonstrates is a one-number edit. Checks absent
+	 * from here pass everywhere.
+	 */
+	private static final Map<String, Integer> FLEET_FAILURES = Map.of(
+		"FileVault enabled", 7,
+		"Screen lock requires a password", 5,
+		"Automatic updates enabled", 4,
+		"Firewall enabled", 3,
+		"Time Machine backup destination configured", 2,
+		"Guest account disabled", 1);
+
+	/**
+	 * What a fleet failure says when somebody does open one. See
+	 * {@link #addFleetResult} for why it is not a generated tip.
+	 */
+	private static final ComplianceResultExplanation FLEET_NOTE = new ComplianceResultExplanation(
+		"Seeded fleet data",
+		"This device is part of the generated fleet the dev database is filled with, so that the "
+			+ "dashboard's distributions have a population to describe. The failure is not a real "
+			+ "finding and carries no generated fix — see Startup.seedFleet().");
+
 	@Inject
 	ComplianceResultAiService aiService;
 
@@ -105,6 +157,7 @@ public class Startup
 			requireItem("Firewall enabled"),
 			requireItem("Automatic updates enabled"),
 			requireItem("Screen lock requires a password"));
+		seedFleet();
 	}
 
 	private ComplianceItem requireItem(String name)
@@ -296,6 +349,106 @@ public class Startup
 		userAir.setAppUser(plainUser);
 		userAir.setLastReportAt(userOpen.getCheckedAt());
 		deviceRepository.persist(userAir);
+	}
+
+	/**
+	 * A fleet, so the dashboard's two distributions have a population to
+	 * describe.
+	 *
+	 * <p>
+	 * The five reports above are written out one at a time because each one
+	 * demonstrates a particular state a single report can be in. These are the
+	 * opposite: no one of them is worth looking at, and they exist only so that
+	 * "what is the estate running" and "what is it failing" have more than four
+	 * machines to answer with. So they come from a table instead.
+	 *
+	 * <p>
+	 * They deliberately get no {@link AppUser}: the Users screen is seeded
+	 * above with six people who each demonstrate something, and sixteen
+	 * generated colleagues would bury them. A report with no user falls back to
+	 * its login name, which is what these carry.
+	 */
+	private void seedFleet()
+	{
+		List<ComplianceItem> catalog = itemRepository.listActive();
+		Instant now = Instant.now();
+
+		for (int device = 0; device < FLEET_VERSIONS.size(); device++)
+		{
+			String version = FLEET_VERSIONS.get(device);
+			String login = "fleet-%02d".formatted(device + 1);
+			Instant checkedAt = now.minus(device + 1L, ChronoUnit.HOURS);
+			Set<String> failing = failingChecksFor(device);
+
+			Report report = new Report();
+			report.setDeviceId("%s.pruefstein.local".formatted(login));
+			report.setUserId(login);
+			report.setKeycloakUser(login);
+			report.setCheckedAt(checkedAt);
+			report.setStatus(failing.isEmpty() ? ReportStatus.COMPLIANT : ReportStatus.NON_COMPLIANT);
+			if (!failing.isEmpty())
+			{
+				report.setDeadline(now.plus(5, ChronoUnit.DAYS));
+			}
+			report.setFinalizedAt(checkedAt.plusSeconds(5));
+			reportRepository.persist(report);
+			// Guarded because FLEET_BUILDS is a Map.of, which throws on a null
+			// key rather than missing it — and a machine that reported no
+			// version reported no build either.
+			osVersion(report, version, version == null ? null : FLEET_BUILDS.get(version), "27.0");
+
+			for (ComplianceItem check : catalog)
+			{
+				addFleetResult(report, check, !failing.contains(check.getName()));
+			}
+
+			Device registered = new Device();
+			registered.setDeviceId(report.getDeviceId());
+			registered.setUserId(login);
+			registered.setKeycloakUser(login);
+			registered.setLastReportAt(checkedAt);
+			deviceRepository.persist(registered);
+		}
+	}
+
+	/**
+	 * Which checks one fleet machine is failing. Counted off the top of the
+	 * fleet rather than scattered, so the ranking the violations chart draws is
+	 * exactly the one {@link #FLEET_FAILURES} declares — a generated spread
+	 * would have to be run to find out what it says.
+	 */
+	private static Set<String> failingChecksFor(int device)
+	{
+		Set<String> failing = new LinkedHashSet<>();
+		FLEET_FAILURES.forEach((check, devices) -> {
+			if (device < devices)
+			{
+				failing.add(check);
+			}
+		});
+		return failing;
+	}
+
+	/**
+	 * Unlike {@link #addResult}, this never asks the AI for a tip. The fleet
+	 * carries dozens of failures and is read in aggregate, so generating an
+	 * explanation for each one would cost a few dozen completions on every
+	 * single dev boot to write text nobody opens. The static note says as much
+	 * to whoever does open one.
+	 */
+	private void addFleetResult(Report report, ComplianceItem item, boolean passed)
+	{
+		ComplianceResult result = new ComplianceResult();
+		result.setReport(report);
+		result.setItem(item);
+		result.setPassed(passed);
+		result.setOutput(passed ? "[{\"seeded\":\"pass\"}]" : "[]");
+		if (!passed)
+		{
+			result.setAiShortDescription(FLEET_NOTE.shortDescription());
+			result.setAiLongExplanation(FLEET_NOTE.longExplanation());
+		}
+		resultRepository.persist(result);
 	}
 
 	/**
