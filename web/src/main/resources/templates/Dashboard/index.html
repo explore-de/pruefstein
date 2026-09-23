@@ -104,20 +104,20 @@
       <p class="text-xs font-medium text-stone-400">{fleet.deviceLabel}, newest release first</p>
     </div>
 
-    <div class="mt-5 space-y-2.5">
+    <div class="chart-rows mt-5 space-y-2.5">
       {#for version in fleet.versions}
-      <div class="flex items-center gap-4"
+      <div class="chart-row flex items-center gap-4" tabindex="0" style="--row: {version_count}"
            title="{version.version} — {version.deviceLabel}, {version.fleetPct}% of the fleet, {version.note}">
         <div class="w-24 sm:w-28 shrink-0">
           <p class="text-sm font-black leading-tight tabular-nums">{version.version}</p>
           <p class="text-[10px] font-medium text-stone-400 leading-tight mt-1">{version.note}</p>
         </div>
-        <div class="flex-1 h-5 border-2 border-black bg-stone-100">
-          <div class="h-full {#if version.current}bg-emerald-400{#else if version.patchBehind}bg-amber-400{#else if version.behind}bg-red-400{#else}bg-stone-300{/if}"
+        <div class="chart-track flex-1 h-5 border-2 border-black bg-stone-100">
+          <div class="chart-bar h-full {#if version.current}bg-emerald-400{#else if version.patchBehind}bg-amber-400{#else if version.behind}bg-red-400{#else}bg-stone-300{/if}"
                style="width: {version.barPct}%"></div>
         </div>
         <p class="w-20 shrink-0 text-right text-sm font-black tabular-nums">{version.devices}<span
-             class="text-xs font-medium text-stone-400"> · {version.fleetPct}%</span></p>
+             class="chart-value text-xs font-medium text-stone-400"> · {version.fleetPct}%</span></p>
       </div>
       {/for}
     </div>
@@ -145,19 +145,20 @@
     </div>
 
     {#if fleet.hasViolations}
-    <div class="mt-5 space-y-4">
+    <div class="chart-rows mt-5 space-y-4">
       {#for violation in fleet.violations}
-      <div title="{violation.name} — failing on {violation.deviceLabel}, {violation.fleetPct}% of the fleet">
+      <div class="chart-row" tabindex="0" style="--row: {violation_count}"
+           title="{violation.name} — failing on {violation.deviceLabel}, {violation.fleetPct}% of the fleet">
         <div class="flex items-baseline justify-between gap-3 mb-1.5">
           <p class="text-sm font-bold">
             {violation.name}{#if violation.hasControl}<span
               class="ml-2 text-[10px] font-black tracking-widest text-stone-400">{violation.control}</span>{/if}
           </p>
           <p class="shrink-0 text-sm font-black tabular-nums">{violation.devices}<span
-               class="text-xs font-medium text-stone-400"> · {violation.fleetPct}%</span></p>
+               class="chart-value text-xs font-medium text-stone-400"> · {violation.fleetPct}%</span></p>
         </div>
-        <div class="h-5 border-2 border-black bg-stone-100">
-          <div class="h-full bg-red-400" style="width: {violation.barPct}%"></div>
+        <div class="chart-track h-5 border-2 border-black bg-stone-100">
+          <div class="chart-bar h-full bg-red-400" style="width: {violation.barPct}%"></div>
         </div>
       </div>
       {/for}
