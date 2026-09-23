@@ -80,6 +80,36 @@ public class ReportRepository implements PanacheRepository<Report>
 		return latest;
 	}
 
+	/**
+	 * The newest run of every device that has ever reported, newest first.
+	 *
+	 * <p>
+	 * This is what the fleet charts mean by "the fleet": one row per machine,
+	 * as that machine last described itself. Counting runs instead would let a
+	 * device that reports every day outvote one that reports every month, and
+	 * the estate would look like whatever its chattiest members are running.
+	 *
+	 * <p>
+	 * The reduce keeps the first row seen per device, which the ordering makes
+	 * the newest — the same tie-break as {@link #findLatestByUser}, so a device
+	 * and its owner never disagree about which run is current.
+	 */
+	public List<LatestRun> findLatestPerDevice()
+	{
+		List<LatestRun> rows = getEntityManager()
+			.createQuery("select new com.pruefstein.report.repository.LatestRun("
+				+ "r.id, r.deviceId, r.osVersion) from Report r"
+				+ " order by r.checkedAt desc, r.id desc", LatestRun.class)
+			.getResultList();
+
+		Map<String, LatestRun> latest = new LinkedHashMap<>();
+		for (LatestRun run : rows)
+		{
+			latest.putIfAbsent(run.deviceId(), run);
+		}
+		return List.copyOf(latest.values());
+	}
+
 	public List<Report> listFiltered(ReportStatus status, String q, String sort, String dir)
 	{
 		return listFiltered(status, q, sort, dir, null);

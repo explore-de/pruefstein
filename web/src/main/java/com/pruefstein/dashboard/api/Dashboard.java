@@ -3,6 +3,7 @@ package com.pruefstein.dashboard.api;
 import java.util.List;
 
 import com.pruefstein.compliance.repository.ComplianceItemRepository;
+import com.pruefstein.dashboard.service.FleetDashboard;
 import com.pruefstein.dashboard.service.UserDashboard;
 import com.pruefstein.onboarding.SetupManual;
 import com.pruefstein.onboarding.SetupStep;
@@ -46,6 +47,9 @@ public class Dashboard extends Controller
 	UserDashboard userDashboard;
 
 	@Inject
+	FleetDashboard fleetDashboard;
+
+	@Inject
 	CurrentUserBean currentUser;
 
 	@Inject
@@ -67,7 +71,8 @@ public class Dashboard extends Controller
 			long nonCompliantPct,
 			long missingPct,
 			long itemCount,
-			long userCount);
+			long userCount,
+			FleetStats fleet);
 
 		public static native TemplateInstance personal(
 			List<DeviceCard> devices,
@@ -98,7 +103,8 @@ public class Dashboard extends Controller
 
 		return Templates.index(compliant, nonCompliant, missing, open, total,
 			compliantPct, nonCompliantPct, missingPct,
-			itemRepository.countActive(), userRepository.count());
+			itemRepository.countActive(), userRepository.count(),
+			fleetDashboard.stats());
 	}
 
 	/**
