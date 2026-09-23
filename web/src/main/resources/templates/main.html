@@ -75,6 +75,13 @@
     the viewBox tightened to the artwork, so it takes currentColor and fills
     the box it is given. Defined once as a symbol because both the sidebar and
     the mobile header draw it.
+
+    Only the symbol carries the artwork's own offset (90 124). A <use> of it
+    opens a nested viewport at the origin of the drawing element's user space,
+    so an element that repeated this viewBox would put that viewport at 0,0
+    while looking at the window starting at 90,124 — the mark shifted up and
+    left by exactly that origin, with its top and left edge cut off. The two
+    below therefore say "0 0 1075 997": same size, no offset.
   -->
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
     <symbol id="pruefstein-mark" viewBox="90 124 1075 997">
@@ -104,7 +111,7 @@
 
       <div class="h-16 flex items-center gap-3 px-5 border-b-2 border-black">
         <a href="{uri:Dashboard.index}" class="flex items-center gap-3 min-w-0">
-          <svg class="w-9 flex-shrink-0" viewBox="90 124 1075 997" fill="currentColor" aria-hidden="true"><use href="#pruefstein-mark"/></svg>
+          <svg class="w-9 flex-shrink-0" viewBox="0 0 1075 997" fill="currentColor" aria-hidden="true"><use href="#pruefstein-mark"/></svg>
           <span class="font-black text-xl uppercase tracking-[0.055em] truncate">Prüfstein</span>
         </a>
         <!-- Closing the drawer from inside it, for a reader whose thumb is
@@ -214,7 +221,7 @@
           </svg>
         </button>
         <a href="{uri:Dashboard.index}" class="flex items-center gap-2 min-w-0">
-          <svg class="w-7 flex-shrink-0" viewBox="90 124 1075 997" fill="currentColor" aria-hidden="true"><use href="#pruefstein-mark"/></svg>
+          <svg class="w-7 flex-shrink-0" viewBox="0 0 1075 997" fill="currentColor" aria-hidden="true"><use href="#pruefstein-mark"/></svg>
           <span class="font-black text-lg uppercase tracking-[0.055em] truncate">Prüfstein</span>
         </a>
       </header>
