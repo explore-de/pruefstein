@@ -107,6 +107,27 @@ class ReportToolsTest
 			.thenAssertResults();
 	}
 
+	/**
+	 * The seeded report has no deadline, no OS and no blocklist result. Sent as
+	 * null, those fail the output schema and Claude Code drops the result.
+	 */
+	@Test
+	@TestSecurity(user = "alice", roles = {})
+	@JwtSecurity(claims = { @Claim(key = "preferred_username", value = "alice") })
+	void absentValuesAreLeftOutRatherThanSentAsNull()
+	{
+		// given (alice's report seeded in setUp, with no deadline)
+
+		// when / then
+		client.when()
+			.toolsCall("getReport", Map.of("id", aliceReportId), response -> {
+				JsonObject view = JsonObject.mapFrom(response.structuredContent());
+				assertFalse(view.encode().contains("null"), view.encode());
+				assertFalse(view.getJsonObject("report").containsKey("deadline"));
+			})
+			.thenAssertResults();
+	}
+
 	@Test
 	@TestSecurity(user = "admin", roles = { "admin" })
 	@JwtSecurity(claims = { @Claim(key = "preferred_username", value = "admin") })

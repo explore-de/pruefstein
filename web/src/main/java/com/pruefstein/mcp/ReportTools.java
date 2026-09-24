@@ -3,6 +3,7 @@ package com.pruefstein.mcp;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pruefstein.compliance.domain.ComplianceItem;
 import com.pruefstein.osversion.service.OsVersionAssessment;
 import com.pruefstein.report.domain.Report;
@@ -22,6 +23,10 @@ import jakarta.ws.rs.ForbiddenException;
  * Reports over MCP, with the permissions of the report screens: an admin reads
  * every report, anybody else only their own — both decided by
  * {@link ReportAccess}.
+ * <p>
+ * Absent values are left out rather than sent as {@code null}: the output
+ * schema declares each field by its type, and a client that validates against
+ * it, as Claude Code does, rejects a {@code null} string.
  */
 @RolesAllowed("**")
 @WrapBusinessError(ForbiddenException.class)
@@ -44,6 +49,7 @@ public class ReportTools
 	 *            when an open report runs out of time to be fixed; {@code null}
 	 *            once it is settled
 	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record ReportSummary(Long id, String user, String userMail, String deviceId, Instant checkedAt,
 		ReportStatus status, Instant deadline, String osVersion)
 	{
@@ -54,6 +60,7 @@ public class ReportTools
 		}
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record ReportList(List<ReportSummary> reports, boolean truncated)
 	{
 	}
@@ -71,11 +78,13 @@ public class ReportTools
 	 *            a model-written explanation of a failure and how to fix it,
 	 *            once the enrichment job has got to it
 	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record CheckResult(String check, String group, String control, boolean passed, boolean waived,
 		String expectedExpression, String output, String summary, String explanation)
 	{
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record InstalledApp(String source, String name, String identifier, String version, String blockedBy)
 	{
 	}
@@ -85,10 +94,12 @@ public class ReportTools
 	 *            how the reported version compares to the newest Apple had
 	 *            published when the report was filed
 	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record OsVersion(String name, String reported, String build, String latest, String standing)
 	{
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record ReportView(ReportSummary report, OsVersion os, List<CheckResult> checks,
 		CheckResult blocklist, List<InstalledApp> blockedApps, int installedAppCount)
 	{

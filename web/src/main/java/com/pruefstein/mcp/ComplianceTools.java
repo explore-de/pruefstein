@@ -2,6 +2,7 @@ package com.pruefstein.mcp;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pruefstein.compliance.domain.AppBlacklistCheck;
 import com.pruefstein.compliance.domain.ComplianceGroup;
 import com.pruefstein.compliance.domain.ComplianceItem;
@@ -21,6 +22,10 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * The compliance catalogue over MCP, with the permissions of the compliance
  * screens: anyone signed in reads it, only an admin adds to it.
+ * <p>
+ * Absent values are left out rather than sent as {@code null}: the output
+ * schema declares each field by its type, and a client that validates against
+ * it, as Claude Code does, rejects a {@code null} string.
  */
 @RolesAllowed("**")
 public class ComplianceTools
@@ -34,10 +39,12 @@ public class ComplianceTools
 	@Inject
 	CheckResolver checkResolver;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record GroupDto(Long id, String name, int checks)
 	{
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record Groups(List<GroupDto> groups)
 	{
 	}
@@ -47,11 +54,13 @@ public class ComplianceTools
 	 *            false for a generated check, whose query is derived and cannot
 	 *            be edited directly
 	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record CheckDto(Long id, String name, Long groupId, String group, String control, String query,
 		String expectedExpression, boolean editable)
 	{
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record Checks(List<CheckDto> checks)
 	{
 	}

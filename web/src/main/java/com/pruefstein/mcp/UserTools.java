@@ -3,6 +3,7 @@ package com.pruefstein.mcp;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
 import com.pruefstein.user.domain.AppUser;
@@ -19,6 +20,10 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * People over MCP, with the permissions of the users screen: admins only, every
  * tool.
+ * <p>
+ * Absent values are left out rather than sent as {@code null}: the output
+ * schema declares each field by its type, and a client that validates against
+ * it, as Claude Code does, rejects a {@code null} string.
  */
 @RolesAllowed("${pruefstein.security.admin-role:admin}")
 public class UserTools
@@ -37,15 +42,18 @@ public class UserTools
 	 * @param stale
 	 *            the latest report is older than the reporting interval
 	 */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record UserDto(Long id, String firstname, String lastname, String mail, boolean signedIn,
 		Long latestReportId, ReportStatus latestStatus, Instant latestCheckedAt, boolean stale)
 	{
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record UserList(List<UserDto> users)
 	{
 	}
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public record Outcome(String message)
 	{
 	}
