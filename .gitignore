@@ -30,6 +30,8 @@ Sessionx.vim
 *~
 # Auto-generated tag files
 tags
+# …but not Qute's user tags, which share the name
+!web/src/main/resources/templates/tags/
 # Persistent undo
 [._]*.un~
 
