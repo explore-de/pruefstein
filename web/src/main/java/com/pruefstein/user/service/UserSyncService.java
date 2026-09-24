@@ -1,6 +1,8 @@
 package com.pruefstein.user.service;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.repository.UserRepository;
@@ -37,14 +39,24 @@ public class UserSyncService
 				{
 					user.setLastname(lastName);
 				}
+				if (subject.equals(user.getFirstname()))
+				{
+					// A row created before the fallback below, when a token
+					// without name claims left the subject as the name.
+					user.setFirstname(firstNameFromMail(email));
+					if (user.getLastname() == null || user.getLastname().isEmpty())
+					{
+						user.setLastname(lastNameFromMail(email));
+					}
+				}
 				return user;
 			})
 			.orElseGet(() -> {
 				AppUser user = new AppUser();
 				user.setOidcSubject(subject);
 				user.setMail(email);
-				user.setFirstname(firstName != null ? firstName : subject);
-				user.setLastname(lastName != null ? lastName : "");
+				user.setFirstname(firstName != null ? firstName : firstNameFromMail(email));
+				user.setLastname(lastName != null ? lastName : lastNameFromMail(email));
 				userRepository.persist(user);
 				return user;
 			});
@@ -73,5 +85,44 @@ public class UserSyncService
 				user.setOidcSubject(subject);
 				return user;
 			});
+	}
+
+	/**
+	 * Entra leaves {@code given_name} and {@code family_name} out of its tokens
+	 * unless the app registration asks for them, so the name is read off an
+	 * address like {@code alex.king@…} instead: "Alex" and "King". Never the
+	 * subject, which is an opaque id nobody recognises on the Users screen.
+	 */
+	static String firstNameFromMail(String email)
+	{
+		String[] parts = mailNameParts(email);
+		return parts.length > 0 ? parts[0] : "";
+	}
+
+	static String lastNameFromMail(String email)
+	{
+		String[] parts = mailNameParts(email);
+		return parts.length > 1 ? String.join(" ", Arrays.copyOfRange(parts, 1, parts.length)) : "";
+	}
+
+	private static String[] mailNameParts(String email)
+	{
+		if (email == null || email.isBlank())
+		{
+			return new String[0];
+		}
+		String local = email.strip().split("@", 2)[0];
+		return Arrays.stream(local.split("[._]+"))
+			.filter(part -> !part.isEmpty())
+			.map(UserSyncService::capitalize)
+			.toArray(String[]::new);
+	}
+
+	private static String capitalize(String part)
+	{
+		// Each hyphenated half too, so klaus-martin becomes Klaus-Martin.
+		return Arrays.stream(part.split("-", -1))
+			.map(half -> half.isEmpty() ? half : Character.toUpperCase(half.charAt(0)) + half.substring(1))
+			.collect(Collectors.joining("-"));
 	}
 }

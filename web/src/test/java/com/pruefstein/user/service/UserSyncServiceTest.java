@@ -51,17 +51,50 @@ class UserSyncServiceTest
 	}
 
 	@Test
-	void usesSubjectAsFirstnameWhenFirstnameIsNull()
+	void takesNameFromMailWhenTokenCarriesNone()
+	{
+		// given (no pre-existing user)
+
+		// when a token without given_name and family_name arrives
+		userSyncService.syncUser("sub-noname", "klaus-martin.fink@example.com", null, null);
+
+		// then the address supplies the name, not the subject
+		AppUser user = userRepository.findBySubject("sub-noname").orElseThrow();
+		assertEquals("Klaus-Martin", user.getFirstname());
+		assertEquals("Fink", user.getLastname());
+	}
+
+	@Test
+	void keepsClaimedNameOverMail()
 	{
 		// given (no pre-existing user)
 
 		// when
-		userSyncService.syncUser("sub-nofirst", "x@example.com", null, "Doe");
+		userSyncService.syncUser("sub-nofirst", "x.y@example.com", null, "Doe");
 
 		// then
 		AppUser user = userRepository.findBySubject("sub-nofirst").orElseThrow();
-		assertEquals("sub-nofirst", user.getFirstname());
+		assertEquals("X", user.getFirstname());
 		assertEquals("Doe", user.getLastname());
+	}
+
+	@Test
+	void repairsRowNamedAfterItsSubject()
+	{
+		// given a row an earlier sync named after the subject
+		AppUser broken = new AppUser();
+		broken.setOidcSubject("Q_7l_opaque");
+		broken.setFirstname("Q_7l_opaque");
+		broken.setLastname("");
+		broken.setMail("alex.king@example.com");
+		userRepository.persist(broken);
+
+		// when the same person signs in again, still without name claims
+		userSyncService.syncUser("Q_7l_opaque", "alex.king@example.com", null, null);
+
+		// then
+		assertEquals("Alex", broken.getFirstname());
+		assertEquals("King", broken.getLastname());
 	}
 
 	@Test
