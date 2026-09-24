@@ -56,6 +56,18 @@ class ManualTest
 			.body(containsString("Applications → Utilities"));
 	}
 
+	/** The first step is a brew command, and a Mac does not come with brew. */
+	@Test
+	void pageExplainsHowToInstallHomebrew()
+	{
+		given()
+			.when().get("/Manual/index")
+			.then()
+			.statusCode(200)
+			.body(containsString("brew --version"))
+			.body(containsString("Homebrew/install/HEAD/install.sh"));
+	}
+
 	@Test
 	void pageLinksTheRepository()
 	{
