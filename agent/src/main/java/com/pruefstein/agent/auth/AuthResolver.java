@@ -72,6 +72,27 @@ public class AuthResolver
 	}
 
 	/**
+	 * A valid access token without ever starting a login: the cached one, or a
+	 * refreshed one. Empty when only an interactive login would do, because a
+	 * caller that is not a terminal — an MCP client asking for a header —
+	 * cannot show anybody a device code.
+	 */
+	public Optional<String> currentToken()
+	{
+		Optional<Credentials> stored = tokenStore.load();
+		if (stored.isEmpty())
+		{
+			return Optional.empty();
+		}
+		Credentials credentials = stored.get();
+		if (!credentials.isExpired())
+		{
+			return Optional.of(credentials.accessToken());
+		}
+		return tryRefresh(credentials) ? Optional.of(tokenHolder.getAccessToken()) : Optional.empty();
+	}
+
+	/**
 	 * Authenticates again after the server rejected the token we had.
 	 * <p>
 	 * {@link Credentials#isExpired()} is a stopwatch, and a stopwatch cannot

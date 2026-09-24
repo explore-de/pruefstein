@@ -1,0 +1,138 @@
+{#include main.html}
+{#title}How to Use MCP — Prüfstein{/title}
+
+<div class="max-w-3xl">
+
+  <!-- Page header -->
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight">How to Use MCP</h1>
+    <p class="text-sm font-medium text-stone-500 mt-1">
+      Ask an AI assistant about your reports and checks instead of clicking through them.
+    </p>
+  </div>
+
+  <!-- What this is -->
+  <div class="bg-white border-2 border-black shadow-brutal p-6 mb-5">
+    <p class="text-sm leading-relaxed text-stone-700">
+      Prüfstein speaks the <a href="https://modelcontextprotocol.io/" class="font-bold underline underline-offset-2">Model Context Protocol</a>,
+      so an assistant such as Claude Code can read your reports, explain why a check failed and look
+      up what a check asks your Mac. It signs in as you and can do exactly what you can do on these
+      pages — no more.
+    </p>
+  </div>
+
+  <!-- The token comes from the agent, so the agent has to be there first -->
+  <div class="bg-white border-2 border-black shadow-brutal p-6 mb-5">
+    <p class="text-[10px] font-black tracking-widest text-stone-400 mb-2">BEFORE YOU START: THE AGENT</p>
+    <p class="text-sm leading-relaxed text-stone-600">
+      The assistant signs in with the agent's login, so you need the agent installed. If you have
+      already reported from this Mac, you have it. Otherwise follow
+      <a href="{uri:Manual.index}" class="font-bold underline underline-offset-2">How to Report</a>
+      up to step 2, or run:
+    </p>
+    {#command brewCommand /}
+  </div>
+
+  <!-- Steps -->
+  <div class="space-y-5 mb-5">
+    <div class="bg-white border-2 border-black shadow-brutal p-6">
+      <div class="flex items-baseline gap-3">
+        <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-accent border-2 border-black text-sm font-black">1</span>
+        <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">Sign in, once</h2>
+      </div>
+      {#command loginCommand /}
+      <p class="mt-3 text-sm leading-relaxed text-stone-600">
+        Skip this if you have signed in before. The assistant reuses this login and refreshes it on
+        its own, so you will not have to do it again.
+      </p>
+    </div>
+
+    <div class="bg-white border-2 border-black shadow-brutal p-6">
+      <div class="flex items-baseline gap-3">
+        <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-accent border-2 border-black text-sm font-black">2</span>
+        <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">Add Prüfstein to Claude Code</h2>
+      </div>
+      {#command mcp.claudeCodeCommand /}
+      <p class="mt-3 text-sm leading-relaxed text-stone-600">
+        Registers the server for every project on this Mac. Claude Code asks the agent for a fresh
+        token each time it connects, so the connection keeps working after the token expires.
+        Run <code class="font-bold">/mcp</code> in Claude Code to check that
+        <strong>pruefstein</strong> is connected.
+      </p>
+    </div>
+  </div>
+
+  <!-- Other clients -->
+  <div class="bg-white border-2 border-black shadow-brutal p-6 mb-5">
+    <p class="text-[10px] font-black tracking-widest text-stone-400 mb-2">OTHER MCP CLIENTS</p>
+    <p class="text-sm leading-relaxed text-stone-600">
+      Any client that supports Streamable HTTP works. Point it at
+    </p>
+    {#command mcp.mcpUrl /}
+    <p class="mt-3 text-sm leading-relaxed text-stone-600">
+      and send the header <code class="font-bold">Authorization: Bearer &lt;token&gt;</code>, with
+      the token this prints:
+    </p>
+    {#command mcp.tokenCommand /}
+    <p class="mt-3 text-sm leading-relaxed text-stone-600">
+      A token lasts only minutes. If your client can run a command to get its headers, have it run
+      <code class="font-bold">pruefstein-agent token --header</code>, which prints the whole header
+      as JSON. If it cannot, you will have to paste in a new token when the old one expires.
+    </p>
+  </div>
+
+  <!-- What there is to call. Mirrors com.pruefstein.mcp, and the roles on it. -->
+  <div class="bg-white border-2 border-black shadow-brutal p-6 mb-5">
+    <p class="text-[10px] font-black tracking-widest text-stone-400 mb-3">WHAT YOU CAN ASK</p>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b-2 border-black text-left">
+            <th class="py-2 pr-4 text-[10px] font-black tracking-widest uppercase">Area</th>
+            <th class="py-2 pr-4 text-[10px] font-black tracking-widest uppercase">Everyone</th>
+            <th class="py-2 text-[10px] font-black tracking-widest uppercase">Admins also</th>
+          </tr>
+        </thead>
+        <tbody class="text-stone-600 align-top">
+          <tr class="border-b border-stone-200">
+            <td class="py-2 pr-4 font-bold text-black">Reports</td>
+            <td class="py-2 pr-4">List your reports and read one in full, with an explanation of every failed check</td>
+            <td class="py-2">Everyone's reports</td>
+          </tr>
+          <tr class="border-b border-stone-200">
+            <td class="py-2 pr-4 font-bold text-black">Checks</td>
+            <td class="py-2 pr-4">List groups and checks, and what each one asks your Mac</td>
+            <td class="py-2">Add groups and checks</td>
+          </tr>
+          <tr>
+            <td class="py-2 pr-4 font-bold text-black">Users</td>
+            <td class="py-2 pr-4">—</td>
+            <td class="py-2">List users, add one (sends the setup invite), ask one for a fresh report</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-4 text-sm leading-relaxed text-stone-600">For example:</p>
+    <ul class="mt-2 space-y-1 text-sm text-stone-600 list-disc pl-5">
+      <li>“Why did my last Prüfstein report fail, and how do I fix it?”</li>
+      <li>“Which checks in the Access Control group look at the screen lock?”</li>
+      {#if inject:currentUser.admin}
+      <li>“Who has not reported in the last week? Ask them for a new report.”</li>
+      <li>“Add a check that FileVault is on.”</li>
+      {/if}
+    </ul>
+  </div>
+
+  <!-- Same rules -->
+  <div class="bg-accent border-2 border-black shadow-brutal p-6">
+    <p class="text-[10px] font-black tracking-widest text-stone-700 mb-2">SAME RULES AS THESE PAGES</p>
+    <p class="text-sm leading-relaxed text-stone-800">
+      The assistant works as you. It sees the reports you can see here and changes only what your
+      role allows. Anything it adds, such as a check or a user, takes effect right away, just as if
+      you had done it on these pages. Read what it plans to do before you let it.
+    </p>
+  </div>
+
+</div>
+
+{/include}

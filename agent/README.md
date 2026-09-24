@@ -38,6 +38,7 @@ prerequisites and the full first-run walkthrough.
 |---|---|
 | `login` | Authenticates against the server's identity provider and caches the credentials |
 | `run` | Runs every compliance check, then asks whether to report the result |
+| `token` | Prints an access token for an MCP client, refreshing it if needed; `--header` prints it as a JSON `Authorization` header. Never logs in |
 | `logout` | Deletes the cached credentials |
 
 ```bash
