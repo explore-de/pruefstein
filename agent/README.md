@@ -113,19 +113,10 @@ rather than healthy.
 pruefstein-agent run --yes    # or -y
 ```
 
-Needs **`osqueryi` on the `PATH`**. When it is missing, `run` asks before
-doing anything else:
-
-```
-You need osqueryi to continue, install it? [y/n]
-```
-
-A `y` runs `brew install --cask osquery` in the foreground — Homebrew installs
-a signed pkg, so it will ask for a sudo password. Anything else, a bare Enter
-included, aborts with exit code 1 and installs nothing. An unattended `run`
-never reaches the prompt: with stdin closed it aborts on the spot rather than
-waiting for an answer, so cron gets a non-zero exit instead of a report in
-which every check errored.
+Needs **`osqueryi` on the `PATH`**. The Homebrew formula pulls in the osquery
+cask; installed any other way, `brew install --cask osquery` provides it. When
+it is missing, `run` stops before doing anything else and exits with code 1, so
+cron gets a non-zero exit instead of a report in which every check errored.
 
 Each query gets 10 seconds before it is abandoned.
 

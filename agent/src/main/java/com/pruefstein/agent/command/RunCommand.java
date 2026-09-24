@@ -36,7 +36,7 @@ public class RunCommand implements Callable<Integer>
 
 	/**
 	 * A {@link Callable} rather than a {@link Runnable} for the sake of the
-	 * exit code: declining the osquery install is a decision, not a crash, and
+	 * exit code: a missing osquery or a declined report is not a crash, and
 	 * a stack trace would be the wrong way to report it — while a zero exit
 	 * would let a cron job believe the machine had been checked.
 	 */

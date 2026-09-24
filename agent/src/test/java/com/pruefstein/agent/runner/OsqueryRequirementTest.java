@@ -3,7 +3,6 @@ package com.pruefstein.agent.runner;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -47,13 +46,4 @@ class OsqueryRequirementTest
 		assertEquals(Optional.empty(), OsqueryRequirement.locate("osqueryi", ""));
 	}
 
-	@Test
-	void offersHomebrewOnMacOsOnly()
-	{
-		assertEquals(Optional.of(List.of("brew", "install", "--cask", "osquery")),
-			OsqueryRequirement.installCommand("Mac OS X"));
-		assertEquals(Optional.empty(), OsqueryRequirement.installCommand("Linux"));
-		assertEquals(Optional.empty(), OsqueryRequirement.installCommand("Windows 11"));
-		assertEquals(Optional.empty(), OsqueryRequirement.installCommand(null));
-	}
 }

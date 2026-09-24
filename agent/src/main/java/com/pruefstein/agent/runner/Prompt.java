@@ -32,9 +32,9 @@ public final class Prompt
 
 	/**
 	 * Anything short of an explicit yes is a {@link Answer#NO}, a bare Enter
-	 * included. Both questions the agent asks lead somewhere that is not easily
-	 * taken back — a privileged installer, a report filed against someone's
-	 * machine — so neither gets the benefit of the doubt.
+	 * included. The question the agent asks leads somewhere that is not easily
+	 * taken back — a report filed against someone's machine — so it does not
+	 * get the benefit of the doubt.
 	 */
 	public enum Answer
 	{
