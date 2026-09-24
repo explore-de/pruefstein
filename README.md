@@ -306,7 +306,7 @@ PostgreSQL and a Keycloak realm seeded with `admin`/`admin` and `user`/`user`:
 ```bash
 (cd web && ./mvnw quarkus:dev)                           # terminal 1
 
-pruefstein-agent login --server http://localhost:8080    # terminal 2
+pruefstein-agent login --server http://localhost:8081    # terminal 2
 pruefstein-agent run                                     # asks before reporting
 ```
 
@@ -376,7 +376,7 @@ cd web
 ./mvnw quarkus:dev
 ```
 
-Quarkus Dev Services starts a PostgreSQL container automatically. The app is available at `http://localhost:8080`.
+Quarkus Dev Services starts a PostgreSQL container automatically. The app is available at `http://localhost:8081`.
 
 #### Signing in, and what each account shows
 

@@ -2,7 +2,7 @@
   "mcpServers": {
     "quarkus-dev": {
       "type": "http",
-      "url": "http://localhost:8080/q/dev-mcp"
+      "url": "http://localhost:8081/q/dev-mcp"
     }
   }
 }
