@@ -41,6 +41,21 @@ class ManualTest
 			.body(containsString("pruefstein-agent login --server " + manual.baseUrl()));
 	}
 
+	/**
+	 * Every step is a command, which is no help to somebody who has never
+	 * opened a terminal.
+	 */
+	@Test
+	void pageExplainsHowToOpenTerminal()
+	{
+		given()
+			.when().get("/Manual/index")
+			.then()
+			.statusCode(200)
+			.body(containsString("OPEN TERMINAL"))
+			.body(containsString("Applications → Utilities"));
+	}
+
 	@Test
 	void pageLinksTheRepository()
 	{
