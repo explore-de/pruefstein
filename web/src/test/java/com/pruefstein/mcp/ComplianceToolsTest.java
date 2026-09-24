@@ -94,6 +94,25 @@ class ComplianceToolsTest
 			.thenAssertResults();
 	}
 
+	/**
+	 * Claude Code throws away a result without a content array, however good
+	 * its structured content is — so the JSON has to come as text too.
+	 */
+	@Test
+	@TestSecurity(user = "alice", roles = {})
+	void structuredResultsAlsoCarryTheirJsonAsText()
+	{
+		// given (group and check seeded in setUp)
+
+		// when / then
+		client.when()
+			.toolsCall("listComplianceItems", Map.of("groupId", groupId), response -> {
+				assertFalse(response.content().isEmpty());
+				assertTrue(response.firstContent().asText().text().contains("MCP Test Item"));
+			})
+			.thenAssertResults();
+	}
+
 	@Test
 	@TestSecurity(user = "alice", roles = {})
 	void nonAdminCannotAddACheck()
