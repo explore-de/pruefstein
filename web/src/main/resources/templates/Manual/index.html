@@ -47,12 +47,12 @@
       The agent is installed with <a href="https://brew.sh/" class="font-bold underline underline-offset-2">Homebrew</a>,
       which does not come with a Mac. To see whether you already have it, run:
     </p>
-    <pre class="mt-3 bg-stone-100 border-2 border-black p-3 overflow-x-auto"><code class="text-sm font-bold">brew --version</code></pre>
+    {#command "brew --version" /}
     <p class="mt-3 text-sm leading-relaxed text-stone-600">
       If that prints a version number, go on to step 1. If it says
       <code class="font-bold">command not found</code>, install Homebrew first:
     </p>
-    <pre class="mt-3 bg-stone-100 border-2 border-black p-3 overflow-x-auto"><code class="text-sm font-bold">/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+    {#command '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' /}
     <p class="mt-3 text-sm leading-relaxed text-stone-600">
       It asks for your password and takes a few minutes. When it finishes it prints
       <strong>Next steps</strong> with a few more commands — run those too, then close Terminal and
@@ -70,7 +70,7 @@
         </span>
         <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">{step.title}</h2>
       </div>
-      <pre class="mt-3 bg-stone-100 border-2 border-black p-3 overflow-x-auto"><code class="text-sm font-bold">{step.command}</code></pre>
+      {#command step.command /}
       <p class="mt-3 text-sm leading-relaxed text-stone-600">{step.note}</p>
     </div>
     {/for}
