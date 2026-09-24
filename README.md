@@ -145,9 +145,9 @@ reach.
 
 ### Withdrawn: the screen lock timeout
 
-`screen-lock-timeout` is gone, and `RetiredCheckMigration` retires it in every
-database that seeded it — a check cannot be deleted, so the reports naming it
-keep their rows. It demanded an `idleTime` under `com.apple.screensaver`, and
+`screen-lock-timeout` is gone. Databases that seeded it had it retired by a
+one-off migration in v1.0.3 — a check cannot be deleted, so the reports naming
+it keep their rows. It demanded an `idleTime` under `com.apple.screensaver`, and
 macOS no longer keeps one there: on a current machine the domain does not exist
 at all, and the sandboxed screen saver container osquery would have to read
 instead needs Full Disk Access the agent does not have. It therefore failed

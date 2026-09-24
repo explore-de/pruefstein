@@ -4,22 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Layout
 
-The active Quarkus application lives in the `web/` subdirectory. The root-level Java sources have been removed and replaced by this subdirectory structure.
+The root `pom.xml` is a reactor over `web/` (the Quarkus server) and `agent/`
+(the CLI that runs osquery on a Mac and reports to it).
 
 ```
-web/          ← Quarkus Maven project (pruefstein-web)
-  pom.xml
-  src/main/java/
-    com/pruefstein/   ← Infrastructure (health check, example REST resource)
-    model/            ← Domain models (Todo)
-    rest/             ← Renarde controllers
-    util/             ← Qute template extensions, dev-mode startup seeding
-  src/main/resources/
-    templates/        ← Qute server-side templates (extend main.html)
-    web/              ← Web Bundler assets (app.js, app.scss → auto-bundled)
-    application.properties
-  src/test/java/
-    com/pruefstein/   ← @QuarkusTest unit tests, @QuarkusIntegrationTest IT tests
+web/src/main/java/com/pruefstein/
+  <feature>/        ← agent, compliance, dashboard, device, homebrew, onboarding,
+                      osversion, report, user — each split into api/ (Renarde
+                      controllers, REST), domain/, repository/, service/
+  mcp/              ← MCP tools, see below
+  notification/     ← report mails
+  shared/bootstrap/ ← SeedLedger, dev-mode demo data (Startup)
+  shared/util/      ← Qute template extensions, Markdown
+  dev/              ← dev-mode-only endpoints
+web/src/main/resources/
+  templates/        ← Qute templates, extend main.html
+  web/              ← Web Bundler assets (app.js, app.scss)
+  compliance-library/ ← baseline checks, one JSON file per library key
+  application.properties
+web/src/main/docker/Dockerfile.native-micro ← the image CI publishes
+deploy/             ← production docker compose stack
 ```
 
 ## Commands
@@ -71,7 +75,7 @@ is why only `web` runs the formatter.
 
 ### Request flow
 
-HTTP request → Renarde `Controller` subclass (in `rest/`) → Qute template (in `templates/`) → rendered HTML.
+HTTP request → Renarde `Controller` subclass (in a feature's `api/`) → Qute template (in `templates/`) → rendered HTML.
 
 Controllers use `@CheckedTemplate` inner classes for type-safe template binding. Templates extend `main.html` via `{#include main.html}`.
 
@@ -81,15 +85,25 @@ Assets under `src/main/resources/web/` are automatically bundled by Quarkus Web 
 
 ### Persistence
 
-`model/Todo.java` currently uses in-memory stubs (real Hibernate/Panache persistence is commented out). PostgreSQL JDBC driver is on the classpath but `application.properties` has no datasource configured yet. Quarkus Dev Services will spin up a PostgreSQL container automatically in dev/test mode when no datasource URL is set.
+Hibernate ORM with Panache repositories on PostgreSQL. There are no schema
+migrations: prod runs `database.generation=update`, and Dev Services starts a
+PostgreSQL container in dev and test.
+
+Baseline checks come from `compliance-library/` and are seeded once per
+database by `CatalogSeeder`; the `SeedLedger` remembers every key it claimed,
+so an administrator's edits and deletions stick. Changing an already-seeded
+check in deployed databases takes a ledgered migration in
+`compliance/bootstrap/` (see `CatalogQueryMigration`); drop such a migration
+once every deployment has run it.
 
 ### Dev-mode seeding
 
-`util/Startup.java` is `@ApplicationScoped` and seeds sample Todo data only when running in `@io.quarkus.runtime.LaunchMode.DEVELOPMENT`.
+`shared/bootstrap/Startup.java` seeds blocked-app examples and demo reports only in
+`LaunchMode.DEVELOPMENT`.
 
 ### Health / OpenAPI
 
-- Health endpoint: `/q/health` (SmallRye Health, `@Liveness` in `com.pruefstein.MyLivenessCheck`)
+- Health endpoint: `/q/health` (SmallRye Health)
 - Swagger UI: `/q/swagger-ui` (SmallRye OpenAPI, available in dev mode)
 
 ### MCP

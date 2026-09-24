@@ -62,43 +62,15 @@ public class CatalogQueryMigration
 	}
 
 	/**
-	 * Every one of these read a machine-level setting through the
-	 * {@code preferences} table, which returns nothing at all to an agent
-	 * running as the invoking user rather than as root — so none of them was
-	 * measuring the machine it reported on.
+	 * The browser check's SQL was right, but Firefox has since been allowed,
+	 * and a deployment still running the old list would fail every device that
+	 * has it installed.
 	 *
 	 * <p>
-	 * The direction of the resulting lie differed. The
-	 * {@code com.apple.SoftwareUpdate} checks and the screen lock timeout
-	 * demanded a row and so failed every device, automatic updates switched on
-	 * or not. The two {@code com.apple.loginwindow} checks treated no rows as
-	 * compliant, and passed every device whether or not automatic login was
-	 * enabled or a guest account was available — the more dangerous half,
-	 * because a fleet full of them looked clean.
-	 *
-	 * <p>
-	 * Firewall logging is here for a related but distinct reason: it read a
-	 * table rather than a domain, but that table reads the same file macOS 15
-	 * deleted, and it cannot report anything true on a modern machine either.
-	 *
-	 * <p>
-	 * The browser check is here for a different reason again: its SQL was
-	 * right, but Firefox has since been allowed, and a deployment still running
-	 * the old list would fail every device that has it installed.
+	 * Entries leave this list once every known deployment has run them; the
+	 * ledger keys they claimed stay spent all the same.
 	 */
 	static final List<Rewrite> REWRITES = List.of(
-		new Rewrite("auto-updates#plist", "auto-updates",
-			"SELECT value FROM preferences WHERE domain = 'com.apple.SoftwareUpdate' AND key = 'AutomaticCheckEnabled';"),
-		new Rewrite("critical-updates#plist", "critical-updates",
-			"SELECT value FROM preferences WHERE domain = 'com.apple.SoftwareUpdate' AND key = 'CriticalUpdateInstall';"),
-		new Rewrite("macos-updates#plist", "macos-updates",
-			"SELECT value FROM preferences WHERE domain = 'com.apple.SoftwareUpdate' AND key = 'AutomaticallyInstallMacOSUpdates';"),
-		new Rewrite("auto-login#plist", "auto-login",
-			"SELECT value FROM preferences WHERE domain = 'com.apple.loginwindow' AND key = 'autoLoginUser';"),
-		new Rewrite("guest-account#plist", "guest-account",
-			"SELECT value FROM preferences WHERE domain = 'com.apple.loginwindow' AND key = 'GuestEnabled';"),
-		new Rewrite("firewall-logging#os-version", "firewall-logging",
-			"SELECT logging_enabled FROM alf;"),
 		new Rewrite("unmanaged-browsers#firefox", "unmanaged-browsers",
 			"SELECT name, bundle_identifier, path FROM apps WHERE bundle_identifier IN ('org.mozilla.firefox', 'org.mozilla.firefoxdeveloperedition', 'org.mozilla.nightly', 'com.vivaldi.Vivaldi', 'com.brave.Browser', 'company.thebrowser.Browser', 'com.operasoftware.Opera', 'com.microsoft.edgemac', 'org.chromium.Chromium', 'app.zen-browser.zen', 'com.kagi.kagimacOS', 'com.duckduckgo.macos.browser');"));
 

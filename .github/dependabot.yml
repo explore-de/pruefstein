@@ -43,11 +43,10 @@ updates:
           - "org.apache.maven.plugins:*"
           - "org.apache.maven:*"
 
-  # Base images in web/ and agent/ Dockerfiles
+  # Base image of the web app's Dockerfile
   - package-ecosystem: docker
     directories:
       - /web/src/main/docker
-      - /agent/src/main/docker
     schedule:
       interval: weekly
       day: monday

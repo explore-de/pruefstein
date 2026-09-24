@@ -12,7 +12,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  * both believe it is a different check. Add entries freely; never repurpose a
  * key. Name one after what it checks and nothing about where it is filed — the
  * first keys carried the 2013 Annex A domains, the classification moved, and
- * {@code LibraryKeyMigration} is what renaming them cost.
+ * renaming them took a migration of its own.
  *
  * @param key
  *            the file name without {@code .json}; not part of the file itself,

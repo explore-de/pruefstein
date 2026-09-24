@@ -19,14 +19,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * The migration exists for databases that already seeded SQL which reported
+ * The migration exists for databases that already seeded SQL which reports
  * compliant devices as non-compliant. What matters is that it corrects exactly
  * that SQL, once, and never what an administrator has since written.
  */
 @QuarkusTest
 class CatalogQueryMigrationTest
 {
-	private static final String AUTO_UPDATES = "auto-updates";
+	private static final String BROWSERS = "unmanaged-browsers";
 
 	@Inject
 	CatalogQueryMigration migration;
@@ -61,8 +61,8 @@ class CatalogQueryMigrationTest
 	void theOutdatedQueryIsReplacedWithTheCorrectedOne()
 	{
 		// given — a database that seeded the release with the broken SQL
-		LibraryEntry def = entry(AUTO_UPDATES);
-		givenSeededCheck(def.name(), outdatedQuery(AUTO_UPDATES), "results.size() > 0 && results[0].value == '1'");
+		LibraryEntry def = entry(BROWSERS);
+		givenSeededCheck(def.name(), outdatedQuery(BROWSERS), "results.size() == 0");
 
 		// when
 		int rewritten = migrate();
@@ -77,9 +77,9 @@ class CatalogQueryMigrationTest
 	@Test
 	void aQueryTheAdministratorRewroteIsLeftAlone()
 	{
-		// given — someone already worked around the bug themselves
-		LibraryEntry def = entry(AUTO_UPDATES);
-		String theirQuery = "SELECT value FROM plist WHERE path = '/Library/Preferences/com.apple.SoftwareUpdate.plist';";
+		// given — someone already wrote their own list
+		LibraryEntry def = entry(BROWSERS);
+		String theirQuery = "SELECT name FROM apps WHERE bundle_identifier = 'com.brave.Browser';";
 		givenSeededCheck(def.name(), theirQuery, "results.size() > 0");
 
 		// when
@@ -96,21 +96,21 @@ class CatalogQueryMigrationTest
 	void theRewriteHappensOnlyOnce()
 	{
 		// given — corrected on the boot after the upgrade
-		LibraryEntry def = entry(AUTO_UPDATES);
-		givenSeededCheck(def.name(), outdatedQuery(AUTO_UPDATES), "results.size() > 0 && results[0].value == '1'");
+		LibraryEntry def = entry(BROWSERS);
+		givenSeededCheck(def.name(), outdatedQuery(BROWSERS), "results.size() == 0");
 		migrate();
 
 		// when — an administrator deliberately puts the old query back, and the
 		// application restarts
 		QuarkusTransaction.requiringNew().run(() -> {
 			ExpressionCheck theirs = (ExpressionCheck)itemRepository.list("name", def.name()).get(0);
-			theirs.setQuery(outdatedQuery(AUTO_UPDATES));
+			theirs.setQuery(outdatedQuery(BROWSERS));
 		});
 		int rewritten = migrate();
 
 		// then — the ledger remembers, so their choice stands
 		assertEquals(0, rewritten);
-		assertEquals(outdatedQuery(AUTO_UPDATES), find(def.name()).getQuery());
+		assertEquals(outdatedQuery(BROWSERS), find(def.name()).getQuery());
 	}
 
 	@Test
@@ -118,7 +118,7 @@ class CatalogQueryMigrationTest
 	{
 		// given — a fresh install, whose checks the seeder created from the
 		// corrected catalog
-		LibraryEntry def = entry(AUTO_UPDATES);
+		LibraryEntry def = entry(BROWSERS);
 		givenSeededCheck(def.name(), def.query(), def.expression());
 
 		// when
