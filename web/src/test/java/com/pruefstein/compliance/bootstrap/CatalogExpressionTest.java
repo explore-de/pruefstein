@@ -107,7 +107,7 @@ class CatalogExpressionTest
 	{
 		assertTrue(evaluate("unmanaged-browsers", "[]"));
 		assertFalse(evaluate("unmanaged-browsers",
-			"[{\"name\":\"Firefox.app\",\"bundle_identifier\":\"org.mozilla.firefox\",\"path\":\"/Applications/Firefox.app\"}]"));
+			"[{\"name\":\"Brave Browser.app\",\"bundle_identifier\":\"com.brave.Browser\",\"path\":\"/Applications/Brave Browser.app\"}]"));
 	}
 
 }

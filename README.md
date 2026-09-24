@@ -196,8 +196,8 @@ What was learned on the way, so the next attempt need not rediscover it:
   checks or take fresh names, but do not point them at anything else.
 
 `unmanaged-browsers` is what stayed: it reads the `apps` table alone, needs no
-profile, and names every browser that is neither Chrome nor Safari — the ones
-that put whatever web filtering is in place out of reach.
+profile, and names every browser that is not Chrome, Safari or Firefox — the
+ones that put whatever web filtering is in place out of reach.
 
 ---
 

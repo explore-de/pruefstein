@@ -80,6 +80,11 @@ public class CatalogQueryMigration
 	 * Firewall logging is here for a related but distinct reason: it read a
 	 * table rather than a domain, but that table reads the same file macOS 15
 	 * deleted, and it cannot report anything true on a modern machine either.
+	 *
+	 * <p>
+	 * The browser check is here for a different reason again: its SQL was
+	 * right, but Firefox has since been allowed, and a deployment still running
+	 * the old list would fail every device that has it installed.
 	 */
 	static final List<Rewrite> REWRITES = List.of(
 		new Rewrite("auto-updates#plist", "auto-updates",
@@ -93,7 +98,9 @@ public class CatalogQueryMigration
 		new Rewrite("guest-account#plist", "guest-account",
 			"SELECT value FROM preferences WHERE domain = 'com.apple.loginwindow' AND key = 'GuestEnabled';"),
 		new Rewrite("firewall-logging#os-version", "firewall-logging",
-			"SELECT logging_enabled FROM alf;"));
+			"SELECT logging_enabled FROM alf;"),
+		new Rewrite("unmanaged-browsers#firefox", "unmanaged-browsers",
+			"SELECT name, bundle_identifier, path FROM apps WHERE bundle_identifier IN ('org.mozilla.firefox', 'org.mozilla.firefoxdeveloperedition', 'org.mozilla.nightly', 'com.vivaldi.Vivaldi', 'com.brave.Browser', 'company.thebrowser.Browser', 'com.operasoftware.Opera', 'com.microsoft.edgemac', 'org.chromium.Chromium', 'app.zen-browser.zen', 'com.kagi.kagimacOS', 'com.duckduckgo.macos.browser');"));
 
 	@Inject
 	SeedLedger ledger;
