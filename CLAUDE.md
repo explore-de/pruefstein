@@ -91,3 +91,17 @@ Assets under `src/main/resources/web/` are automatically bundled by Quarkus Web 
 
 - Health endpoint: `/q/health` (SmallRye Health, `@Liveness` in `com.pruefstein.MyLivenessCheck`)
 - Swagger UI: `/q/swagger-ui` (SmallRye OpenAPI, available in dev mode)
+
+### MCP
+
+`/mcp` (Streamable HTTP, `quarkus-mcp-server-http`) exposes the tools in
+`com.pruefstein.mcp`. It authenticates through the `api` OIDC tenant with a
+bearer token, like the agent. Clients log in themselves via MCP OAuth: the 401
+points at `/.well-known/oauth-protected-resource/mcp`, and they sign in as the
+agent's public client on `http://localhost:33418/callback`
+(`pruefstein.mcp.*`). `/McpGuide/index` walks users through it.
+
+Each tool class carries the same `@RolesAllowed` as the screen it mirrors, and
+the logic lives in shared services (`ReportAccess`, `ReportDetails`,
+`UserAdministration`), so a permission change there applies to the web and MCP
+alike.

@@ -25,23 +25,23 @@ class McpGuideTest
 			.then()
 			.statusCode(200)
 			.body(containsString(mcp.mcpUrl()))
-			.body(containsString("claude mcp add-json --scope user pruefstein"));
+			.body(containsString("claude mcp add --transport http --scope user"));
 	}
 
 	/**
-	 * The token expires in minutes, so the command must fetch it per connection
-	 * rather than bake one in.
+	 * Neither IdP registers clients on demand, so the client id and the fixed
+	 * callback are the two things a client cannot discover by itself.
 	 */
 	@Test
 	@TestSecurity(user = "alice", roles = {})
-	void claudeCodeCommandFetchesTheTokenFromTheAgent()
+	void claudeCodeCommandNamesTheClientAndItsCallback()
 	{
 		given()
 			.when().get("/McpGuide/index")
 			.then()
 			.statusCode(200)
-			.body(containsString("headersHelper"))
-			.body(containsString("pruefstein-agent token --header"));
+			.body(containsString("--client-id " + mcp.clientId() + " --callback-port 33418"))
+			.body(containsString(mcp.redirectUri()));
 	}
 
 	@Test

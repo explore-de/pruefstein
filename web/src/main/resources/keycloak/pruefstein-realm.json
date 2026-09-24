@@ -23,7 +23,8 @@
       "redirectUris": [
         "http://localhost:8080/*",
         "http://localhost:8081/*",
-        "https://localhost:8443/*"
+        "https://localhost:8443/*",
+        "http://localhost:33418/callback"
       ],
       "webOrigins": [
         "http://localhost:8080",

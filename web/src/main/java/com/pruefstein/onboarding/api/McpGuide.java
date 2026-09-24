@@ -1,7 +1,6 @@
 package com.pruefstein.onboarding.api;
 
 import com.pruefstein.onboarding.McpManual;
-import com.pruefstein.onboarding.SetupManual;
 import io.quarkiverse.renarde.Controller;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -18,20 +17,16 @@ import jakarta.inject.Inject;
 public class McpGuide extends Controller
 {
 	@Inject
-	SetupManual setupManual;
-
-	@Inject
 	McpManual mcpManual;
 
 	@CheckedTemplate
 	public static class Templates
 	{
-		public static native TemplateInstance index(McpManual mcp, String brewCommand, String loginCommand);
+		public static native TemplateInstance index(McpManual mcp);
 	}
 
 	public TemplateInstance index()
 	{
-		return Templates.index(mcpManual, setupManual.steps().get(0).command(),
-			setupManual.steps().get(1).command());
+		return Templates.index(mcpManual);
 	}
 }

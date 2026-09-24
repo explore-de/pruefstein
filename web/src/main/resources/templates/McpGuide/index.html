@@ -21,43 +21,28 @@
     </p>
   </div>
 
-  <!-- The token comes from the agent, so the agent has to be there first -->
-  <div class="bg-white border-2 border-black shadow-brutal p-6 mb-5">
-    <p class="text-[10px] font-black tracking-widest text-stone-400 mb-2">BEFORE YOU START: THE AGENT</p>
-    <p class="text-sm leading-relaxed text-stone-600">
-      The assistant signs in with the agent's login, so you need the agent installed. If you have
-      already reported from this Mac, you have it. Otherwise follow
-      <a href="{uri:Manual.index}" class="font-bold underline underline-offset-2">How to Report</a>
-      up to step 2, or run:
-    </p>
-    {#command brewCommand /}
-  </div>
-
   <!-- Steps -->
   <div class="space-y-5 mb-5">
     <div class="bg-white border-2 border-black shadow-brutal p-6">
       <div class="flex items-baseline gap-3">
         <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-accent border-2 border-black text-sm font-black">1</span>
-        <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">Sign in, once</h2>
+        <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">Add Prüfstein to Claude Code</h2>
       </div>
-      {#command loginCommand /}
+      {#command mcp.claudeCodeCommand /}
       <p class="mt-3 text-sm leading-relaxed text-stone-600">
-        Skip this if you have signed in before. The assistant reuses this login and refreshes it on
-        its own, so you will not have to do it again.
+        Run this in Terminal. It adds the server for every project on this Mac.
       </p>
     </div>
 
     <div class="bg-white border-2 border-black shadow-brutal p-6">
       <div class="flex items-baseline gap-3">
         <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center bg-accent border-2 border-black text-sm font-black">2</span>
-        <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">Add Prüfstein to Claude Code</h2>
+        <h2 class="text-[11px] font-black tracking-widest uppercase text-stone-500">Sign in, once</h2>
       </div>
-      {#command mcp.claudeCodeCommand /}
       <p class="mt-3 text-sm leading-relaxed text-stone-600">
-        Registers the server for every project on this Mac. Claude Code asks the agent for a fresh
-        token each time it connects, so the connection keeps working after the token expires.
-        Run <code class="font-bold">/mcp</code> in Claude Code to check that
-        <strong>pruefstein</strong> is connected.
+        In Claude Code, type <code class="font-bold">/mcp</code>, pick <strong>pruefstein</strong> and
+        choose <strong>Authenticate</strong>. Your browser opens the same sign-in page you use for
+        this site. Once you have signed in, Claude Code keeps the login and renews it on its own.
       </p>
     </div>
   </div>
@@ -66,18 +51,18 @@
   <div class="bg-white border-2 border-black shadow-brutal p-6 mb-5">
     <p class="text-[10px] font-black tracking-widest text-stone-400 mb-2">OTHER MCP CLIENTS</p>
     <p class="text-sm leading-relaxed text-stone-600">
-      Any client that supports Streamable HTTP works. Point it at
+      Any client that supports Streamable HTTP and MCP's OAuth sign-in works. Point it at
     </p>
     {#command mcp.mcpUrl /}
     <p class="mt-3 text-sm leading-relaxed text-stone-600">
-      and send the header <code class="font-bold">Authorization: Bearer &lt;token&gt;</code>, with
-      the token this prints:
+      It finds the sign-in page on its own. What it cannot find is which app to sign in as, so give
+      it this client ID, with no client secret:
     </p>
-    {#command mcp.tokenCommand /}
+    {#command mcp.clientId /}
     <p class="mt-3 text-sm leading-relaxed text-stone-600">
-      A token lasts only minutes. If your client can run a command to get its headers, have it run
-      <code class="font-bold">pruefstein-agent token --header</code>, which prints the whole header
-      as JSON. If it cannot, you will have to paste in a new token when the old one expires.
+      and have it wait for the sign-in to come back on
+      <code class="font-bold break-all">{mcp.redirectUri}</code>, the only address the sign-in page
+      will send you back to.
     </p>
   </div>
 

@@ -459,6 +459,10 @@ One registration serves both the browser login and the agent:
    ever redirects to.
 2. **Authentication → Allow public client flows → Yes.** The agent logs in with
    the device code flow, which needs it.
+   **Add a platform → Mobile and desktop applications**, custom redirect URI
+   `http://localhost:33418/callback`. MCP clients such as Claude Code log in
+   as this same public client and wait for the code on that port; see
+   `pruefstein.mcp.callback-port`.
 3. **Certificates & secrets → New client secret.** This is `ENTRA_CLIENT_SECRET`.
 4. **Expose an API → Application ID URI → Add**, keeping the suggested
    `api://<client-id>`. Without it the agent's token is audienced to Microsoft

@@ -9,8 +9,7 @@ import picocli.CommandLine;
 @CommandLine.Command(
 	name = "pruefstein-agent",
 	description = "Prüfstein compliance agent",
-	subcommands = {LoginCommand.class, LogoutCommand.class, RunCommand.class, SelfTestCommand.class,
-		TokenCommand.class},
+	subcommands = {LoginCommand.class, LogoutCommand.class, RunCommand.class, SelfTestCommand.class},
 	mixinStandardHelpOptions = true,
 	versionProvider = AgentVersionProvider.class)
 public class MainCommand implements Runnable
