@@ -40,6 +40,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>io.quarkus.platform</groupId>
+                <artifactId>quarkus-mcp-server-bom</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -111,7 +118,21 @@
             <groupId>io.quarkiverse.flow</groupId>
             <artifactId>quarkus-flow-jpa</artifactId>
         </dependency>
+        <!-- mcp -->
+        <dependency>
+            <groupId>io.quarkiverse.mcp</groupId>
+            <artifactId>quarkus-mcp-server-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.mcp</groupId>
+            <artifactId>quarkus-mcp-server-hibernate-validator</artifactId>
+        </dependency>
         <!-- test -->
+        <dependency>
+            <groupId>io.quarkiverse.mcp</groupId>
+            <artifactId>quarkus-mcp-server-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-junit</artifactId>

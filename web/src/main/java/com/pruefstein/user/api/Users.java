@@ -1,17 +1,12 @@
 package com.pruefstein.user.api;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 
-import com.pruefstein.device.domain.Device;
 import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.notification.ReportRequestMailService;
-import com.pruefstein.report.domain.Report;
-import com.pruefstein.report.repository.ReportRepository;
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.repository.UserRepository;
+import com.pruefstein.user.service.UserAdministration;
 import io.quarkiverse.renarde.Controller;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -21,7 +16,6 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.ws.rs.POST;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.RestForm;
 
 @SuppressWarnings("unused")
@@ -32,84 +26,23 @@ public class Users extends Controller
 	UserRepository userRepository;
 
 	@Inject
-	ReportRepository reportRepository;
-
-	@Inject
 	DeviceRepository deviceRepository;
 
 	@Inject
 	ReportRequestMailService requestMailService;
 
-	@ConfigProperty(name = "pruefstein.compliance.reporting-interval-days", defaultValue = "7")
-	int reportingIntervalDays;
+	@Inject
+	UserAdministration userAdministration;
 
 	@CheckedTemplate
 	public static class Templates
 	{
-		public static native TemplateInstance index(List<UserRow> rows);
-	}
-
-	/**
-	 * One user as the list shows them, with their most recent run alongside.
-	 *
-	 * @param latestReport
-	 *            {@code null} for a user nothing has ever reported for — a
-	 *            colleague who has not installed the agent, or one added here
-	 *            minutes ago. The screen says so rather than leaving the cell
-	 *            blank, because "never reported" is the finding.
-	 */
-	/**
-	 * @param signedIn
-	 *            whether this person has ever authenticated. Only
-	 *            {@code create} leaves a row without a subject, so a false here
-	 *            means an admin typed them in and nothing has happened since —
-	 *            which is a different problem from somebody who signed in and
-	 *            never ran the agent, and wants chasing differently.
-	 */
-	public record UserRow(AppUser user, Report latestReport, boolean stale, boolean signedIn)
-	{
-		public AppUser getUser()
-		{
-			return user;
-		}
-
-		public Report getLatestReport()
-		{
-			return latestReport;
-		}
-
-		/**
-		 * The run is older than the interval everyone reports on, so it no
-		 * longer proves much. The verdict on the report itself is left alone —
-		 * a pass stays a pass — because what went stale is the evidence, not
-		 * the finding.
-		 */
-		public boolean isStale()
-		{
-			return stale;
-		}
-
-		public boolean isSignedIn()
-		{
-			return signedIn;
-		}
+		public static native TemplateInstance index(List<UserAdministration.UserRow> rows);
 	}
 
 	public TemplateInstance index()
 	{
-		List<AppUser> users = userRepository.listAll();
-		Map<Long, Report> latest = reportRepository.findLatestByUser(
-			users.stream().map(user -> user.id).toList());
-		Instant staleBefore = Instant.now().minus(reportingIntervalDays, ChronoUnit.DAYS);
-		return Templates.index(users.stream()
-			.map(user -> {
-				Report report = latest.get(user.id);
-				boolean stale = report != null
-					&& report.getCheckedAt() != null
-					&& report.getCheckedAt().isBefore(staleBefore);
-				return new UserRow(user, report, stale, user.getOidcSubject() != null);
-			})
-			.toList());
+		return Templates.index(userAdministration.overview());
 	}
 
 	@POST
@@ -124,14 +57,7 @@ public class Users extends Controller
 			index();
 			return;
 		}
-		AppUser appUser = new AppUser();
-		appUser.setFirstname(firstname);
-		appUser.setLastname(lastname);
-		appUser.setMail(mail);
-		userRepository.persist(appUser);
-		// A new hire cannot report until somebody tells them how, so adding
-		// them here is the invitation.
-		requestMailService.sendInvite(appUser);
+		userAdministration.create(firstname, lastname, mail);
 		index();
 	}
 
@@ -195,17 +121,15 @@ public class Users extends Controller
 			notFound();
 			return;
 		}
-		List<Device> devices = deviceRepository.findByAppUser(appUser.id);
-		if (devices.isEmpty())
+		int devices = userAdministration.requestReport(appUser);
+		if (devices == 0)
 		{
-			requestMailService.sendInvite(appUser);
 			flash("message", "No device yet — sent " + appUser.getMail() + " the setup invite");
 		}
 		else
 		{
-			devices.forEach(requestMailService::sendReportDue);
 			flash("message", "Asked " + appUser.getMail() + " to re-check "
-				+ (devices.size() == 1 ? "their device" : devices.size() + " devices"));
+				+ (devices == 1 ? "their device" : devices + " devices"));
 		}
 		index();
 	}
