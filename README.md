@@ -467,6 +467,12 @@ One registration serves both the browser login and the agent:
 4. **Expose an API → Application ID URI → Add**, keeping the suggested
    `api://<client-id>`. Without it the agent's token is audienced to Microsoft
    Graph and the API rejects it.
+   MCP clients need a second one, the server's MCP address: in the
+   **Manifest**, add `https://<your host>/mcp` to `identifierUris`, next to the
+   `api://` one. They send that address as the `resource` of their login, and
+   Entra refuses the login (AADSTS9010010) unless the scope names the app by
+   the same URI. Entra only accepts an `https://` identifier on a domain
+   verified in the tenant, so `<your host>` has to be on, or under, one.
 5. **App roles → Create app role** with the value `admin`, then assign it to
    the admins under **Enterprise applications → Users and groups**. Everybody
    else needs no role.
