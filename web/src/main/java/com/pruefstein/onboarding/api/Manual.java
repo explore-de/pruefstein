@@ -20,17 +20,21 @@ import jakarta.inject.Inject;
 public class Manual extends Controller
 {
 	@Inject
-	SetupManual manual;
+	SetupManual setupManual;
 
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(List<SetupStep> steps, String repositoryUrl,
 			String baseUrl);
 	}
 
 	public TemplateInstance index()
 	{
-		return Templates.index(manual.steps(), manual.repositoryUrl(), manual.baseUrl());
+		return Templates.index(setupManual.steps(), setupManual.repositoryUrl(), setupManual.baseUrl());
 	}
 }

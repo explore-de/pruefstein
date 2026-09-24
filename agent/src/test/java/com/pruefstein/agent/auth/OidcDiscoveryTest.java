@@ -1,5 +1,6 @@
 package com.pruefstein.agent.auth;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -53,13 +54,12 @@ class OidcDiscoveryTest
 	@Test
 	void rejectsAProviderWithoutDeviceFlow() throws Exception
 	{
-		String metadata = """
+		JsonNode metadata = MAPPER.readTree("""
 			{"issuer": "https://idp.example.com", "token_endpoint": "https://idp.example.com/token"}
-			""";
+			""");
 
 		IllegalStateException failure = assertThrows(IllegalStateException.class,
-			() -> OidcDiscovery.parse("https://idp.example.com/.well-known/openid-configuration",
-				MAPPER.readTree(metadata)));
+			() -> OidcDiscovery.parse("https://idp.example.com/.well-known/openid-configuration", metadata));
 
 		assertTrue(failure.getMessage().contains("device_authorization_endpoint"));
 	}

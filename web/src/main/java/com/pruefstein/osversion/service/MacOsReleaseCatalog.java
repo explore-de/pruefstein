@@ -93,16 +93,18 @@ public class MacOsReleaseCatalog
 				{
 					release.setPublicRelease(true);
 				}
-				continue;
 			}
-			MacOsRelease release = new MacOsRelease();
-			release.setProductVersion(asset.productVersion());
-			release.setBuild(asset.build());
-			release.setPostingDate(asset.postingDate());
-			release.setPublicRelease(publicRelease);
-			release.setSeenAt(now);
-			repository.persist(release);
-			added++;
+			else
+			{
+				MacOsRelease release = new MacOsRelease();
+				release.setProductVersion(asset.productVersion());
+				release.setBuild(asset.build());
+				release.setPostingDate(asset.postingDate());
+				release.setPublicRelease(publicRelease);
+				release.setSeenAt(now);
+				repository.persist(release);
+				added++;
+			}
 		}
 		return added;
 	}

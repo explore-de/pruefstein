@@ -39,7 +39,7 @@ public class CheckResolver
 		return switch (item)
 		{
 			case ExpressionCheck check -> new ResolvedCheck(check.getQuery(), check.getExpectedExpression());
-			case AppBlacklistCheck ignored -> new ResolvedCheck(
+			case AppBlacklistCheck _ -> new ResolvedCheck(
 				blacklistQueryGenerator.generate(blockedAppRepository.listEnabled()),
 				BlacklistQueryGenerator.EXPRESSION);
 			default -> throw new IllegalStateException(

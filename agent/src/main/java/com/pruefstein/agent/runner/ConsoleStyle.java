@@ -27,7 +27,7 @@ public final class ConsoleStyle
 	/** Green {@code [PASS]} or red {@code [FAIL]} — the one thing being scanned for. */
 	public static String verdict(boolean passed)
 	{
-		return passed ? style("@|bold,green [PASS]|@") : style("@|bold,red [FAIL]|@");
+		return style(passed ? "@|bold,green [PASS]|@" : "@|bold,red [FAIL]|@");
 	}
 
 	/** A check that never produced a verdict — red, like a failure, because it is one. */

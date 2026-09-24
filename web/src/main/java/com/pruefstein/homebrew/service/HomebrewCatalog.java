@@ -104,7 +104,7 @@ public class HomebrewCatalog
 	}
 
 	private <T> Map<String, String> fetch(HttpClient client, String type, Class<T> entryType,
-		Function<T, String> key, Function<T, String> homepage) throws Exception
+		Function<T, String> key, Function<T, String> homepage) throws IOException, InterruptedException
 	{
 		String url = apiUrl + "/" + type + ".json";
 		HttpRequest request = HttpRequest.newBuilder(URI.create(url))

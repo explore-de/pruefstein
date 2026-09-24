@@ -14,10 +14,10 @@
     <!-- Non-compliant -->
     <a href="{uri:Reports.index}?status=NON_COMPLIANT" class="block bg-red-400 border-2 border-black shadow-brutal p-6 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <p class="text-[10px] font-black tracking-widest text-red-900">NON-COMPLIANT</p>
-      <p class="text-5xl font-black mt-2">{nonCompliantCount}</p>
-      {#if totalCount > 0}
+      <p class="text-5xl font-black mt-2">{reports.nonCompliant}</p>
+      {#if reports.total > 0}
       <p class="text-sm font-black mt-2 text-red-900">
-        {nonCompliantPct}% of reports
+        {reports.nonCompliantPct}% of reports
       </p>
       {#else}
       <p class="text-sm font-black mt-2 text-red-900">no reports yet</p>
@@ -27,10 +27,10 @@
     <!-- Missing -->
     <a href="{uri:Reports.index}?status=MISSING" class="block bg-accent border-2 border-black shadow-brutal p-6 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <p class="text-[10px] font-black tracking-widest text-stone-700">MISSING</p>
-      <p class="text-5xl font-black mt-2">{missingCount}</p>
-      {#if totalCount > 0}
+      <p class="text-5xl font-black mt-2">{reports.missing}</p>
+      {#if reports.total > 0}
       <p class="text-sm font-black mt-2 text-stone-700">
-        {missingPct}% of reports
+        {reports.missingPct}% of reports
       </p>
       {#else}
       <p class="text-sm font-black mt-2 text-stone-700">no reports yet</p>
@@ -40,10 +40,10 @@
     <!-- Compliant -->
     <a href="{uri:Reports.index}?status=COMPLIANT" class="block bg-emerald-400 border-2 border-black shadow-brutal p-6 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <p class="text-[10px] font-black tracking-widest text-emerald-900">COMPLIANT</p>
-      <p class="text-5xl font-black mt-2">{compliantCount}</p>
-      {#if totalCount > 0}
+      <p class="text-5xl font-black mt-2">{reports.compliant}</p>
+      {#if reports.total > 0}
       <p class="text-sm font-black mt-2 text-emerald-900">
-        {compliantPct}% of reports
+        {reports.compliantPct}% of reports
       </p>
       {#else}
       <p class="text-sm font-black mt-2 text-emerald-900">no reports yet</p>
@@ -57,7 +57,7 @@
 
     <a href="{uri:Reports.index}?status=OPEN" class="block bg-white border-2 border-black shadow-brutal p-5 hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <p class="text-[10px] font-black tracking-widest text-stone-400">PENDING</p>
-      <p class="text-3xl font-black mt-1">{openCount}</p>
+      <p class="text-3xl font-black mt-1">{reports.open}</p>
       <p class="text-xs font-medium text-stone-400 mt-1">awaiting finalization</p>
     </a>
 

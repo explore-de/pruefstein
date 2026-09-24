@@ -18,6 +18,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class ReportRepository implements PanacheRepository<Report>
 {
+	private static final String CHECKED_AT = "checkedAt";
+
 	public Optional<Report> findOpenByDeviceAndUser(String deviceId, String userId)
 	{
 		return find("deviceId = ?1 and userId = ?2 and status = ?3",
@@ -70,7 +72,7 @@ public class ReportRepository implements PanacheRepository<Report>
 		{
 			return Map.of();
 		}
-		Sort newestFirst = Sort.by("checkedAt", Sort.Direction.Descending)
+		Sort newestFirst = Sort.by(CHECKED_AT, Sort.Direction.Descending)
 			.and("id", Sort.Direction.Descending);
 		Map<Long, Report> latest = new LinkedHashMap<>();
 		for (Report report : list("appUser.id in ?1", newestFirst, userIds))
@@ -198,8 +200,8 @@ public class ReportRepository implements PanacheRepository<Report>
 			case "status" -> "status";
 			case "deviceId" -> "deviceId";
 			// Ordered in memory by the displayed name; newest first within one
-			case "user" -> "checkedAt";
-			default -> "checkedAt";
+			case "user" -> CHECKED_AT;
+			default -> CHECKED_AT;
 		};
 		boolean desc = "user".equals(col) || !"asc".equals(dir);
 		return desc ? Sort.by(column).descending() : Sort.by(column).ascending();

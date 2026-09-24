@@ -49,12 +49,18 @@ class ComplianceRunnerTest
 		ComplianceRunner runner = new ComplianceRunner();
 		runner.parallelism = 100;
 
-		// Last check finishes first
+		// Last check finishes first: each one waits for the one after it
+		CountDownLatch[] finished = IntStream.rangeClosed(0, 6)
+			.mapToObj(i -> new CountDownLatch(1))
+			.toArray(CountDownLatch[]::new);
 		List<ResultPayload> results = runner.runChecks(checks(6), check -> {
-			sleep((6 - check.id()) * 20);
-			return new ResultPayload(check.id(), true, null);
+			int id = check.id().intValue();
+			boolean inTurn = id == 6 || await(finished[id + 1]);
+			finished[id].countDown();
+			return new ResultPayload(check.id(), inTurn, null);
 		});
 
+		assertTrue(results.stream().allMatch(ResultPayload::passed), "checks should have finished last to first");
 		assertEquals(ids(6), itemIds(results));
 	}
 
@@ -165,22 +171,23 @@ class ComplianceRunnerTest
 		{
 			return started.await(timeoutMillis, TimeUnit.MILLISECONDS);
 		}
-		catch (InterruptedException e)
+		catch (InterruptedException _)
 		{
 			Thread.currentThread().interrupt();
 			return false;
 		}
 	}
 
-	private static void sleep(long millis)
+	private static boolean await(CountDownLatch latch)
 	{
 		try
 		{
-			Thread.sleep(millis);
+			return latch.await(5, TimeUnit.SECONDS);
 		}
-		catch (InterruptedException e)
+		catch (InterruptedException _)
 		{
 			Thread.currentThread().interrupt();
+			return false;
 		}
 	}
 }

@@ -1,10 +1,16 @@
 package com.pruefstein.compliance.service;
 
+import java.util.stream.Stream;
+
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @QuarkusTest
 class ComplianceEvaluatorTest
@@ -12,14 +18,22 @@ class ComplianceEvaluatorTest
 	@Inject
 	ComplianceEvaluator evaluator;
 
-	@Test
-	void returnsTrueWhenExpressionPasses() throws Exception
+	static Stream<Arguments> passingExpressions()
 	{
-		// given
-		String json = "[{\"encrypted\":\"1\"}]";
+		return Stream.of(
+			arguments("[{\"encrypted\":\"1\"}]", "results[0].encrypted == \"1\""),
+			arguments("[{\"pid\":\"1\"},{\"pid\":\"2\"}]", "results.size() == 2"),
+			arguments("[]", "results.isEmpty()"),
+			arguments("[{\"status\":\"on\"},{\"status\":\"on\"}]",
+				"results.size() > 0 && results[0].status == \"on\""));
+	}
 
+	@ParameterizedTest(name = "{1}")
+	@MethodSource("passingExpressions")
+	void returnsTrueWhenExpressionPasses(String json, String expression) throws Exception
+	{
 		// when
-		boolean result = evaluator.evaluate(json, "results[0].encrypted == \"1\"");
+		boolean result = evaluator.evaluate(json, expression);
 
 		// then
 		assertTrue(result);
@@ -39,46 +53,7 @@ class ComplianceEvaluatorTest
 	}
 
 	@Test
-	void evaluatesSizeExpression() throws Exception
-	{
-		// given
-		String json = "[{\"pid\":\"1\"},{\"pid\":\"2\"}]";
-
-		// when
-		boolean result = evaluator.evaluate(json, "results.size() == 2");
-
-		// then
-		assertTrue(result);
-	}
-
-	@Test
-	void emptyResultsEvaluatesCorrectly() throws Exception
-	{
-		// given
-		String json = "[]";
-
-		// when
-		boolean result = evaluator.evaluate(json, "results.isEmpty()");
-
-		// then
-		assertTrue(result);
-	}
-
-	@Test
-	void combinedExpressionWithMultipleRows() throws Exception
-	{
-		// given
-		String json = "[{\"status\":\"on\"},{\"status\":\"on\"}]";
-
-		// when
-		boolean result = evaluator.evaluate(json, "results.size() > 0 && results[0].status == \"on\"");
-
-		// then
-		assertTrue(result);
-	}
-
-	@Test
-	void throwsWhenExpressionReturnsNonBoolean() throws Exception
+	void throwsWhenExpressionReturnsNonBoolean()
 	{
 		// given
 		String json = "[{\"count\":\"5\"}]";

@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MacOsVersionTest
@@ -124,7 +123,7 @@ class MacOsVersionTest
 		// given / when / then
 		assertTrue(new MacOsVersion(26, 7, 0).compareTo(new MacOsVersion(27, 0, 0)) < 0);
 		assertTrue(new MacOsVersion(27, 0, 1).compareTo(new MacOsVersion(27, 0, 0)) > 0);
-		assertFalse(new MacOsVersion(15, 7, 9).compareTo(new MacOsVersion(15, 7, 9)) != 0);
+		assertEquals(0, new MacOsVersion(15, 7, 9).compareTo(new MacOsVersion(15, 7, 9)));
 	}
 
 	@Test

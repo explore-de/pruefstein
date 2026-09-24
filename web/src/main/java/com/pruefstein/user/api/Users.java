@@ -22,6 +22,8 @@ import org.jboss.resteasy.reactive.RestForm;
 @RolesAllowed("${pruefstein.security.admin-role:admin}")
 public class Users extends Controller
 {
+	private static final String MESSAGE = "message";
+
 	@Inject
 	UserRepository userRepository;
 
@@ -37,6 +39,10 @@ public class Users extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(List<UserAdministration.UserRow> rows);
 	}
 
@@ -102,7 +108,7 @@ public class Users extends Controller
 			return;
 		}
 		requestMailService.sendInvite(appUser);
-		flash("message", "Invite sent to " + appUser.getMail());
+		flash(MESSAGE, "Invite sent to " + appUser.getMail());
 		index();
 	}
 
@@ -124,11 +130,11 @@ public class Users extends Controller
 		int devices = userAdministration.requestReport(appUser);
 		if (devices == 0)
 		{
-			flash("message", "No device yet — sent " + appUser.getMail() + " the setup invite");
+			flash(MESSAGE, "No device yet — sent " + appUser.getMail() + " the setup invite");
 		}
 		else
 		{
-			flash("message", "Asked " + appUser.getMail() + " to re-check "
+			flash(MESSAGE, "Asked " + appUser.getMail() + " to re-check "
 				+ (devices == 1 ? "their device" : devices + " devices"));
 		}
 		index();

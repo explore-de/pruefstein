@@ -84,7 +84,7 @@ public class CredentialsConfigSource implements ConfigSource
 			// still be schemeless, and the REST client would fail on them.
 			return ServerUrl.normalize(serverUrl.asText());
 		}
-		catch (Exception e)
+		catch (Exception _)
 		{
 			// Config is read long before logging is configured; a broken file
 			// falls back to the configured default rather than failing startup.

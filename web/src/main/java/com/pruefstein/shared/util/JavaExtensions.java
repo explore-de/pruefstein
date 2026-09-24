@@ -11,6 +11,10 @@ import io.quarkus.qute.TemplateExtension;
 @TemplateExtension
 public class JavaExtensions
 {
+	private JavaExtensions()
+	{
+	}
+
 	/**
 	 * How long ago an instant was, in the coarsest unit that still says
 	 * something.

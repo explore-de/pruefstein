@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
  * Override the output directory with {@code -Dpreview.dir=…}.
  */
 @QuarkusTest
-class MailPreviewDump
+class MailPreviewDumpTest
 {
 	private static final Path OUT = Path.of(System.getProperty("preview.dir", "target/mail-preview"));
 

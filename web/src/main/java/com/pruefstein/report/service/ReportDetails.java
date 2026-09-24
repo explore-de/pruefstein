@@ -67,10 +67,6 @@ public class ReportDetails
 	}
 
 	/**
-	 * A result plus the pass condition its check was evaluated against —
-	 * resolved here because generated checks hold no expression of their own.
-	 */
-	/**
 	 * One installed application paired with the rule that forbids it, if any,
 	 * and where to read up on it, if anywhere.
 	 */
@@ -156,6 +152,10 @@ public class ReportDetails
 		}
 	}
 
+	/**
+	 * A result plus the pass condition its check was evaluated against —
+	 * resolved here because generated checks hold no expression of their own.
+	 */
 	public record ResultRow(ComplianceResult result, String expression)
 	{
 		public ComplianceItem getItem()

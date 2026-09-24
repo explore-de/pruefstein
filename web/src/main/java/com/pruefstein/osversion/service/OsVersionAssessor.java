@@ -1,6 +1,7 @@
 package com.pruefstein.osversion.service;
 
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -51,7 +52,7 @@ public class OsVersionAssessor
 		int years = 0;
 		if (standing == OsVersionStanding.MAJOR_BEHIND)
 		{
-			OptionalInt age = reported.get().trainAgeInYears(LocalDate.now());
+			OptionalInt age = reported.get().trainAgeInYears(LocalDate.now(ZoneOffset.UTC));
 			years = age.orElse(0);
 		}
 		return new OsVersionAssessment(report.getOsName(), report.getOsVersion(), report.getOsBuild(),

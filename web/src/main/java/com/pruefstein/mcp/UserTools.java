@@ -92,8 +92,11 @@ public class UserTools
 			throw new ToolCallException("No user with id " + userId);
 		}
 		int devices = userAdministration.requestReport(user);
-		return new Outcome(devices == 0
-			? "No device yet — sent " + user.getMail() + " the setup invite"
-			: "Asked " + user.getMail() + " to re-check " + (devices == 1 ? "their device" : devices + " devices"));
+		if (devices == 0)
+		{
+			return new Outcome("No device yet — sent " + user.getMail() + " the setup invite");
+		}
+		String which = devices == 1 ? "their device" : devices + " devices";
+		return new Outcome("Asked " + user.getMail() + " to re-check " + which);
 	}
 }

@@ -1,5 +1,6 @@
 package com.pruefstein.report.service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -14,6 +15,7 @@ import io.serverlessworkflow.impl.WorkflowStatus;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -52,31 +54,11 @@ class WorkflowInstancesTest
 			.run(() -> workflowInstances.discard(periodicReportingFlow, instanceId));
 
 		// then — cancelling unwinds the parked listen task on an engine thread,
-		// which is what releases its event registration
-		assertTrue(awaitDetached(instanceId),
-			"a discarded instance should no longer be held by the engine");
-	}
-
-	/** Cancellation propagates through the listen task's future, not inline. */
-	private boolean awaitDetached(String instanceId)
-	{
-		for (int attempt = 0; attempt < 50; attempt++)
-		{
-			if (periodicReportingFlow.definition().activeInstance(instanceId).isEmpty())
-			{
-				return true;
-			}
-			try
-			{
-				Thread.sleep(100);
-			}
-			catch (InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				throw new IllegalStateException(e);
-			}
-		}
-		return false;
+		// which is what releases its event registration. That propagates
+		// through the listen task's future, not inline.
+		await("a discarded instance should no longer be held by the engine")
+			.atMost(Duration.ofSeconds(5))
+			.until(() -> periodicReportingFlow.definition().activeInstance(instanceId).isEmpty());
 	}
 
 	@Test
@@ -154,9 +136,9 @@ class WorkflowInstancesTest
 	@Test
 	void discardingNothingIsHarmless()
 	{
-		QuarkusTransaction.requiringNew().run(() -> {
+		assertDoesNotThrow(() -> QuarkusTransaction.requiringNew().run(() -> {
 			workflowInstances.discard(periodicReportingFlow, null);
 			workflowInstances.discard(periodicReportingFlow, "  ");
-		});
+		}));
 	}
 }

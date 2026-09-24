@@ -256,7 +256,7 @@
        class="hidden lg:block fixed bottom-0 right-0 pointer-events-none select-none"
        style="height:70vh;width:auto;mix-blend-mode:multiply;z-index:-1">
   <script>
-    document.getElementById('stone-deco').src = '/static/stone-' + (Math.floor(Math.random() * 4) + 1) + '.jpg';
+    document.getElementById('stone-deco').src = '/static/stone-' + (crypto.getRandomValues(new Uint32Array(1))[0] % 4 + 1) + '.jpg';
   </script>
 
   <script>
@@ -267,7 +267,9 @@
         if (here === linkPath || (linkPath !== '/' && here.startsWith(linkPath))) {
           link.classList.add('nav-link-active');
         }
-      } catch (_) {}
+      } catch (_) {
+        // A link whose href is not a URL just stays unhighlighted
+      }
     });
   </script>
 

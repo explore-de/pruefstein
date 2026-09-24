@@ -1,6 +1,10 @@
 package com.pruefstein.dev;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -87,9 +91,14 @@ public class DevOsqueryResource
 
 	private OsqueryResult executeOsquery(String query)
 	{
+		Optional<java.nio.file.Path> binary = locateOsquery();
+		if (binary.isEmpty())
+		{
+			return OsqueryResult.error("osqueryi not found — is osquery installed and on PATH?");
+		}
 		try
 		{
-			ProcessBuilder pb = new ProcessBuilder("osqueryi", "--json", query);
+			ProcessBuilder pb = new ProcessBuilder(binary.get().toString(), "--json", query);
 			pb.redirectErrorStream(true);
 			Process process = pb.start();
 
@@ -110,18 +119,31 @@ public class DevOsqueryResource
 		}
 		catch (IOException e)
 		{
-			String msg = e.getMessage();
-			if (msg != null && msg.contains("No such file"))
-			{
-				return OsqueryResult.error("osqueryi not found — is osquery installed and on PATH?");
-			}
-			return OsqueryResult.error(msg != null ? msg : "Unknown IO error");
+			return OsqueryResult.error(e.getMessage() != null ? e.getMessage() : "Unknown IO error");
 		}
-		catch (InterruptedException e)
+		catch (InterruptedException _)
 		{
 			Thread.currentThread().interrupt();
 			return OsqueryResult.error("Interrupted");
 		}
+	}
+
+	/**
+	 * The lookup {@link ProcessBuilder} would make, done here to run it by its
+	 * full path.
+	 */
+	private static Optional<java.nio.file.Path> locateOsquery()
+	{
+		String pathEnv = System.getenv("PATH");
+		if (pathEnv == null)
+		{
+			return Optional.empty();
+		}
+		return Arrays.stream(pathEnv.split(File.pathSeparator))
+			.filter(directory -> !directory.isBlank())
+			.map(directory -> java.nio.file.Path.of(directory, "osqueryi"))
+			.filter(Files::isExecutable)
+			.findFirst();
 	}
 
 	private OsqueryResult evaluateExpression(String output, String expression)

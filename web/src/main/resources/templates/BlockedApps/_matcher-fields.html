@@ -8,9 +8,9 @@
   </div>
 
   <div class="border-2 border-black bg-accent p-2.5">
-    <label class="block text-[11px] font-black tracking-wide mb-1.5">Find the identifiers with AI</label>
+    <label for="{idPrefix}-ai-description" class="block text-[11px] font-black tracking-wide mb-1.5">Find the identifiers with AI</label>
     <div class="flex gap-2">
-      <input type="text" x-model="aiDescription" @keydown.enter.prevent="findIdentifiers()"
+      <input id="{idPrefix}-ai-description" type="text" x-model="aiDescription" @keydown.enter.prevent="findIdentifiers()"
              placeholder="e.g. Nextcloud desktop sync client"
              class="flex-1 px-2 py-1.5 text-xs border-2 border-black focus:outline-none">
       <button type="button" @click="findIdentifiers()" :disabled="aiLoading"
@@ -25,22 +25,22 @@
     </p>
   </div>
   <div>
-    <label class="block text-xs font-black tracking-wide mb-1.5">Bundle identifiers</label>
-    <textarea name="bundleIds" rows="2" x-model="editData.bundleids"
+    <label for="{idPrefix}-bundle-ids" class="block text-xs font-black tracking-wide mb-1.5">Bundle identifiers</label>
+    <textarea id="{idPrefix}-bundle-ids" name="bundleIds" rows="2" x-model="editData.bundleids"
               placeholder="com.nextcloud.desktopclient.nextcloud"
               class="w-full px-3 py-2 text-xs font-mono border-2 border-black focus:outline-none focus:bg-accent"></textarea>
     <p class="text-[11px] font-medium text-stone-400 mt-1">Most reliable — read from the app bundle, not its filename.</p>
   </div>
   <div>
-    <label class="block text-xs font-black tracking-wide mb-1.5">Homebrew packages</label>
-    <textarea name="homebrewNames" rows="2" x-model="editData.homebrew"
+    <label for="{idPrefix}-homebrew-names" class="block text-xs font-black tracking-wide mb-1.5">Homebrew packages</label>
+    <textarea id="{idPrefix}-homebrew-names" name="homebrewNames" rows="2" x-model="editData.homebrew"
               placeholder="nextcloud"
               class="w-full px-3 py-2 text-xs font-mono border-2 border-black focus:outline-none focus:bg-accent"></textarea>
     <p class="text-[11px] font-medium text-stone-400 mt-1">Formula or cask name, as shown by <code class="font-mono">brew list</code>.</p>
   </div>
   <div>
-    <label class="block text-xs font-black tracking-wide mb-1.5">Application names</label>
-    <textarea name="appNames" rows="2" x-model="editData.appnames"
+    <label for="{idPrefix}-app-names" class="block text-xs font-black tracking-wide mb-1.5">Application names</label>
+    <textarea id="{idPrefix}-app-names" name="appNames" rows="2" x-model="editData.appnames"
               placeholder="Nextcloud.app"
               class="w-full px-3 py-2 text-xs font-mono border-2 border-black focus:outline-none focus:bg-accent"></textarea>
     <p class="text-[11px] font-medium text-stone-400 mt-1">Fallback only — a renamed bundle slips past a name match.</p>

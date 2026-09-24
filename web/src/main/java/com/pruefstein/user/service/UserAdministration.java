@@ -48,8 +48,6 @@ public class UserAdministration
 	 *            colleague who has not installed the agent, or one added here
 	 *            minutes ago. The screen says so rather than leaving the cell
 	 *            blank, because "never reported" is the finding.
-	 */
-	/**
 	 * @param signedIn
 	 *            whether this person has ever authenticated. Only
 	 *            {@code create} leaves a row without a subject, so a false here

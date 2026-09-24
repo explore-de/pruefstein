@@ -3,6 +3,7 @@ package com.pruefstein.report.flow;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import io.cloudevents.CloudEvent;
@@ -46,7 +47,7 @@ public class EngineEvents
 			.withId(UUID.randomUUID().toString())
 			.withType(type)
 			.withSource(SOURCE)
-			.withTime(OffsetDateTime.now())
+			.withTime(OffsetDateTime.now(ZoneOffset.UTC))
 			.withExtension("flowinstanceid", flowInstanceId)
 			.withDataContentType("application/json")
 			.withData(dataJson.getBytes(StandardCharsets.UTF_8))

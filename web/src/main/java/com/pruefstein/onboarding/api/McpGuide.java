@@ -22,6 +22,10 @@ public class McpGuide extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(McpManual mcp);
 	}
 

@@ -30,7 +30,7 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class ComplianceLibrary
 {
-	public static final String DIRECTORY = "compliance-library";
+	public static final String DIRECTORY = "compliance-library/";
 
 	@Inject
 	ObjectMapper objectMapper;
@@ -61,7 +61,7 @@ public class ComplianceLibrary
 
 	private <T> T read(String file, Class<T> type)
 	{
-		String path = DIRECTORY + "/" + file;
+		String path = DIRECTORY + file;
 		try (InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(path))
 		{
 			if (in == null)

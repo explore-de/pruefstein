@@ -26,31 +26,7 @@ public class UserSyncService
 	{
 		return userRepository.findBySubject(subject)
 			.or(() -> adoptByMail(subject, email))
-			.map(user -> {
-				if (email != null)
-				{
-					user.setMail(email);
-				}
-				if (firstName != null)
-				{
-					user.setFirstname(firstName);
-				}
-				if (lastName != null)
-				{
-					user.setLastname(lastName);
-				}
-				if (subject.equals(user.getFirstname()))
-				{
-					// A row created before the fallback below, when a token
-					// without name claims left the subject as the name.
-					user.setFirstname(firstNameFromMail(email));
-					if (user.getLastname() == null || user.getLastname().isEmpty())
-					{
-						user.setLastname(lastNameFromMail(email));
-					}
-				}
-				return user;
-			})
+			.map(user -> refresh(user, subject, email, firstName, lastName))
 			.orElseGet(() -> {
 				AppUser user = new AppUser();
 				user.setOidcSubject(subject);
@@ -60,6 +36,36 @@ public class UserSyncService
 				userRepository.persist(user);
 				return user;
 			});
+	}
+
+	/**
+	 * Takes over whatever the token says, and leaves alone what it does not.
+	 */
+	private static AppUser refresh(AppUser user, String subject, String email, String firstName, String lastName)
+	{
+		if (email != null)
+		{
+			user.setMail(email);
+		}
+		if (firstName != null)
+		{
+			user.setFirstname(firstName);
+		}
+		if (lastName != null)
+		{
+			user.setLastname(lastName);
+		}
+		if (subject.equals(user.getFirstname()))
+		{
+			// A row created before the fallback in syncUser, when a token
+			// without name claims left the subject as the name.
+			user.setFirstname(firstNameFromMail(email));
+			if (user.getLastname() == null || user.getLastname().isEmpty())
+			{
+				user.setLastname(lastNameFromMail(email));
+			}
+		}
+		return user;
 	}
 
 	/**

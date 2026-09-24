@@ -33,7 +33,7 @@ public class AgentVersionProvider implements CommandLine.IVersionProvider
 				.filter(value -> !value.isBlank())
 				.orElse(UNKNOWN);
 		}
-		catch (Exception e)
+		catch (Exception _)
 		{
 			// Asking the version is never worth a stack trace at the user.
 			return UNKNOWN;

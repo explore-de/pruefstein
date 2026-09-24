@@ -22,6 +22,10 @@ public class DeviceAuthService
 	{
 	};
 
+	private static final String CLIENT_ID_PARAMETER = "client_id=";
+
+	private static final String ACCESS_TOKEN = "access_token";
+
 	@Inject
 	ObjectMapper objectMapper;
 
@@ -36,7 +40,7 @@ public class DeviceAuthService
 		OidcEndpoints endpoints = discovery.discover(config.issuer());
 
 		HttpResponse<String> response = post(endpoints.deviceAuthorizationEndpoint(),
-			"client_id=" + encode(config.clientId()) + scopeParameter(config));
+			CLIENT_ID_PARAMETER + encode(config.clientId()) + scopeParameter(config));
 		Map<String, Object> device = objectMapper.readValue(response.body(), MAP_TYPE);
 
 		if (!device.containsKey("device_code"))
@@ -67,7 +71,7 @@ public class DeviceAuthService
 	private Map<String, Object> pollForToken(String tokenEndpoint, AgentServerConfig config,
 		String deviceCode, int intervalSeconds) throws IOException, InterruptedException
 	{
-		String body = "client_id=" + encode(config.clientId())
+		String body = CLIENT_ID_PARAMETER + encode(config.clientId())
 			+ "&grant_type=urn:ietf:params:oauth:grant-type:device_code"
 			+ "&device_code=" + encode(deviceCode);
 
@@ -79,7 +83,7 @@ public class DeviceAuthService
 			HttpResponse<String> response = post(tokenEndpoint, body);
 			Map<String, Object> result = objectMapper.readValue(response.body(), MAP_TYPE);
 
-			if (result.containsKey("access_token"))
+			if (result.containsKey(ACCESS_TOKEN))
 			{
 				System.out.println(" done.");
 				return result;
@@ -102,7 +106,7 @@ public class DeviceAuthService
 		AgentServerConfig config = current.serverConfig();
 		OidcEndpoints endpoints = discovery.discover(config.issuer());
 
-		String body = "client_id=" + encode(config.clientId())
+		String body = CLIENT_ID_PARAMETER + encode(config.clientId())
 			+ "&grant_type=refresh_token"
 			+ "&refresh_token=" + encode(current.refreshToken())
 			+ scopeParameter(config);
@@ -110,7 +114,7 @@ public class DeviceAuthService
 		HttpResponse<String> response = post(endpoints.tokenEndpoint(), body);
 		Map<String, Object> result = objectMapper.readValue(response.body(), MAP_TYPE);
 
-		if (!result.containsKey("access_token"))
+		if (!result.containsKey(ACCESS_TOKEN))
 		{
 			throw new IllegalStateException("Token refresh failed: " + describeError(result));
 		}
@@ -142,7 +146,7 @@ public class DeviceAuthService
 	private static Credentials toCredentials(String serverUrl, AgentServerConfig config,
 		Map<String, Object> tokenResponse)
 	{
-		String accessToken = (String) tokenResponse.get("access_token");
+		String accessToken = (String) tokenResponse.get(ACCESS_TOKEN);
 		String refreshToken = (String) tokenResponse.get("refresh_token");
 		int expiresIn = ((Number) tokenResponse.getOrDefault("expires_in", 300)).intValue();
 		Instant expiresAt = Instant.now().plusSeconds(expiresIn);
@@ -158,7 +162,7 @@ public class DeviceAuthService
 	private static String describeError(Map<String, Object> response)
 	{
 		Object description = response.get("error_description");
-		return description != null ? String.valueOf(description) : String.valueOf(response.get("error"));
+		return String.valueOf(description != null ? description : response.get("error"));
 	}
 
 	private static String encode(String value)

@@ -13,6 +13,10 @@ import io.quarkus.qute.CheckedTemplate;
 @CheckedTemplate(basePath = "mails")
 public class MailTemplates
 {
+	private MailTemplates()
+	{
+	}
+
 	/**
 	 * Sent once a report has a verdict — on upload, or when the flow finalises
 	 * it.

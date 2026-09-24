@@ -37,6 +37,10 @@ public class ComplianceGroups extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(List<ComplianceGroup> groups);
 
 		public static native TemplateInstance show(ComplianceGroup group, List<CheckRow> items, boolean devMode);

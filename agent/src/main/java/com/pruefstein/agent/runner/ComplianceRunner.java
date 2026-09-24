@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -196,7 +197,7 @@ public class ComplianceRunner
 	 */
 	List<ResultPayload> runChecks(List<CheckItem> checks, Function<CheckItem, ResultPayload> work)
 	{
-		int threads = Math.max(1, Math.min(parallelism, checks.size()));
+		int threads = Math.clamp(checks.size(), 1, Math.max(1, parallelism));
 		try (ExecutorService executor = Executors.newFixedThreadPool(threads))
 		{
 			List<Future<ResultPayload>> pending = new ArrayList<>(checks.size());
@@ -316,9 +317,30 @@ public class ComplianceRunner
 		return value == null ? null : value.toString();
 	}
 
-	private String osquery(String query) throws IOException, InterruptedException
+	/**
+	 * Runs {@code osqueryi} from where {@link OsqueryRequirement} finds it,
+	 * which is the lookup {@link ProcessBuilder} would otherwise make itself.
+	 * An interrupt ends the query like a failure does, and stays set for
+	 * whoever is waiting on the run.
+	 */
+	private String osquery(String query) throws IOException
 	{
-		ProcessBuilder pb = new ProcessBuilder("osqueryi", "--json", query);
+		Path binary = OsqueryRequirement.locate(OsqueryRequirement.BINARY, System.getenv("PATH"))
+			.orElseThrow(() -> new OsqueryException(OsqueryRequirement.BINARY + " is not on the PATH"));
+		try
+		{
+			return osquery(binary, query);
+		}
+		catch (InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw new OsqueryException("osqueryi was interrupted", e);
+		}
+	}
+
+	private String osquery(Path binary, String query) throws IOException, InterruptedException
+	{
+		ProcessBuilder pb = new ProcessBuilder(binary.toString(), "--json", query);
 		pb.redirectErrorStream(true);
 		Process process = pb.start();
 		// Read while it runs: a result bigger than the pipe buffer would
@@ -331,7 +353,7 @@ public class ComplianceRunner
 			{
 				in.transferTo(buffer);
 			}
-			catch (IOException e)
+			catch (IOException _)
 			{
 				// Only happens when the process is killed, and that is reported below.
 			}
@@ -339,13 +361,13 @@ public class ComplianceRunner
 		if (!process.waitFor(OSQUERY_TIMEOUT_SECONDS, TimeUnit.SECONDS))
 		{
 			process.destroyForcibly();
-			throw new RuntimeException("osqueryi timed out after " + OSQUERY_TIMEOUT_SECONDS + " seconds");
+			throw new OsqueryException("osqueryi timed out after " + OSQUERY_TIMEOUT_SECONDS + " seconds");
 		}
 		reader.join();
 		String output = buffer.toString(StandardCharsets.UTF_8).strip();
 		if (process.exitValue() != 0)
 		{
-			throw new RuntimeException("osqueryi exited with code " + process.exitValue() + ": " + output);
+			throw new OsqueryException("osqueryi exited with code " + process.exitValue() + ": " + output);
 		}
 		return output;
 	}
@@ -402,7 +424,7 @@ public class ComplianceRunner
 		{
 			return InetAddress.getLocalHost().getHostName();
 		}
-		catch (Exception e)
+		catch (Exception _)
 		{
 			return "unknown";
 		}

@@ -54,6 +54,11 @@ public class RunCommand implements Callable<Integer>
 		{
 			authResolver.ensureAuthenticated();
 		}
+		catch (InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("Authentication was interrupted.", e);
+		}
 		catch (Exception e)
 		{
 			throw new RuntimeException("Authentication failed.", e);
@@ -155,6 +160,11 @@ public class RunCommand implements Callable<Integer>
 			try
 			{
 				authResolver.reauthenticate();
+			}
+			catch (InterruptedException failure)
+			{
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("Authentication was interrupted.", failure);
 			}
 			catch (Exception failure)
 			{

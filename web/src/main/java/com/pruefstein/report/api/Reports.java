@@ -32,6 +32,10 @@ public class Reports extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(
 			List<ReportGroup> groups,
 			String statusFilter,
@@ -59,8 +63,9 @@ public class Reports extends Controller
 			{
 				statusFilter = ReportStatus.valueOf(statusParam);
 			}
-			catch (IllegalArgumentException ignored)
+			catch (IllegalArgumentException _)
 			{
+				// An unknown status is no filter, as if none had been given
 			}
 		}
 

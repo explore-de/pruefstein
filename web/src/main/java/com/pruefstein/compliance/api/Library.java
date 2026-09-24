@@ -37,7 +37,7 @@ public class Library extends Controller
 	private static final String UNGROUPED = "Blocked Apps";
 
 	@Inject
-	ComplianceLibrary library;
+	ComplianceLibrary complianceLibrary;
 
 	@Inject
 	LibraryInstantiator instantiator;
@@ -48,6 +48,10 @@ public class Library extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(List<Section> sections);
 	}
 
@@ -76,7 +80,7 @@ public class Library extends Controller
 	public TemplateInstance index()
 	{
 		Map<String, List<Row>> sections = new LinkedHashMap<>();
-		for (LibraryEntry entry : library.entries())
+		for (LibraryEntry entry : complianceLibrary.entries())
 		{
 			ComplianceItem inUse = itemRepository.findActiveByLibraryKey(entry.key()).orElse(null);
 			sections.computeIfAbsent(entry.group() != null ? entry.group() : UNGROUPED, name -> new ArrayList<>())
@@ -97,7 +101,7 @@ public class Library extends Controller
 			index();
 			return;
 		}
-		Optional<LibraryEntry> entry = library.find(key);
+		Optional<LibraryEntry> entry = complianceLibrary.find(key);
 		if (entry.isEmpty())
 		{
 			notFound();

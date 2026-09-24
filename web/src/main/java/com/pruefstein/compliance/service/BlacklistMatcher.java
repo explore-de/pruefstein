@@ -40,7 +40,7 @@ public class BlacklistMatcher
 			{
 			});
 		}
-		catch (Exception e)
+		catch (Exception _)
 		{
 			return List.of();
 		}
@@ -131,7 +131,7 @@ public class BlacklistMatcher
 		{
 			if (c == '%' || c == '_')
 			{
-				if (literal.length() > 0)
+				if (!literal.isEmpty())
 				{
 					regex.append(Pattern.quote(literal.toString()));
 					literal.setLength(0);
@@ -143,7 +143,7 @@ public class BlacklistMatcher
 				literal.append(c);
 			}
 		}
-		if (literal.length() > 0)
+		if (!literal.isEmpty())
 		{
 			regex.append(Pattern.quote(literal.toString()));
 		}

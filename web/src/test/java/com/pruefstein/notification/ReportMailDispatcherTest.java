@@ -21,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -109,7 +108,7 @@ class ReportMailDispatcherTest
 		QuarkusTransaction.requiringNew().run(() -> dispatcher.request(reportRepository.findById(reportId)));
 
 		// then
-		verify(mailService, timeout(2000)).sendOutcomeMail(eq(reportId));
+		verify(mailService, timeout(2000)).sendOutcomeMail(reportId);
 		assertNull(pendingSince(), "nothing should have been held back");
 	}
 
@@ -123,7 +122,7 @@ class ReportMailDispatcherTest
 		QuarkusTransaction.requiringNew().run(() -> dispatcher.request(reportRepository.findById(reportId)));
 
 		// then
-		verify(mailService, never()).sendOutcomeMail(eq(reportId));
+		verify(mailService, never()).sendOutcomeMail(reportId);
 		assertNotNull(pendingSince(), "the mail should be waiting for an explanation");
 	}
 
@@ -144,7 +143,7 @@ class ReportMailDispatcherTest
 		dispatcher.sendReady();
 
 		// then
-		verify(mailService, timeout(2000)).sendOutcomeMail(eq(reportId));
+		verify(mailService, timeout(2000)).sendOutcomeMail(reportId);
 		assertNull(pendingSince(), "a sent mail should no longer be pending");
 	}
 
@@ -165,7 +164,7 @@ class ReportMailDispatcherTest
 		dispatcher.sendReady();
 
 		// then — still unexplained, sent anyway
-		verify(mailService, timeout(2000)).sendOutcomeMail(eq(reportId));
+		verify(mailService, timeout(2000)).sendOutcomeMail(reportId);
 		assertNull(pendingSince());
 	}
 
@@ -184,7 +183,7 @@ class ReportMailDispatcherTest
 		QuarkusTransaction.requiringNew().run(() -> dispatcher.request(reportRepository.findById(reportId)));
 
 		// then
-		verify(mailService, timeout(2000)).sendOutcomeMail(eq(reportId));
+		verify(mailService, timeout(2000)).sendOutcomeMail(reportId);
 		assertNull(pendingSince());
 	}
 

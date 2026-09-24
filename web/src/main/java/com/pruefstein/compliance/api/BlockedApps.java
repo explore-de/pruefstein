@@ -47,6 +47,10 @@ public class BlockedApps extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
+		private Templates()
+		{
+		}
+
 		public static native TemplateInstance index(List<BlockedApp> blockedApps, String checkName,
 			String generatedQuery, String generatedExpression, boolean devMode);
 	}

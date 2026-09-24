@@ -44,6 +44,26 @@ public class Startup
 {
 	private static final Logger LOG = LoggerFactory.getLogger(Startup.class);
 
+	/** The dev realm's login whose machine is the fully compliant one. */
+	private static final String ALICE = "alice";
+
+	/** The one machine "user" reports from, twice. */
+	private static final String USER_MACHINE = "MacBook-Pro-User.local";
+
+	/** osquery rows of a check that passes. */
+	private static final String FILEVAULT_ON = "[{\"filevault_status\":\"on\"}]";
+
+	private static final String FIREWALL_ON = "[{\"global_state\":\"1\"}]";
+
+	private static final String AUTO_UPDATES_ON = "[{\"value\":\"1\"}]";
+
+	private static final String SCREEN_LOCK_THREE_MINUTES = "[{\"value\":\"180\"}]";
+
+	/** The newest release of each train in the demo fleet. */
+	private static final String MACOS_26_LATEST = "26.7.1";
+
+	private static final String MACOS_15_LATEST = "15.7.9";
+
 	/**
 	 * Offline fallbacks used when the AI service is unreachable (e.g. no
 	 * {@code OPENAI_API_KEY} in the dev environment), so the seeded UI still
@@ -51,17 +71,22 @@ public class Startup
 	 */
 	private static final ComplianceResultExplanation FILEVAULT_FALLBACK = new ComplianceResultExplanation(
 		"FileVault encryption not enabled",
-		"The osquery result returned no rows, which means FileVault is off on this device. "
-			+ "Without disk encryption, data on the drive is readable if the device is lost or stolen.\n\n"
-			+ "To fix: System Settings → Privacy & Security → FileVault → Turn On FileVault. "
-			+ "You will need to restart the device and save the recovery key in a secure location.");
+		"""
+			The osquery result returned no rows, which means FileVault is off on this device. \
+			Without disk encryption, data on the drive is readable if the device is lost or stolen.
+
+			To fix: System Settings → Privacy & Security → FileVault → Turn On FileVault. \
+			You will need to restart the device and save the recovery key in a secure location.""");
 
 	private static final ComplianceResultExplanation AUTO_UPDATES_FALLBACK = new ComplianceResultExplanation(
 		"Automatic software updates disabled",
-		"The AutomaticCheckEnabled preference is set to 0, meaning macOS will not check for or install updates automatically. "
-			+ "Missing security patches leaves the device exposed to known vulnerabilities.\n\n"
-			+ "To fix: System Settings → General → Software Update → Automatic Updates → enable all options. "
-			+ "Alternatively, run: sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true");
+		"""
+			The AutomaticCheckEnabled preference is set to 0, meaning macOS will not check for or install \
+			updates automatically. Missing security patches leaves the device exposed to known vulnerabilities.
+
+			To fix: System Settings → General → Software Update → Automatic Updates → enable all options. \
+			Alternatively, run: sudo defaults write /Library/Preferences/com.apple.SoftwareUpdate \
+			AutomaticCheckEnabled -bool true""");
 
 	/**
 	 * What the generated fleet is running, one entry per machine. Weighted so
@@ -72,20 +97,20 @@ public class Startup
 	 */
 	private static final List<String> FLEET_VERSIONS = Arrays.asList(
 		"27.0", "27.0", "27.0", "27.0",
-		"26.7.1", "26.7.1", "26.7.1",
+		MACOS_26_LATEST, MACOS_26_LATEST, MACOS_26_LATEST,
 		"26.7", "26.7",
 		"26.5", "26.5",
 		"15.8", "15.8",
-		"15.7.9",
+		MACOS_15_LATEST,
 		null, null);
 
 	private static final Map<String, String> FLEET_BUILDS = Map.of(
 		"27.0", "26A428",
-		"26.7.1", "25G231",
+		MACOS_26_LATEST, "25G231",
 		"26.7", "25G229",
 		"26.5", "25F74",
 		"15.8", "24H23",
-		"15.7.9", "24G830");
+		MACOS_15_LATEST, "24G830");
 
 	/**
 	 * How many of the fleet fail each check. This is the violations chart's
@@ -212,7 +237,7 @@ public class Startup
 		// The people the reports belong to. Without these the Users screen is
 		// empty and every report is unattributed, so the last-report column,
 		// the STALE badge and the two mail actions all have nothing to show.
-		AppUser aliceUser = seedUser("alice", "Alice", "Andersson");
+		AppUser aliceUser = seedUser(ALICE, "Alice", "Andersson");
 		AppUser bobUser = seedUser("bob", "Bob", "Bergmann");
 		AppUser plainUser = seedUser("user", "Uli", "Ulrich");
 		// Carol was typed in and nothing has happened since: the invite may
@@ -228,8 +253,8 @@ public class Startup
 		// Report 1: fully compliant, finalized yesterday
 		Report compliant = new Report();
 		compliant.setDeviceId("MacBook-Pro-Alice.local");
-		compliant.setUserId("alice");
-		compliant.setKeycloakUser("alice");
+		compliant.setUserId(ALICE);
+		compliant.setKeycloakUser(ALICE);
 		compliant.setAppUser(aliceUser);
 		compliant.setCheckedAt(Instant.now().minus(1, ChronoUnit.DAYS));
 		compliant.setStatus(ReportStatus.COMPLIANT);
@@ -237,9 +262,9 @@ public class Startup
 		reportRepository.persist(compliant);
 		osVersion(compliant, "27.0", "26A428", "27.0");
 
-		addResult(compliant, fileVault, true, "[{\"filevault_status\":\"on\"}]");
-		addResult(compliant, firewall, true, "[{\"global_state\":\"1\"}]");
-		addResult(compliant, autoUpdates, true, "[{\"value\":\"1\"}]");
+		addResult(compliant, fileVault, true, FILEVAULT_ON);
+		addResult(compliant, firewall, true, FIREWALL_ON);
+		addResult(compliant, autoUpdates, true, AUTO_UPDATES_ON);
 		addResult(compliant, screenLock, true, "[{\"value\":\"120\"}]");
 
 		// Report 2: non-compliant with deadline, checked an hour ago
@@ -253,16 +278,16 @@ public class Startup
 		nonCompliant.setDeadline(Instant.now().plus(6, ChronoUnit.DAYS));
 		nonCompliant.setFinalizedAt(Instant.now().minus(1, ChronoUnit.HOURS).plusSeconds(5));
 		reportRepository.persist(nonCompliant);
-		osVersion(nonCompliant, "26.7", "25G229", "26.7.1");
+		osVersion(nonCompliant, "26.7", "25G229", MACOS_26_LATEST);
 
 		addResult(nonCompliant, fileVault, false, "[]", FILEVAULT_FALLBACK);
-		addResult(nonCompliant, firewall, true, "[{\"global_state\":\"1\"}]");
+		addResult(nonCompliant, firewall, true, FIREWALL_ON);
 		addResult(nonCompliant, autoUpdates, false, "[{\"value\":\"0\"}]", AUTO_UPDATES_FALLBACK);
 		addResult(nonCompliant, screenLock, true, "[{\"value\":\"240\"}]");
 
 		// Report 3: compliant, for the "user" Keycloak test account
 		Report userReport = new Report();
-		userReport.setDeviceId("MacBook-Pro-User.local");
+		userReport.setDeviceId(USER_MACHINE);
 		userReport.setUserId("user");
 		userReport.setKeycloakUser("user");
 		userReport.setAppUser(plainUser);
@@ -272,16 +297,16 @@ public class Startup
 		reportRepository.persist(userReport);
 		osVersion(userReport, "26.5.1", "25F80", "26.7");
 
-		addResult(userReport, fileVault, true, "[{\"filevault_status\":\"on\"}]");
-		addResult(userReport, firewall, true, "[{\"global_state\":\"1\"}]");
-		addResult(userReport, autoUpdates, true, "[{\"value\":\"1\"}]");
-		addResult(userReport, screenLock, true, "[{\"value\":\"180\"}]");
+		addResult(userReport, fileVault, true, FILEVAULT_ON);
+		addResult(userReport, firewall, true, FIREWALL_ON);
+		addResult(userReport, autoUpdates, true, AUTO_UPDATES_ON);
+		addResult(userReport, screenLock, true, SCREEN_LOCK_THREE_MINUTES);
 
 		// Report 4: Uli's older run, well past the 7-day interval. The newest
 		// run wins the row, so this one only shows inside the folded group —
 		// it is here to give the Reports list a genuinely aged entry.
 		Report aged = new Report();
-		aged.setDeviceId("MacBook-Pro-User.local");
+		aged.setDeviceId(USER_MACHINE);
 		aged.setUserId("user");
 		aged.setKeycloakUser("user");
 		aged.setAppUser(plainUser);
@@ -289,12 +314,12 @@ public class Startup
 		aged.setStatus(ReportStatus.COMPLIANT);
 		aged.setFinalizedAt(Instant.now().minus(40, ChronoUnit.DAYS).plusSeconds(5));
 		reportRepository.persist(aged);
-		osVersion(aged, "15.7.9", "24G830", "26.7");
+		osVersion(aged, MACOS_15_LATEST, "24G830", "26.7");
 
-		addResult(aged, fileVault, true, "[{\"filevault_status\":\"on\"}]");
-		addResult(aged, firewall, true, "[{\"global_state\":\"1\"}]");
-		addResult(aged, autoUpdates, true, "[{\"value\":\"1\"}]");
-		addResult(aged, screenLock, true, "[{\"value\":\"180\"}]");
+		addResult(aged, fileVault, true, FILEVAULT_ON);
+		addResult(aged, firewall, true, FIREWALL_ON);
+		addResult(aged, autoUpdates, true, AUTO_UPDATES_ON);
+		addResult(aged, screenLock, true, SCREEN_LOCK_THREE_MINUTES);
 
 		// Report 5: Uli's other machine, failing two checks with the repair
 		// window still open. The one report state the personal dashboard is
@@ -309,19 +334,19 @@ public class Startup
 		userOpen.setStatus(ReportStatus.OPEN);
 		userOpen.setDeadline(Instant.now().plus(5, ChronoUnit.DAYS));
 		reportRepository.persist(userOpen);
-		osVersion(userOpen, "26.7.1", "25G231", "26.7.1");
+		osVersion(userOpen, MACOS_26_LATEST, "25G231", MACOS_26_LATEST);
 
 		addResult(userOpen, fileVault, false, "[]", FILEVAULT_FALLBACK);
-		addResult(userOpen, firewall, true, "[{\"global_state\":\"1\"}]");
+		addResult(userOpen, firewall, true, FIREWALL_ON);
 		addResult(userOpen, autoUpdates, false, "[{\"value\":\"0\"}]", AUTO_UPDATES_FALLBACK);
-		addResult(userOpen, screenLock, true, "[{\"value\":\"180\"}]");
+		addResult(userOpen, screenLock, true, SCREEN_LOCK_THREE_MINUTES);
 
 		// Device registry — seeded devices carry no periodic flow instance;
 		// the first real check-in starts one.
 		Device alice = new Device();
 		alice.setDeviceId("MacBook-Pro-Alice.local");
-		alice.setUserId("alice");
-		alice.setKeycloakUser("alice");
+		alice.setUserId(ALICE);
+		alice.setKeycloakUser(ALICE);
 		alice.setAppUser(aliceUser);
 		alice.setLastReportAt(compliant.getCheckedAt());
 		deviceRepository.persist(alice);
@@ -335,7 +360,7 @@ public class Startup
 		deviceRepository.persist(bob);
 
 		Device user = new Device();
-		user.setDeviceId("MacBook-Pro-User.local");
+		user.setDeviceId(USER_MACHINE);
 		user.setUserId("user");
 		user.setKeycloakUser("user");
 		user.setAppUser(plainUser);

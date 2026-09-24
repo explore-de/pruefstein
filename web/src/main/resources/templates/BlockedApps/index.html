@@ -234,7 +234,7 @@
           <textarea name="reason" rows="2" x-model="editData.reason" placeholder="Why this application is not permitted — shown to the user in the remediation tip"
                     class="w-full px-3 py-2 text-sm border-2 border-black focus:outline-none focus:bg-accent"></textarea>
         </div>
-        {#include BlockedApps/_matcher-fields.html /}
+        {#include BlockedApps/_matcher-fields.html idPrefix="create" /}
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" @click="showCreate = false"
                   class="px-4 py-2 text-sm font-bold border-2 border-black hover:bg-stone-100">
@@ -270,7 +270,7 @@
           <textarea name="reason" rows="2" x-model="editData.reason"
                     class="w-full px-3 py-2 text-sm border-2 border-black focus:outline-none focus:bg-accent"></textarea>
         </div>
-        {#include BlockedApps/_matcher-fields.html /}
+        {#include BlockedApps/_matcher-fields.html idPrefix="edit" /}
         <label class="flex items-center gap-2 text-sm font-bold">
           <input type="checkbox" name="enabled" value="true" :checked="editData.enabled"
                  class="w-4 h-4 border-2 border-black">

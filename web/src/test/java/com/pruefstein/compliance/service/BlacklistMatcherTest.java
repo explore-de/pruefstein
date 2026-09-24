@@ -1,15 +1,20 @@
 package com.pruefstein.compliance.service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pruefstein.compliance.domain.AppMatcher;
 import com.pruefstein.compliance.domain.BlockedApp;
 import com.pruefstein.compliance.domain.MatcherType;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Named.named;
 
 class BlacklistMatcherTest
 {
@@ -35,25 +40,27 @@ class BlacklistMatcherTest
 		new AppMatcher(MatcherType.BUNDLE_ID, "com.nextcloud.desktopclient.nextcloud"),
 		new AppMatcher(MatcherType.HOMEBREW, "nextcloud"));
 
-	@Test
-	void matchesBundleIdentifierOnAppRows()
+	static Stream<Named<String>> nextcloudInstalls()
 	{
-		String output = """
-			[{"source":"app","name":"Nextcloud.app","identifier":"com.nextcloud.desktopclient.nextcloud",
-			  "version":"3.13.0","path":"/Applications/Nextcloud.app"}]
-			""";
-
-		assertEquals(List.of(NEXTCLOUD), matcher.match(output, List.of(NEXTCLOUD)));
+		return Stream.of(
+			named("bundle identifier on an app row", """
+				[{"source":"app","name":"Nextcloud.app","identifier":"com.nextcloud.desktopclient.nextcloud",
+				  "version":"3.13.0","path":"/Applications/Nextcloud.app"}]
+				"""),
+			named("Homebrew name on a brew row", """
+				[{"source":"brew:cask","name":"nextcloud","identifier":"nextcloud",
+				  "version":"3.13.0","path":"/opt/homebrew/Caskroom/nextcloud"}]
+				"""),
+			named("either, case-insensitively", """
+				[{"source":"app","name":"NextCloud.app","identifier":"COM.NEXTCLOUD.DESKTOPCLIENT.NEXTCLOUD",
+				  "version":"3","path":"/Applications/NextCloud.app"}]
+				"""));
 	}
 
-	@Test
-	void matchesHomebrewNameOnBrewRows()
+	@ParameterizedTest
+	@MethodSource("nextcloudInstalls")
+	void matchesAnInstallByAnyOfItsMatchers(String output)
 	{
-		String output = """
-			[{"source":"brew:cask","name":"nextcloud","identifier":"nextcloud",
-			  "version":"3.13.0","path":"/opt/homebrew/Caskroom/nextcloud"}]
-			""";
-
 		assertEquals(List.of(NEXTCLOUD), matcher.match(output, List.of(NEXTCLOUD)));
 	}
 
@@ -79,17 +86,6 @@ class BlacklistMatcherTest
 			""";
 
 		assertTrue(matcher.match(output, List.of(brewOnly)).isEmpty());
-	}
-
-	@Test
-	void matchingIsCaseInsensitive()
-	{
-		String output = """
-			[{"source":"app","name":"NextCloud.app","identifier":"COM.NEXTCLOUD.DESKTOPCLIENT.NEXTCLOUD",
-			  "version":"3","path":"/Applications/NextCloud.app"}]
-			""";
-
-		assertEquals(List.of(NEXTCLOUD), matcher.match(output, List.of(NEXTCLOUD)));
 	}
 
 	@Test

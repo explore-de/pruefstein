@@ -95,7 +95,7 @@ public class AuthResolver
 		login(resolveServerUrl(null, stored));
 	}
 
-	private boolean tryRefresh(Credentials credentials)
+	private boolean tryRefresh(Credentials credentials) throws InterruptedException
 	{
 		if (credentials.refreshToken() == null)
 		{
@@ -107,6 +107,10 @@ public class AuthResolver
 			tokenStore.save(refreshed);
 			tokenHolder.setAccessToken(refreshed.accessToken());
 			return true;
+		}
+		catch (InterruptedException e)
+		{
+			throw e;
 		}
 		catch (Exception e)
 		{

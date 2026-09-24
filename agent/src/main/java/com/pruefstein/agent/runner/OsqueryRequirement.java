@@ -22,7 +22,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class OsqueryRequirement
 {
-	private static final String BINARY = "osqueryi";
+	static final String BINARY = "osqueryi";
 	private static final String INSTALL = "brew install --cask osquery";
 
 	/**

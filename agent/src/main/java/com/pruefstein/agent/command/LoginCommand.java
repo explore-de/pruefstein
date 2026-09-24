@@ -27,6 +27,11 @@ public class LoginCommand implements Runnable
 			authResolver.ensureAuthenticated(server);
 			System.out.println("Login successful. Credentials cached for future runs.");
 		}
+		catch (InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("Login was interrupted.", e);
+		}
 		catch (Exception e)
 		{
 			throw new RuntimeException("Login failed.", e);

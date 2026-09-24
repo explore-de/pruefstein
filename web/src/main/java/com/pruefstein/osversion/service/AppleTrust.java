@@ -1,7 +1,10 @@
 package com.pruefstein.osversion.service;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -73,7 +76,7 @@ public class AppleTrust
 		}
 	}
 
-	private X509Certificate readRoot() throws Exception
+	private X509Certificate readRoot() throws IOException, CertificateException
 	{
 		try (InputStream pem = Thread.currentThread().getContextClassLoader()
 			.getResourceAsStream(certificateResource))
@@ -92,7 +95,8 @@ public class AppleTrust
 	 * One trust store holding the platform's anchors and Apple's root, so both
 	 * are offered to the handshake rather than one replacing the other.
 	 */
-	private X509TrustManager trustManagerWith(X509Certificate appleRoot) throws Exception
+	private X509TrustManager trustManagerWith(X509Certificate appleRoot)
+		throws GeneralSecurityException, IOException
 	{
 		List<X509Certificate> anchors = new ArrayList<>(platformAnchors());
 		anchors.add(appleRoot);
@@ -117,7 +121,7 @@ public class AppleTrust
 		throw new IllegalStateException("No X509TrustManager among the defaults");
 	}
 
-	private List<X509Certificate> platformAnchors() throws Exception
+	private List<X509Certificate> platformAnchors() throws GeneralSecurityException
 	{
 		TrustManagerFactory factory = TrustManagerFactory
 			.getInstance(TrustManagerFactory.getDefaultAlgorithm());

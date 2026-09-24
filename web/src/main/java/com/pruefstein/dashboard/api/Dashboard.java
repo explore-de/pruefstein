@@ -61,17 +61,11 @@ public class Dashboard extends Controller
 	@CheckedTemplate
 	public static class Templates
 	{
-		public static native TemplateInstance index(
-			long compliantCount,
-			long nonCompliantCount,
-			long missingCount,
-			long openCount,
-			long totalCount,
-			long compliantPct,
-			long nonCompliantPct,
-			long missingPct,
-			long itemCount,
-			long userCount,
+		private Templates()
+		{
+		}
+
+		public static native TemplateInstance index(ReportCounts reports, long itemCount, long userCount,
 			FleetStats fleet);
 
 		public static native TemplateInstance personal(
@@ -80,6 +74,33 @@ public class Dashboard extends Controller
 			String manualUrl,
 			String runCommand,
 			String intervalLabel);
+	}
+
+	/**
+	 * How many reports stand at each verdict, and what share of all of them
+	 * that is.
+	 */
+	public record ReportCounts(long compliant, long nonCompliant, long missing, long open, long total)
+	{
+		public long compliantPct()
+		{
+			return percentOfTotal(compliant);
+		}
+
+		public long nonCompliantPct()
+		{
+			return percentOfTotal(nonCompliant);
+		}
+
+		public long missingPct()
+		{
+			return percentOfTotal(missing);
+		}
+
+		private long percentOfTotal(long count)
+		{
+			return total > 0 ? (count * 100) / total : 0;
+		}
 	}
 
 	@Path("/")
@@ -91,20 +112,20 @@ public class Dashboard extends Controller
 	/** The estate, for the people whose job it is. */
 	private TemplateInstance fleet()
 	{
-		long total = reportRepository.count();
-		long compliant = reportRepository.count("status", ReportStatus.COMPLIANT);
-		long nonCompliant = reportRepository.count("status", ReportStatus.NON_COMPLIANT);
-		long missing = reportRepository.count("status", ReportStatus.MISSING);
-		long open = reportRepository.count("status", ReportStatus.OPEN);
+		ReportCounts reports = new ReportCounts(
+			countWith(ReportStatus.COMPLIANT),
+			countWith(ReportStatus.NON_COMPLIANT),
+			countWith(ReportStatus.MISSING),
+			countWith(ReportStatus.OPEN),
+			reportRepository.count());
 
-		long compliantPct = total > 0 ? (compliant * 100) / total : 0;
-		long nonCompliantPct = total > 0 ? (nonCompliant * 100) / total : 0;
-		long missingPct = total > 0 ? (missing * 100) / total : 0;
-
-		return Templates.index(compliant, nonCompliant, missing, open, total,
-			compliantPct, nonCompliantPct, missingPct,
-			itemRepository.countActive(), userRepository.count(),
+		return Templates.index(reports, itemRepository.countActive(), userRepository.count(),
 			fleetDashboard.stats());
+	}
+
+	private long countWith(ReportStatus status)
+	{
+		return reportRepository.count("status", status);
 	}
 
 	/**
