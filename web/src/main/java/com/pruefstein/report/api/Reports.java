@@ -42,7 +42,8 @@ public class Reports extends Controller
 			String q,
 			String sort,
 			String dir,
-			boolean allRuns);
+			boolean allRuns,
+			String osFilter);
 
 		public static native TemplateInstance show(Report report, List<ReportDetails.ResultRow> results,
 			ReportDetails.ResultRow blacklistResult, List<ReportDetails.InventoryRow> inventory, long blockedCount,
@@ -54,7 +55,8 @@ public class Reports extends Controller
 		@QueryParam("q") String q,
 		@QueryParam("sort") String sort,
 		@QueryParam("dir") String dir,
-		@QueryParam("all") String allParam)
+		@QueryParam("all") String allParam,
+		@QueryParam("os") String os)
 	{
 		ReportStatus statusFilter = null;
 		if (statusParam != null && !statusParam.isBlank())
@@ -77,6 +79,9 @@ public class Reports extends Controller
 		// page opens with — so judging a user by their latest run only is what
 		// a plain /Reports/index means.
 		boolean allRuns = "1".equals(allParam);
+		// The macOS version exactly as the dashboard chart counted it, which is
+		// where this filter is set from: that chart trims what the agent sent.
+		String activeOs = os != null ? os.trim() : "";
 
 		String ownerFilter = reportAccess.ownerFilter();
 		// Held back from the query while only latest runs count, so the group
@@ -87,7 +92,18 @@ public class Reports extends Controller
 			allRuns ? statusFilter : null, activeQ, activeSort, activeDir, ownerFilter);
 		// Grouped after filtering, so "latest" means the latest run the reader
 		// asked to see rather than one the filter just took off the page.
+		if (allRuns && !activeOs.isEmpty())
+		{
+			reports = reports.stream().filter(report -> onVersion(report, activeOs)).toList();
+		}
 		List<ReportGroup> groups = ReportGroup.group(reports);
+		if (!allRuns && !activeOs.isEmpty())
+		{
+			// Like the status below, judged by the run that is current: the
+			// chart counts machines by the version they are on now, not by one
+			// they have since updated from.
+			groups = groups.stream().filter(group -> onVersion(group.latest(), activeOs)).toList();
+		}
 		if (!allRuns && statusFilter != null)
 		{
 			// Applied to the group rather than the run: a user who has since
@@ -98,7 +114,12 @@ public class Reports extends Controller
 			ReportStatus wanted = statusFilter;
 			groups = groups.stream().filter(group -> group.latest().getStatus() == wanted).toList();
 		}
-		return Templates.index(groups, activeStatus, activeQ, activeSort, activeDir, allRuns);
+		return Templates.index(groups, activeStatus, activeQ, activeSort, activeDir, allRuns, activeOs);
+	}
+
+	private static boolean onVersion(Report report, String os)
+	{
+		return report.getOsVersion() != null && report.getOsVersion().trim().equals(os);
 	}
 
 	public TemplateInstance show(@RestPath Long id)

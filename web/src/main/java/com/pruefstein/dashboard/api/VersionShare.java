@@ -1,5 +1,8 @@
 package com.pruefstein.dashboard.api;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 import com.pruefstein.osversion.domain.OsVersionStanding;
 
 /**
@@ -25,6 +28,10 @@ import com.pruefstein.osversion.domain.OsVersionStanding;
  *            is printed
  * @param folded
  *            whether this row stands for several versions that did not fit
+ * @param reportFilter
+ *            the version the reports screen can be filtered by to list these
+ *            machines, or {@code null} for a row that is not one version — the
+ *            folded tail and the machines that never said
  */
 public record VersionShare(
 	String version,
@@ -32,7 +39,8 @@ public record VersionShare(
 	long devices,
 	int fleetPct,
 	int barPct,
-	boolean folded)
+	boolean folded,
+	String reportFilter)
 {
 	/** Green: at the newest release Apple has published, or ahead of it. */
 	public boolean isCurrent()
@@ -79,6 +87,21 @@ public record VersionShare(
 			case MAJOR_BEHIND -> "a major version behind";
 			case UNKNOWN -> "no version reported";
 		};
+	}
+
+	/** Whether the bar links to the reports on its version. */
+	public boolean hasReports()
+	{
+		return reportFilter != null;
+	}
+
+	/**
+	 * The query string that filters the reports screen to this version. Encoded
+	 * here because the version is whatever the agent sent.
+	 */
+	public String reportsQuery()
+	{
+		return "os=" + URLEncoder.encode(reportFilter, StandardCharsets.UTF_8);
 	}
 
 	public String deviceLabel()

@@ -112,6 +112,14 @@ class DashboardFleetChartsTest
 			.body(containsString("A.8.24"));
 	}
 
+	@Test
+	@TestSecurity(user = "admin", roles = { "admin" })
+	void aVersionBarLinksToTheReportsOnIt()
+	{
+		given().when().get("/").then().statusCode(200)
+			.body(containsString("/Reports/index?os=15.7.9"));
+	}
+
 	/**
 	 * The legend and the wording beside each bar, because colour alone must
 	 * never be what tells a reader a machine is out of date.

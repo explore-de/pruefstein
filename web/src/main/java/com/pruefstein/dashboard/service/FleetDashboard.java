@@ -113,7 +113,7 @@ public class FleetDashboard
 			OsVersionStanding standing = MacOsVersion.parse(entry.getKey())
 				.map(version -> version.standingAgainst(latest.orElse(null)))
 				.orElse(OsVersionStanding.UNKNOWN);
-			bars.add(share(entry.getKey(), standing, entry.getValue(), runs.size(), max, false));
+			bars.add(share(entry.getKey(), standing, entry.getValue(), runs.size(), max, false, entry.getKey()));
 		}
 
 		// Everything past the cap is older than everything shown, so the fold
@@ -124,12 +124,12 @@ public class FleetDashboard
 		{
 			long folded = tail.stream().mapToLong(Map.Entry::getValue).sum();
 			bars.add(share(tail.size() + " older versions", OsVersionStanding.MAJOR_BEHIND,
-				folded, runs.size(), max, true));
+				folded, runs.size(), max, true, null));
 		}
 
 		if (unknown > 0)
 		{
-			bars.add(share("Unknown", OsVersionStanding.UNKNOWN, unknown, runs.size(), max, false));
+			bars.add(share("Unknown", OsVersionStanding.UNKNOWN, unknown, runs.size(), max, false, null));
 		}
 		return List.copyOf(bars);
 	}
@@ -148,9 +148,10 @@ public class FleetDashboard
 	}
 
 	private static VersionShare share(String version, OsVersionStanding standing, long devices,
-		long fleet, long max, boolean folded)
+		long fleet, long max, boolean folded, String reportFilter)
 	{
-		return new VersionShare(version, standing, devices, percent(devices, fleet), bar(devices, max), folded);
+		return new VersionShare(version, standing, devices, percent(devices, fleet), bar(devices, max), folded,
+			reportFilter);
 	}
 
 	/** The checks the fleet is failing right now, worst first. */
