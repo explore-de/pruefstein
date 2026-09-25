@@ -18,6 +18,9 @@ import com.pruefstein.osversion.domain.OsVersionStanding;
  * @param version
  *            the version as the machines reported it, e.g. {@code 15.7.9}, or
  *            the summary label of a folded row
+ * @param missing
+ *            the release these machines could install without changing train,
+ *            or {@code null} when there is none or it is not known
  * @param devices
  *            machines whose newest run reported this version
  * @param fleetPct
@@ -36,6 +39,7 @@ import com.pruefstein.osversion.domain.OsVersionStanding;
 public record VersionShare(
 	String version,
 	OsVersionStanding standing,
+	String missing,
 	long devices,
 	int fleetPct,
 	int barPct,
@@ -49,8 +53,8 @@ public record VersionShare(
 	}
 
 	/**
-	 * Amber: the right feature update missing a fix, or an older train Apple
-	 * still patches, on its newest fix.
+	 * Amber: the newest macOS missing a fix, or an older macOS Apple still
+	 * patches, on its newest fix.
 	 */
 	public boolean isPatchBehind()
 	{
@@ -59,13 +63,15 @@ public record VersionShare(
 	}
 
 	/**
-	 * Red: an older feature update, an older train, or a folded tail of both.
+	 * Red: the newest macOS missing a feature update, an older macOS missing
+	 * its own updates or no longer patched, or a folded tail of those.
 	 */
 	public boolean isBehind()
 	{
 		return folded
 			|| standing == OsVersionStanding.MINOR_BEHIND
-			|| standing == OsVersionStanding.MAJOR_BEHIND;
+			|| standing == OsVersionStanding.OLDER_TRAIN_UNPATCHED
+			|| standing == OsVersionStanding.UNSUPPORTED_TRAIN;
 	}
 
 	/** Grey: the machine never said, so there is nothing to judge. */
@@ -76,6 +82,8 @@ public record VersionShare(
 
 	/**
 	 * The standing in words, so the colour is never the only thing saying it.
+	 * Names the release that is missing where there is one, so a bar a train
+	 * behind cannot be misread as behind the bar above it.
 	 */
 	public String note()
 	{
@@ -86,10 +94,12 @@ public record VersionShare(
 		return switch (standing)
 		{
 			case CURRENT -> "up to date";
-			case PATCH_BEHIND -> "missing a fix";
-			case OLDER_TRAIN_PATCHED -> "older, fully patched";
-			case MINOR_BEHIND -> "an update behind";
-			case MAJOR_BEHIND -> "a major version behind";
+			case PATCH_BEHIND -> missing != null ? "missing " + missing : "missing a fix";
+			case MINOR_BEHIND -> missing != null ? "missing " + missing : "missing an update";
+			case OLDER_TRAIN_PATCHED -> "older macOS, fully patched";
+			case OLDER_TRAIN_UNPATCHED -> missing != null ? "older macOS, missing " + missing
+				: "older macOS, missing updates";
+			case UNSUPPORTED_TRAIN -> "older macOS, no longer patched";
 			case UNKNOWN -> "no version reported";
 		};
 	}

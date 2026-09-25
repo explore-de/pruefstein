@@ -221,14 +221,20 @@ internet: reports then show the version without judging it.
 
 The report header shows the version and how it compares:
 
-| Difference | Mark | Meaning |
-|---|---|---|
-| none | `CURRENT` | at the newest release, or ahead of it on a beta |
-| patch | `FIX BEHIND`, amber | same feature update, missing a fix |
-| minor | `UPDATE BEHIND`, red | same major train, an older feature update |
-| major | `MAJOR BEHIND`, red, plus `USES A 2-YEAR-OLD VERSION` | an older train altogether |
+| Mark | Meaning |
+|---|---|
+| `CURRENT`, green | at the newest release, or ahead of it on a beta |
+| `MISSING A FIX`, amber | the newest macOS and feature update, missing a fix |
+| `MISSING AN UPDATE`, red | the newest macOS, an older feature update |
+| `OLDER MACOS, FULLY PATCHED`, amber | an older macOS Apple still patches, on its newest fix |
+| `OLDER MACOS, MISSING UPDATES`, red, plus `USES A 2-YEAR-OLD VERSION` | an older macOS Apple still patches, short of its newest fix |
+| `OLDER MACOS, NO LONGER PATCHED`, red, plus the age | an older macOS Apple has stopped patching |
 
-The age on that last mark comes from the major number, which says which year the
+Apple patches the newest macOS and the two before it. The dashboard's version
+chart uses the same standings and names the release a bar is missing — a bar on
+26.6.2 reads "older macOS, missing 26.7" when 27 is out.
+
+The age on the red older-macOS marks comes from the major number, which says which year the
 train shipped: Apple numbered macOS sequentially from 11 (2020) to 15 (2024),
 then switched to naming a train after the year it ships into, so 26 shipped in
 2025 and 27 in 2026. Both runs are closed formulas, and a train released after

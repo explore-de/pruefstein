@@ -84,7 +84,7 @@ class ReportOsVersionHeaderTest
 			.statusCode(200)
 			.body(containsString("27.0"))
 			.body(containsString("CURRENT"))
-			.body(not(containsString("FIX BEHIND")))
+			.body(not(containsString("MISSING A FIX")))
 			.body(not(containsString("USES A")));
 	}
 
@@ -99,7 +99,7 @@ class ReportOsVersionHeaderTest
 			.when().get("/Reports/show/" + reportId)
 			.then()
 			.statusCode(200)
-			.body(containsString("FIX BEHIND"))
+			.body(containsString("MISSING A FIX"))
 			.body(containsString("bg-amber-400"))
 			.body(containsString("latest was 26.7.1"))
 			.body(not(containsString("USES A")));
@@ -116,7 +116,7 @@ class ReportOsVersionHeaderTest
 			.when().get("/Reports/show/" + reportId)
 			.then()
 			.statusCode(200)
-			.body(containsString("UPDATE BEHIND"))
+			.body(containsString("MISSING AN UPDATE"))
 			.body(containsString("bg-red-400"))
 			.body(not(containsString("USES A")));
 	}
@@ -132,7 +132,7 @@ class ReportOsVersionHeaderTest
 			.when().get("/Reports/show/" + reportId)
 			.then()
 			.statusCode(200)
-			.body(containsString("MAJOR BEHIND"))
+			.body(containsString("OLDER MACOS, MISSING UPDATES"))
 			.body(containsString("bg-red-600"))
 			// macOS 15 shipped in 2024, so it is two trains and two years back
 			.body(containsString("USES A 2-YEAR-OLD VERSION"));
@@ -152,10 +152,10 @@ class ReportOsVersionHeaderTest
 				.when().get("/Reports/show/" + reportId)
 				.then()
 				.statusCode(200)
-				.body(containsString("OLDER, PATCHED"))
+				.body(containsString("OLDER MACOS, FULLY PATCHED"))
 				.body(containsString("bg-amber-400"))
-				.body(containsString("newest fix, still supported"))
-				.body(not(containsString("MAJOR BEHIND")))
+				.body(containsString("newest fix of macOS 15, which Apple still patches"))
+				.body(not(containsString("OLDER MACOS, MISSING UPDATES")))
 				.body(not(containsString("USES A")));
 		}
 		finally
@@ -163,6 +163,46 @@ class ReportOsVersionHeaderTest
 			QuarkusTransaction.requiringNew()
 				.run(() -> releaseRepository.delete("productVersion = ?1", "15.7.9"));
 		}
+	}
+
+	@Test
+	void namesTheFixAnOlderTrainIsMissing()
+	{
+		// given — 26.7 is the newest Tahoe, and the machine is still on 26.6.2
+		seed("26.6.2", "25G83", "27.0");
+		release("26.7", "25G229");
+
+		try
+		{
+			// when / then
+			given()
+				.when().get("/Reports/show/" + reportId)
+				.then()
+				.statusCode(200)
+				.body(containsString("OLDER MACOS, MISSING UPDATES"))
+				.body(containsString("missing 26.7, the newest macOS 26"));
+		}
+		finally
+		{
+			QuarkusTransaction.requiringNew()
+				.run(() -> releaseRepository.delete("productVersion = ?1", "26.7"));
+		}
+	}
+
+	@Test
+	void saysWhenApplesStoppedPatchingATrain()
+	{
+		// given — with 27 newest, macOS 14 is three trains back
+		seed("14.8.1", "23J30", "27.0");
+
+		// when / then
+		given()
+			.when().get("/Reports/show/" + reportId)
+			.then()
+			.statusCode(200)
+			.body(containsString("OLDER MACOS, NO LONGER PATCHED"))
+			.body(containsString("Apple no longer patches macOS 14"))
+			.body(containsString("USES A 3-YEAR-OLD VERSION"));
 	}
 
 	private void release(String version, String build)
@@ -190,7 +230,7 @@ class ReportOsVersionHeaderTest
 			.then()
 			.statusCode(200)
 			.body(containsString("not reported"))
-			.body(not(containsString("MAJOR BEHIND")));
+			.body(not(containsString("OLDER MACOS, MISSING UPDATES")));
 	}
 
 	/**
@@ -221,7 +261,7 @@ class ReportOsVersionHeaderTest
 				.when().get("/Reports/show/" + reportId)
 				.then()
 				.statusCode(200)
-				.body(containsString("MAJOR BEHIND"))
+				.body(containsString("OLDER MACOS, MISSING UPDATES"))
 				.body(containsString("USES A 1-YEAR-OLD VERSION"))
 				.body(not(containsString("no release data")));
 		}
@@ -244,8 +284,8 @@ class ReportOsVersionHeaderTest
 			.then()
 			.statusCode(200)
 			.body(containsString("15.7.9"))
-			.body(not(containsString("MAJOR BEHIND")))
-			.body(not(containsString("FIX BEHIND")))
+			.body(not(containsString("OLDER MACOS, MISSING UPDATES")))
+			.body(not(containsString("MISSING A FIX")))
 			// and says so, rather than showing a bare version that looks fine
 			.body(containsString("not compared — no release data"));
 	}

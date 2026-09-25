@@ -25,7 +25,7 @@
         {#else}
         <span class="inline-block px-3 py-1 text-xs font-black tracking-widest border-2 border-black bg-stone-200">OPEN</span>
         {/if}
-        {#if os.majorBehind && os.ageKnown}
+        {#if (os.olderTrainUnpatched || os.unsupportedTrain) && os.ageKnown}
         <span class="block mt-2 px-3 py-1 text-[10px] font-black tracking-widest border-2 border-black bg-red-600 text-white text-center">
           USES A {os.ageLabel.toUpperCase()} VERSION
         </span>
@@ -50,19 +50,25 @@
         <p class="text-sm font-bold mt-0.5 tabular-nums flex items-center gap-1.5 flex-wrap">
           <span>{os.reported}</span>
           {#if os.patchBehind}
-          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-amber-400">FIX BEHIND</span>
+          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-amber-400">MISSING A FIX</span>
           {#else if os.olderTrainPatched}
-          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-amber-400">OLDER, PATCHED</span>
+          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-amber-400">OLDER MACOS, FULLY PATCHED</span>
           {#else if os.minorBehind}
-          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-red-400 text-white">UPDATE BEHIND</span>
-          {#else if os.majorBehind}
-          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-red-600 text-white">MAJOR BEHIND</span>
+          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-red-400 text-white">MISSING AN UPDATE</span>
+          {#else if os.olderTrainUnpatched}
+          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-red-600 text-white">OLDER MACOS, MISSING UPDATES</span>
+          {#else if os.unsupportedTrain}
+          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-red-600 text-white">OLDER MACOS, NO LONGER PATCHED</span>
           {#else if os.latest != null}
           <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-emerald-400">CURRENT</span>
           {/if}
         </p>
         {#if os.olderTrainPatched}
-        <p class="text-[10px] font-medium text-stone-500 mt-0.5">newest fix, still supported · latest was {os.latest}</p>
+        <p class="text-[10px] font-medium text-stone-500 mt-0.5">newest fix of {os.train}, which Apple still patches · latest was {os.latest}</p>
+        {#else if os.olderTrainUnpatched && os.latestOfTrain != null}
+        <p class="text-[10px] font-medium text-stone-500 mt-0.5">missing {os.latestOfTrain}, the newest {os.train} · latest was {os.latest}</p>
+        {#else if os.unsupportedTrain}
+        <p class="text-[10px] font-medium text-stone-500 mt-0.5">Apple no longer patches {os.train} · latest was {os.latest}</p>
         {#else if os.behind}
         <p class="text-[10px] font-medium text-stone-500 mt-0.5">latest was {os.latest}</p>
         {#else if os.latest == null}

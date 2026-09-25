@@ -113,10 +113,13 @@ public class FleetDashboard
 		List<VersionShare> bars = new ArrayList<>();
 		for (Map.Entry<String, Long> entry : ordered.subList(0, Math.min(ordered.size(), MAX_VERSION_BARS)))
 		{
-			OsVersionStanding standing = MacOsVersion.parse(entry.getKey())
-				.map(version -> version.standingAgainst(latest.orElse(null), latestPerTrain.get(version.major())))
+			Optional<MacOsVersion> version = MacOsVersion.parse(entry.getKey());
+			MacOsVersion latestOfTrain = version.map(parsed -> latestPerTrain.get(parsed.major())).orElse(null);
+			OsVersionStanding standing = version
+				.map(parsed -> parsed.standingAgainst(latest.orElse(null), latestOfTrain))
 				.orElse(OsVersionStanding.UNKNOWN);
-			bars.add(share(entry.getKey(), standing, entry.getValue(), runs.size(), max, false, entry.getKey()));
+			bars.add(share(entry.getKey(), standing, missing(standing, latest.orElse(null), latestOfTrain),
+				entry.getValue(), runs.size(), max, false, entry.getKey()));
 		}
 
 		// Everything past the cap is older than everything shown, so the fold
@@ -127,13 +130,13 @@ public class FleetDashboard
 		if (!tail.isEmpty())
 		{
 			long folded = tail.stream().mapToLong(Map.Entry::getValue).sum();
-			bars.add(share(tail.size() + " older versions", OsVersionStanding.MAJOR_BEHIND,
+			bars.add(share(tail.size() + " older versions", OsVersionStanding.UNSUPPORTED_TRAIN, null,
 				folded, runs.size(), max, true, null));
 		}
 
 		if (unknown > 0)
 		{
-			bars.add(share("Unknown", OsVersionStanding.UNKNOWN, unknown, runs.size(), max, false, null));
+			bars.add(share("Unknown", OsVersionStanding.UNKNOWN, null, unknown, runs.size(), max, false, null));
 		}
 		return List.copyOf(bars);
 	}
@@ -151,11 +154,27 @@ public class FleetDashboard
 		return byVersion.thenComparing(Map.Entry::getKey);
 	}
 
-	private static VersionShare share(String version, OsVersionStanding standing, long devices,
-		long fleet, long max, boolean folded, String reportFilter)
+	private static VersionShare share(String version, OsVersionStanding standing, MacOsVersion missing,
+		long devices, long fleet, long max, boolean folded, String reportFilter)
 	{
-		return new VersionShare(version, standing, devices, percent(devices, fleet), bar(devices, max), folded,
-			reportFilter);
+		return new VersionShare(version, standing, missing != null ? missing.toString() : null, devices,
+			percent(devices, fleet), bar(devices, max), folded, reportFilter);
+	}
+
+	/**
+	 * The release the machines on a version have not installed yet but could
+	 * without changing train: the newest release for the newest train, their
+	 * own train's newest fix for an older one. Nothing for a machine that is up
+	 * to date, fully patched, or on a train Apple has dropped.
+	 */
+	private static MacOsVersion missing(OsVersionStanding standing, MacOsVersion latest, MacOsVersion latestOfTrain)
+	{
+		return switch (standing)
+		{
+			case PATCH_BEHIND, MINOR_BEHIND -> latest;
+			case OLDER_TRAIN_UNPATCHED -> latestOfTrain;
+			default -> null;
+		};
 	}
 
 	/** The checks the fleet is failing right now, worst first. */

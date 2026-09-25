@@ -37,18 +37,15 @@ class MacOsVersionTest
 	}
 
 	@Test
-	void namesTheCoarsestNumberThatDiffers()
+	void namesTheCoarsestNumberThatDiffersWithinTheNewestTrain()
 	{
 		// given
 		MacOsVersion latest = new MacOsVersion(27, 1, 2);
 
 		// when / then
-		assertEquals(OsVersionStanding.CURRENT, new MacOsVersion(27, 1, 2).standingAgainst(latest));
-		assertEquals(OsVersionStanding.PATCH_BEHIND, new MacOsVersion(27, 1, 1).standingAgainst(latest));
-		assertEquals(OsVersionStanding.MINOR_BEHIND, new MacOsVersion(27, 0, 0).standingAgainst(latest));
-		assertEquals(OsVersionStanding.MAJOR_BEHIND, new MacOsVersion(26, 7, 0).standingAgainst(latest));
-		// A whole train behind outranks being up to date within that train
-		assertEquals(OsVersionStanding.MAJOR_BEHIND, new MacOsVersion(15, 9, 9).standingAgainst(latest));
+		assertEquals(OsVersionStanding.CURRENT, new MacOsVersion(27, 1, 2).standingAgainst(latest, latest));
+		assertEquals(OsVersionStanding.PATCH_BEHIND, new MacOsVersion(27, 1, 1).standingAgainst(latest, latest));
+		assertEquals(OsVersionStanding.MINOR_BEHIND, new MacOsVersion(27, 0, 0).standingAgainst(latest, latest));
 	}
 
 	@Test
@@ -65,43 +62,35 @@ class MacOsVersionTest
 	}
 
 	@Test
-	void anOlderTrainStaysRedWhenItIsMissingItsOwnFix()
+	void anOlderTrainMissingItsOwnFixIsUnpatched()
 	{
 		// given
 		MacOsVersion latest = new MacOsVersion(27, 0, 0);
 
-		// when / then — one fix short of its train's newest
-		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+		// when / then — short of its train's newest, by a fix or a feature
+		// update
+		assertEquals(OsVersionStanding.OLDER_TRAIN_UNPATCHED,
 			new MacOsVersion(26, 7, 0).standingAgainst(latest, new MacOsVersion(26, 7, 1)));
+		assertEquals(OsVersionStanding.OLDER_TRAIN_UNPATCHED,
+			new MacOsVersion(26, 6, 2).standingAgainst(latest, new MacOsVersion(26, 7, 0)));
 		// and when the train's newest is not known at all
-		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+		assertEquals(OsVersionStanding.OLDER_TRAIN_UNPATCHED,
 			new MacOsVersion(26, 7, 1).standingAgainst(latest, null));
 	}
 
 	@Test
-	void aTrainApplesStoppedPatchingStaysRedEvenFullyPatched()
+	void aTrainApplesStoppedPatchingIsUnsupportedEvenFullyPatched()
 	{
 		// given — with 27 newest, 14 (2023) is three trains back
 		MacOsVersion latest = new MacOsVersion(27, 0, 0);
 
 		// when / then
-		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+		assertEquals(OsVersionStanding.UNSUPPORTED_TRAIN,
 			new MacOsVersion(14, 8, 1).standingAgainst(latest, new MacOsVersion(14, 8, 1)));
-		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+		assertEquals(OsVersionStanding.UNSUPPORTED_TRAIN,
+			new MacOsVersion(14, 6, 0).standingAgainst(latest, new MacOsVersion(14, 8, 1)));
+		assertEquals(OsVersionStanding.UNSUPPORTED_TRAIN,
 			new MacOsVersion(10, 15, 7).standingAgainst(latest, new MacOsVersion(10, 15, 7)));
-	}
-
-	@Test
-	void theNewestTrainIsJudgedAsBeforeWhateverItsTrainSays()
-	{
-		// given
-		MacOsVersion latest = new MacOsVersion(27, 1, 2);
-
-		// when / then — the extra yardstick only ever softens a major gap
-		assertEquals(OsVersionStanding.PATCH_BEHIND,
-			new MacOsVersion(27, 1, 1).standingAgainst(latest, latest));
-		assertEquals(OsVersionStanding.MINOR_BEHIND,
-			new MacOsVersion(27, 0, 0).standingAgainst(latest, latest));
 	}
 
 	@Test
@@ -111,8 +100,8 @@ class MacOsVersionTest
 		MacOsVersion latest = new MacOsVersion(27, 0, 0);
 
 		// when / then
-		assertEquals(OsVersionStanding.CURRENT, new MacOsVersion(27, 1, 0).standingAgainst(latest));
-		assertEquals(OsVersionStanding.CURRENT, new MacOsVersion(28, 0, 0).standingAgainst(latest));
+		assertEquals(OsVersionStanding.CURRENT, new MacOsVersion(27, 1, 0).standingAgainst(latest, latest));
+		assertEquals(OsVersionStanding.CURRENT, new MacOsVersion(28, 0, 0).standingAgainst(latest, null));
 	}
 
 	@Test

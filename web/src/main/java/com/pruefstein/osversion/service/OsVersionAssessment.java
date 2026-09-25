@@ -1,5 +1,6 @@
 package com.pruefstein.osversion.service;
 
+import com.pruefstein.osversion.domain.MacOsVersion;
 import com.pruefstein.osversion.domain.OsVersionStanding;
 
 /**
@@ -15,6 +16,9 @@ import com.pruefstein.osversion.domain.OsVersionStanding;
  * @param latest
  *            the newest release Apple had published when this report was filed,
  *            or {@code null} if that was not known
+ * @param latestOfTrain
+ *            the newest release of the device's own train Apple had published
+ *            when this report was filed, or {@code null} if that was not known
  * @param standing
  *            how the two compare
  * @param yearsBehind
@@ -26,12 +30,13 @@ public record OsVersionAssessment(
 	String reported,
 	String build,
 	String latest,
+	String latestOfTrain,
 	OsVersionStanding standing,
 	int yearsBehind)
 {
 	public static OsVersionAssessment unknown()
 	{
-		return new OsVersionAssessment(null, null, null, null, OsVersionStanding.UNKNOWN, 0);
+		return new OsVersionAssessment(null, null, null, null, null, OsVersionStanding.UNKNOWN, 0);
 	}
 
 	public String getName()
@@ -64,10 +69,32 @@ public record OsVersionAssessment(
 		return standing == OsVersionStanding.CURRENT;
 	}
 
-	/** A missing fix — worth saying, not worth alarming anyone. Amber. */
+	/**
+	 * The device's own train as people name it, e.g. {@code macOS 26}, or
+	 * {@code null} when the version could not be read.
+	 */
+	public String getTrain()
+	{
+		return MacOsVersion.parse(reported)
+			.map(version -> getName() + " " + version.major())
+			.orElse(null);
+	}
+
+	public String getLatestOfTrain()
+	{
+		return latestOfTrain;
+	}
+
+	/** Newest train, missing a fix — worth saying, not alarming. Amber. */
 	public boolean isPatchBehind()
 	{
 		return standing == OsVersionStanding.PATCH_BEHIND;
+	}
+
+	/** Newest train, an older feature update. Red. */
+	public boolean isMinorBehind()
+	{
+		return standing == OsVersionStanding.MINOR_BEHIND;
 	}
 
 	/**
@@ -79,22 +106,22 @@ public record OsVersionAssessment(
 		return standing == OsVersionStanding.OLDER_TRAIN_PATCHED;
 	}
 
-	/** An older feature update within the same train. Red. */
-	public boolean isMinorBehind()
+	/** An older train Apple still patches, missing its newest fix. Red. */
+	public boolean isOlderTrainUnpatched()
 	{
-		return standing == OsVersionStanding.MINOR_BEHIND;
+		return standing == OsVersionStanding.OLDER_TRAIN_UNPATCHED;
 	}
 
-	/** An older train altogether. Red, and its age gets named. */
-	public boolean isMajorBehind()
+	/** A train Apple no longer patches. Red. */
+	public boolean isUnsupportedTrain()
 	{
-		return standing == OsVersionStanding.MAJOR_BEHIND;
+		return standing == OsVersionStanding.UNSUPPORTED_TRAIN;
 	}
 
 	/** Whether anything at all is out of date. */
 	public boolean isBehind()
 	{
-		return isPatchBehind() || isOlderTrainPatched() || isMinorBehind() || isMajorBehind();
+		return isKnown() && standing != OsVersionStanding.CURRENT;
 	}
 
 	public int getYearsBehind()
@@ -113,9 +140,8 @@ public record OsVersionAssessment(
 	}
 
 	/**
-	 * The extra mark a whole-train-behind machine earns, e.g.
-	 * {@code 2-year-old} — attributive, so it stays singular however many years
-	 * it is.
+	 * The extra mark an older train in red earns, e.g. {@code 2-year-old} —
+	 * attributive, so it stays singular however many years it is.
 	 */
 	public String getAgeLabel()
 	{

@@ -130,8 +130,11 @@ class FleetDashboardTest
 			VersionShare patched = share(stats, "15.7.9");
 			assertTrue(patched.isPatchBehind());
 			assertFalse(patched.isBehind());
-			assertEquals("older, fully patched", patched.note());
-			assertTrue(share(stats, "15.7.8").isBehind());
+			assertEquals("older macOS, fully patched", patched.note());
+			VersionShare unpatched = share(stats, "15.7.8");
+			assertTrue(unpatched.isBehind());
+			// named by what it is missing, not by how far it is from the newest
+			assertEquals("older macOS, missing 15.7.9", unpatched.note());
 		}
 		finally
 		{

@@ -45,19 +45,19 @@ public class OsVersionAssessor
 			// The version is worth showing even with nothing to measure it
 			// against; it simply gets no colour.
 			return new OsVersionAssessment(report.getOsName(), report.getOsVersion(), report.getOsBuild(),
-				null, OsVersionStanding.CURRENT, 0);
+				null, null, OsVersionStanding.CURRENT, 0);
 		}
 
 		MacOsVersion latestOfTrain = catalog.latestPublicPerTrain(filedOn(report)).get(reported.get().major());
 		OsVersionStanding standing = reported.get().standingAgainst(latest, latestOfTrain);
 		int years = 0;
-		if (standing == OsVersionStanding.MAJOR_BEHIND)
+		if (standing == OsVersionStanding.OLDER_TRAIN_UNPATCHED || standing == OsVersionStanding.UNSUPPORTED_TRAIN)
 		{
 			OptionalInt age = reported.get().trainAgeInYears(LocalDate.now(ZoneOffset.UTC));
 			years = age.orElse(0);
 		}
 		return new OsVersionAssessment(report.getOsName(), report.getOsVersion(), report.getOsBuild(),
-			latest.toString(), standing, years);
+			latest.toString(), latestOfTrain != null ? latestOfTrain.toString() : null, standing, years);
 	}
 
 	/**

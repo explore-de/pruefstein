@@ -90,12 +90,16 @@ public class ReportTools
 	}
 
 	/**
+	 * @param latestOfTrain
+	 *            the newest release of the device's own train Apple had
+	 *            published when the report was filed
 	 * @param standing
 	 *            how the reported version compares to the newest Apple had
 	 *            published when the report was filed
 	 */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	public record OsVersion(String name, String reported, String build, String latest, String standing)
+	public record OsVersion(String name, String reported, String build, String latest, String latestOfTrain,
+		String standing)
 	{
 	}
 
@@ -120,7 +124,11 @@ public class ReportTools
 
 	@Tool(description = "Reads one compliance report in full: every check with whether it passed, the condition "
 		+ "it was judged by, what the device returned and an explanation of any failure; the installed apps the "
-		+ "blocklist forbids; and how the macOS version compares to Apple's latest.", structuredContent = true)
+		+ "blocklist forbids; and how the macOS version compares to Apple's latest. os.standing is one of "
+		+ "CURRENT, PATCH_BEHIND (newest macOS, missing a fix), MINOR_BEHIND (newest macOS, missing a feature "
+		+ "update), OLDER_TRAIN_PATCHED (older macOS Apple still patches, fully patched), OLDER_TRAIN_UNPATCHED "
+		+ "(older macOS Apple still patches, missing its latestOfTrain), UNSUPPORTED_TRAIN (older macOS Apple no "
+		+ "longer patches) or UNKNOWN.", structuredContent = true)
 	ReportView getReport(@ToolArg(description = "The report's id") Long id)
 	{
 		Report report = reportRepository.findById(id);
@@ -133,7 +141,8 @@ public class ReportTools
 		OsVersionAssessment os = details.os();
 		return new ReportView(
 			ReportSummary.of(report),
-			new OsVersion(os.getName(), os.reported(), os.build(), os.latest(), os.standing().name()),
+			new OsVersion(os.getName(), os.reported(), os.build(), os.latest(), os.latestOfTrain(),
+				os.standing().name()),
 			details.results().stream().map(ReportTools::toResult).toList(),
 			details.blacklistResult() != null ? toResult(details.blacklistResult()) : null,
 			details.inventory().stream()

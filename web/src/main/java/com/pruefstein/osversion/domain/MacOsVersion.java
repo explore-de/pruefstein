@@ -66,50 +66,38 @@ public record MacOsVersion(int major, int minor, int patch) implements Comparabl
 	}
 
 	/**
-	 * How far behind {@code latest} this version is — the coarsest number that
-	 * differs, because that is the one that matters. A version at or ahead of
-	 * the latest release is {@link OsVersionStanding#CURRENT}; a machine on a
-	 * beta is not behind anything.
+	 * How this version compares to {@code latest}. Within the newest train, the
+	 * coarsest number that differs decides; on an older train, whether Apple
+	 * still patches it and whether this is its newest fix. A version at or
+	 * ahead of the latest release is {@link OsVersionStanding#CURRENT}; a
+	 * machine on a beta is not behind anything.
+	 *
+	 * @param latest
+	 *            the newest release Apple published, or {@code null} when that
+	 *            is not known — which judges nothing
+	 * @param latestOfTrain
+	 *            the newest release Apple published in this version's train, or
+	 *            {@code null} when that is not known — which keeps an older
+	 *            train red
 	 */
-	public OsVersionStanding standingAgainst(MacOsVersion latest)
+	public OsVersionStanding standingAgainst(MacOsVersion latest, MacOsVersion latestOfTrain)
 	{
 		if (latest == null || compareTo(latest) >= 0)
 		{
 			return OsVersionStanding.CURRENT;
 		}
-		if (major != latest.major)
+		if (major == latest.major)
 		{
-			return OsVersionStanding.MAJOR_BEHIND;
+			return minor != latest.minor ? OsVersionStanding.MINOR_BEHIND : OsVersionStanding.PATCH_BEHIND;
 		}
-		if (minor != latest.minor)
+		if (!isStillPatchedAlongside(latest))
 		{
-			return OsVersionStanding.MINOR_BEHIND;
+			return OsVersionStanding.UNSUPPORTED_TRAIN;
 		}
-		return OsVersionStanding.PATCH_BEHIND;
-	}
-
-	/**
-	 * Like {@link #standingAgainst(MacOsVersion)}, but a machine a whole train
-	 * behind is let off to {@link OsVersionStanding#OLDER_TRAIN_PATCHED} when
-	 * it is on the newest fix of its own train and Apple still patches that
-	 * train.
-	 *
-	 * @param latestOfTrain
-	 *            the newest release Apple published in this version's train, or
-	 *            {@code null} when that is not known — which keeps it red
-	 */
-	public OsVersionStanding standingAgainst(MacOsVersion latest, MacOsVersion latestOfTrain)
-	{
-		OsVersionStanding standing = standingAgainst(latest);
-		if (standing == OsVersionStanding.MAJOR_BEHIND
-			&& latestOfTrain != null
+		boolean onNewestFix = latestOfTrain != null
 			&& latestOfTrain.major == major
-			&& compareTo(latestOfTrain) >= 0
-			&& isStillPatchedAlongside(latest))
-		{
-			return OsVersionStanding.OLDER_TRAIN_PATCHED;
-		}
-		return standing;
+			&& compareTo(latestOfTrain) >= 0;
+		return onNewestFix ? OsVersionStanding.OLDER_TRAIN_PATCHED : OsVersionStanding.OLDER_TRAIN_UNPATCHED;
 	}
 
 	/**
