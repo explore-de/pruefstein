@@ -1,0 +1,85 @@
+{#include main.html}
+{#title}Review Import — Prüfstein{/title}
+
+<div x-data="{ count: 0 }" x-init="count = $el.querySelectorAll('input[name=mail]').length" class="max-w-6xl">
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl sm:text-4xl font-black tracking-tight">Review Import</h1>
+      <p class="text-sm font-medium text-stone-500 mt-1">
+        Found in <span class="font-bold text-black">{fileName}</span>. Fix anything the AI got wrong,
+        remove whoever should not be invited, then send.
+      </p>
+    </div>
+    <a href="{uri:Users.index}"
+       class="self-start px-4 py-2.5 text-sm font-bold border-2 border-black bg-white hover:bg-stone-100">Cancel</a>
+  </div>
+
+  <form method="post" action="{uri:Users.inviteAll}"
+        @submit="$el.querySelector('[type=submit]').disabled = true">
+    {#authenticityToken /}
+
+    <div class="bg-white border-2 border-black shadow-brutal overflow-x-auto">
+      <table class="w-full min-w-[44rem] text-sm">
+        <thead>
+          <tr class="border-b-2 border-black bg-black text-white">
+            <th class="text-left px-4 py-3 font-black tracking-wide text-xs">First Name</th>
+            <th class="text-left px-4 py-3 font-black tracking-wide text-xs">Last Name</th>
+            <th class="text-left px-4 py-3 font-black tracking-wide text-xs">Email</th>
+            <th class="px-4 py-3 w-10"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {#for person in candidates}
+          {#if person.existing}
+          <!-- Already on record: shown so the admin knows they were found,
+               but not submitted, so nobody ends up in the list twice. -->
+          <tr class="border-b-2 border-black last:border-0 bg-stone-50 text-stone-400">
+            <td class="px-4 py-2 font-medium">{person.firstname}</td>
+            <td class="px-4 py-2 font-medium">{person.lastname}</td>
+            <td class="px-4 py-2">{person.mail}</td>
+            <td class="px-4 py-2 text-right whitespace-nowrap">
+              <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-stone-300 bg-white">ALREADY A USER</span>
+            </td>
+          </tr>
+          {#else}
+          <tr class="border-b-2 border-black last:border-0 hover:bg-accent/40">
+            <td class="px-2 py-1.5">
+              <input name="firstname" type="text" value="{person.firstname}" required aria-label="First name"
+                     class="w-full px-2 py-1.5 text-sm font-medium border-2 border-transparent hover:border-stone-300 focus:border-black focus:outline-none focus:bg-accent invalid:border-red-400">
+            </td>
+            <td class="px-2 py-1.5">
+              <input name="lastname" type="text" value="{person.lastname}" required aria-label="Last name"
+                     class="w-full px-2 py-1.5 text-sm font-medium border-2 border-transparent hover:border-stone-300 focus:border-black focus:outline-none focus:bg-accent invalid:border-red-400">
+            </td>
+            <td class="px-2 py-1.5">
+              <input name="mail" type="email" value="{person.mail}" required aria-label="Email"
+                     class="w-full px-2 py-1.5 text-sm border-2 border-transparent hover:border-stone-300 focus:border-black focus:outline-none focus:bg-accent invalid:border-red-400">
+            </td>
+            <td class="px-2 py-1.5 text-right">
+              <button type="button" aria-label="Remove" title="Don't invite"
+                      @click="$el.closest('tr').remove(); count--"
+                      class="p-1.5 border-2 border-transparent hover:border-black hover:bg-red-50 text-red-600">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+          {/if}
+          {/for}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex items-center justify-end gap-4 mt-6">
+      <p class="text-sm font-medium text-stone-500">Each person gets the setup mail right away.</p>
+      <button type="submit" :disabled="count === 0"
+              class="px-5 py-2.5 text-sm font-bold bg-black text-white border-2 border-black shadow-brutal-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all disabled:opacity-50">
+        Send <span x-text="count"></span> <span x-text="count === 1 ? 'Invite' : 'Invites'"></span>
+      </button>
+    </div>
+  </form>
+</div>
+
+{/include}

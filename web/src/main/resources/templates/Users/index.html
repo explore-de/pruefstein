@@ -13,6 +13,14 @@
       <p class="text-sm font-medium text-stone-500 mt-1">Manage employee accounts.</p>
     </div>
     {#if inject:currentUser.admin}
+    <div class="flex flex-wrap gap-2">
+    <button @click="showImport = true"
+            class="inline-flex items-center gap-2 bg-white text-black text-sm font-bold px-4 py-2.5 border-2 border-black shadow-brutal-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+      </svg>
+      Import from File
+    </button>
     <button @click="showCreate = true"
             class="inline-flex items-center gap-2 bg-black text-white text-sm font-bold px-4 py-2.5 border-2 border-black shadow-brutal-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all">
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
@@ -20,6 +28,7 @@
       </svg>
       Add User
     </button>
+    </div>
     {/if}
   </div>
 
@@ -160,6 +169,41 @@
     </table>
   </div>
 
+  <!-- ── Import Modal ──────────────────────────────────────── -->
+  <div x-show="showImport" x-cloak
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+       @click.self="if (!importing) showImport = false" @keydown.escape.window="if (!importing) showImport = false">
+    <div class="bg-white border-2 border-black shadow-brutal-lg w-full max-w-md max-h-[90vh] overflow-y-auto" @click.stop>
+      <div class="px-6 pt-5 pb-4 border-b-2 border-black">
+        <h2 class="text-xl font-black">Import from File</h2>
+        <p class="text-sm font-medium text-stone-500 mt-1">
+          Upload any list of colleagues — an HR export, a Markdown table, a plain list of addresses.
+          AI picks out names and emails; you review everyone before a single invite goes out.
+        </p>
+      </div>
+      <form method="post" action="{uri:Users.importFile}" enctype="multipart/form-data"
+            @submit="importing = true" class="px-6 pt-4 pb-6 space-y-4">
+        {#authenticityToken /}
+        <div>
+          <label class="block text-xs font-black tracking-wide mb-1.5">File (.csv, .md, .txt)</label>
+          <input name="file" type="file" accept=".csv,.md,.markdown,.txt,.tsv,text/csv,text/markdown,text/plain" required
+                 class="w-full text-sm border-2 border-black file:mr-3 file:px-3 file:py-2 file:border-0 file:border-r-2 file:border-black file:bg-accent file:font-bold file:text-sm">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" @click="showImport = false" :disabled="importing"
+                  class="px-4 py-2 text-sm font-bold border-2 border-black hover:bg-stone-100 disabled:opacity-50">
+            Cancel
+          </button>
+          <button type="submit" :disabled="importing"
+                  class="px-4 py-2 text-sm font-bold bg-black text-white border-2 border-black shadow-brutal-sm hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all disabled:opacity-60">
+            <span x-show="!importing">Read File</span>
+            <span x-show="importing" x-cloak>Reading…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- ── Create Modal ──────────────────────────────────────── -->
   <div x-show="showCreate" x-cloak
        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
@@ -274,6 +318,8 @@ function usersPage() {
   return {
     search: '',
     showCreate: false,
+    showImport: false,
+    importing: false,
     showEdit: false,
     showDelete: false,
     editData: { id: '', firstname: '', lastname: '', mail: '' },
