@@ -462,10 +462,6 @@ One registration serves both the browser login and the agent:
    ever redirects to.
 2. **Authentication → Allow public client flows → Yes.** The agent logs in with
    the device code flow, which needs it.
-   **Add a platform → Mobile and desktop applications**, custom redirect URI
-   `http://localhost:33418/callback`. MCP clients such as Claude Code log in
-   as this same public client and wait for the code on that port; see
-   `pruefstein.mcp.callback-port`.
 3. **Certificates & secrets → New client secret.** This is `ENTRA_CLIENT_SECRET`.
 4. **Expose an API → Application ID URI → Add**, keeping the suggested
    `api://<client-id>`. Without it the agent's token is audienced to Microsoft
@@ -479,6 +475,23 @@ One registration serves both the browser login and the agent:
 5. **App roles → Create app role** with the value `admin`, then assign it to
    the admins under **Enterprise applications → Users and groups**. Everybody
    else needs no role.
+
+MCP clients such as Claude Code need a registration of their own. They ask for
+`https://<your host>/mcp/.default`, and Entra lets an app ask for a token for
+itself only by its GUID (AADSTS90009), so they cannot sign in as the one above:
+
+1. On the registration above, **Expose an API → Add a scope**, e.g.
+   `access`, admins and users may consent.
+2. **App registrations → New registration**, e.g. `pruefstein MCP`, with the
+   redirect URI platform **Public client/native (mobile & desktop)** and
+   `http://localhost:33418/callback`. MCP clients wait for the code on that
+   port; see `pruefstein.mcp.callback-port`.
+3. **Authentication → Allow public client flows → Yes.**
+4. **API permissions → Add a permission → My APIs →** the registration above,
+   delegated, the scope from step 1; then **Grant admin consent**.
+
+Its application (client) id is `PRUEFSTEIN_MCP_CLIENT_ID`; the "How to use MCP"
+page puts it into the `claude mcp add` command.
 
 The tenant id and the application (client) id from the overview page are
 `ENTRA_TENANT_ID` and `ENTRA_CLIENT_ID`. To grant admin by group rather than by
@@ -507,6 +520,7 @@ with an account holding `admin` gives you the fleet dashboard.
 | `PRUEFSTEIN_BASE_URL` | yes | `https://` plus that host. Mails and the setup page link to it |
 | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | yes | Used both to create the database and to connect to it |
 | `ENTRA_TENANT_ID`, `ENTRA_CLIENT_ID`, `ENTRA_CLIENT_SECRET` | yes | From the app registration above |
+| `PRUEFSTEIN_MCP_CLIENT_ID` | for MCP | The MCP registration above. Without it MCP clients cannot sign in |
 | `MAIL_FROM`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD` | yes | STARTTLS is required, so port 587 is the usual one |
 | `OPENAI_API_KEY` | no | Turns on the AI explanations |
 | `PRUEFSTEIN_SECURITY_ROLE_CLAIM_PATH`, `PRUEFSTEIN_SECURITY_ADMIN_ROLE` | no | Default to `roles` and `admin` |
