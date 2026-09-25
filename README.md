@@ -23,6 +23,7 @@ infrastructure. It is one repository under Apache-2.0 — no core edition, no
 feature held back for a paid tier.
 
 ```bash
+brew install --cask osquery
 brew install explore-de/pruefstein/pruefstein-agent
 pruefstein-agent login --server https://pruefstein.example.com
 pruefstein-agent run
@@ -260,10 +261,12 @@ It is intended to run as a scheduled task (launchd on macOS, systemd on Linux, T
 ### Installing the CLI
 
 ```bash
+brew install --cask osquery
 brew install explore-de/pruefstein/pruefstein-agent
 ```
 
-That is the whole thing. The formula is fully qualified, so Homebrew taps
+osquery comes first because every check runs through it, and Homebrew does not
+let a formula depend on a cask. The formula is fully qualified, so Homebrew taps
 [explore-de/homebrew-pruefstein](https://github.com/explore-de/homebrew-pruefstein)
 on your behalf, and what it installs is a prebuilt native binary: no JDK, no
 build. `brew uninstall pruefstein-agent` removes it.

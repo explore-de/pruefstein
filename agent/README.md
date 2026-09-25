@@ -12,10 +12,12 @@ Built with Quarkus and [Picocli](https://quarkus.io/guides/picocli).
 ## Installing
 
 ```bash
+brew install --cask osquery
 brew install explore-de/pruefstein/pruefstein-agent
 ```
 
-A prebuilt native binary from the tap at
+osquery first: every check runs through it, and a formula cannot depend on a
+cask. Then a prebuilt native binary from the tap at
 [explore-de/homebrew-pruefstein](https://github.com/explore-de/homebrew-pruefstein).
 No JDK and nothing to compile.
 

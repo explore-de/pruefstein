@@ -70,9 +70,7 @@
                   <p style="margin:{#if step_count > 1}18px{#else}0{/if} 0 0 0;font-size:13px;font-weight:bold;text-transform:uppercase;color:#57534e;">
                     {step_count} — {step.title}
                   </p>
-                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;word-break:break-all;">
-                    {step.command}
-                  </p>
+                  <p style="margin:6px 0 0 0;font-family:'Space Mono',Consolas,Monaco,monospace;font-size:14px;font-weight:bold;word-break:break-all;white-space:pre-line;">{step.command}</p>
                   <p style="margin:6px 0 0 0;font-size:13px;line-height:1.5;color:#57534e;">
                     {step.note}
                   </p>

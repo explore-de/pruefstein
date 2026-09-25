@@ -76,8 +76,8 @@
 				<Button href={site.repo} external variant="dark">Get it on GitHub ↗</Button>
 			</div>
 
-			<!-- The one line somebody has to copy to try it. Fully qualified, so
-			     Homebrew taps on their behalf and this really is one command. -->
+			<!-- What somebody has to copy to try it: osquery, then the agent. Fully
+			     qualified, so Homebrew taps on their behalf. -->
 			<div class="install">
 				<CodeBlock label="Install the agent" code={site.install} tone="dark" wrap />
 			</div>

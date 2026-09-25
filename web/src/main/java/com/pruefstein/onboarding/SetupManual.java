@@ -32,10 +32,11 @@ public class SetupManual
 	public List<SetupStep> steps()
 	{
 		return List.of(
-			new SetupStep("Install the agent", "brew install " + brewFormula,
-				"One command: Homebrew finds the tap on its own and installs a prebuilt binary. "
-					+ "Nothing to compile, and no Java to install — the agent is a native "
-					+ "executable."),
+			new SetupStep("Install the agent",
+				"brew install --cask osquery\nbrew install " + brewFormula,
+				"osquery runs the checks, and Homebrew cannot pull a cask in as a dependency, "
+					+ "so it comes first. Homebrew finds the tap on its own and installs a "
+					+ "prebuilt binary: nothing to compile, and no Java to install."),
 			new SetupStep("Sign in, once", "pruefstein-agent login --server " + baseUrl(),
 				"--server (short: -s) names the Prüfstein server you report to. It is stored "
 					+ "alongside your credentials and reused by every later run, so this is the "
