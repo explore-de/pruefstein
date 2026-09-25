@@ -1,9 +1,13 @@
 package com.pruefstein.osversion.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 import com.pruefstein.osversion.domain.MacOsRelease;
 import com.pruefstein.osversion.domain.MacOsVersion;
@@ -62,6 +66,21 @@ public class MacOsReleaseCatalog
 			.map(MacOsRelease::version)
 			.filter(java.util.Objects::nonNull)
 			.max(Comparator.naturalOrder());
+	}
+
+	/**
+	 * The newest public release of each train that Apple had published by
+	 * {@code asOf}, keyed by major. A release with no posting date counts as
+	 * published.
+	 */
+	public Map<Integer, MacOsVersion> latestPublicPerTrain(LocalDate asOf)
+	{
+		return repository.find("publicRelease = true").list().stream()
+			.filter(release -> release.getPostingDate() == null || !release.getPostingDate().isAfter(asOf))
+			.map(MacOsRelease::version)
+			.filter(java.util.Objects::nonNull)
+			.collect(Collectors.toMap(MacOsVersion::major, version -> version,
+				BinaryOperator.<MacOsVersion> maxBy(Comparator.naturalOrder())));
 	}
 
 	/** Every release the catalogue knows, newest first. */

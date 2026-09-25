@@ -70,6 +70,15 @@ public record OsVersionAssessment(
 		return standing == OsVersionStanding.PATCH_BEHIND;
 	}
 
+	/**
+	 * An older train, fully patched and still supported by Apple. Amber — not
+	 * the newest, but nothing left to fix short of the upgrade.
+	 */
+	public boolean isOlderTrainPatched()
+	{
+		return standing == OsVersionStanding.OLDER_TRAIN_PATCHED;
+	}
+
 	/** An older feature update within the same train. Red. */
 	public boolean isMinorBehind()
 	{
@@ -85,7 +94,7 @@ public record OsVersionAssessment(
 	/** Whether anything at all is out of date. */
 	public boolean isBehind()
 	{
-		return isPatchBehind() || isMinorBehind() || isMajorBehind();
+		return isPatchBehind() || isOlderTrainPatched() || isMinorBehind() || isMajorBehind();
 	}
 
 	public int getYearsBehind()

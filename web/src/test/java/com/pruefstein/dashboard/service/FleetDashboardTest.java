@@ -1,6 +1,7 @@
 package com.pruefstein.dashboard.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,8 @@ import com.pruefstein.compliance.repository.ComplianceResultRepository;
 import com.pruefstein.dashboard.api.FleetStats;
 import com.pruefstein.dashboard.api.VersionShare;
 import com.pruefstein.dashboard.api.ViolationShare;
+import com.pruefstein.osversion.domain.MacOsRelease;
+import com.pruefstein.osversion.repository.MacOsReleaseRepository;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
 import com.pruefstein.report.repository.ReportRepository;
@@ -43,6 +46,9 @@ class FleetDashboardTest
 
 	@Inject
 	ComplianceResultRepository resultRepository;
+
+	@Inject
+	MacOsReleaseRepository releaseRepository;
 
 	private final List<Long> reports = new ArrayList<>();
 
@@ -103,6 +109,48 @@ class FleetDashboardTest
 		assertEquals(1, share(stats, "26.1").devices());
 		assertEquals(3, share(stats, "14.6").devices());
 		assertEquals(75, share(stats, "14.6").fleetPct());
+	}
+
+	/**
+	 * A machine on the newest fix of a train Apple still patches is amber, not
+	 * red; one a fix short of that train is still red.
+	 */
+	@Test
+	void theNewestFixOfAStillPatchedTrainReadsAmber()
+	{
+		release("27.0", "26A428");
+		release("15.7.9", "24G830");
+		report("fleet-patched.local", "15.7.9", hoursAgo(2));
+		report("fleet-unpatched.local", "15.7.8", hoursAgo(2));
+
+		try
+		{
+			FleetStats stats = fleet.stats();
+
+			VersionShare patched = share(stats, "15.7.9");
+			assertTrue(patched.isPatchBehind());
+			assertFalse(patched.isBehind());
+			assertEquals("older, fully patched", patched.note());
+			assertTrue(share(stats, "15.7.8").isBehind());
+		}
+		finally
+		{
+			QuarkusTransaction.requiringNew().run(() -> releaseRepository
+				.delete("productVersion in ?1", List.of("27.0", "15.7.9")));
+		}
+	}
+
+	private void release(String version, String build)
+	{
+		QuarkusTransaction.requiringNew().run(() -> {
+			MacOsRelease release = new MacOsRelease();
+			release.setProductVersion(version);
+			release.setBuild(build);
+			release.setPostingDate(LocalDate.of(2026, 9, 15));
+			release.setPublicRelease(true);
+			release.setSeenAt(Instant.now());
+			releaseRepository.persist(release);
+		});
 	}
 
 	/**

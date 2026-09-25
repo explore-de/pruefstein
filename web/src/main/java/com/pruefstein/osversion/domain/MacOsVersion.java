@@ -36,6 +36,13 @@ public record MacOsVersion(int major, int minor, int patch) implements Comparabl
 	private static final int FIRST_YEAR_BASED = 26;
 
 	/**
+	 * Apple ships security fixes for the current train and the two before it.
+	 * Counted in years rather than majors, because the numbering jumped from 15
+	 * to 26.
+	 */
+	private static final int SUPPORTED_TRAINS = 3;
+
+	/**
 	 * Parses a version as osquery reports it, ignoring anything after the three
 	 * numbers.
 	 *
@@ -79,6 +86,42 @@ public record MacOsVersion(int major, int minor, int patch) implements Comparabl
 			return OsVersionStanding.MINOR_BEHIND;
 		}
 		return OsVersionStanding.PATCH_BEHIND;
+	}
+
+	/**
+	 * Like {@link #standingAgainst(MacOsVersion)}, but a machine a whole train
+	 * behind is let off to {@link OsVersionStanding#OLDER_TRAIN_PATCHED} when
+	 * it is on the newest fix of its own train and Apple still patches that
+	 * train.
+	 *
+	 * @param latestOfTrain
+	 *            the newest release Apple published in this version's train, or
+	 *            {@code null} when that is not known — which keeps it red
+	 */
+	public OsVersionStanding standingAgainst(MacOsVersion latest, MacOsVersion latestOfTrain)
+	{
+		OsVersionStanding standing = standingAgainst(latest);
+		if (standing == OsVersionStanding.MAJOR_BEHIND
+			&& latestOfTrain != null
+			&& latestOfTrain.major == major
+			&& compareTo(latestOfTrain) >= 0
+			&& isStillPatchedAlongside(latest))
+		{
+			return OsVersionStanding.OLDER_TRAIN_PATCHED;
+		}
+		return standing;
+	}
+
+	/**
+	 * Whether Apple still ships fixes for this train while {@code latest} is
+	 * the newest. A train whose year is unknown is too old to say.
+	 */
+	private boolean isStillPatchedAlongside(MacOsVersion latest)
+	{
+		OptionalInt ours = trainReleaseYear();
+		OptionalInt newest = latest.trainReleaseYear();
+		return ours.isPresent() && newest.isPresent()
+			&& newest.getAsInt() - ours.getAsInt() < SUPPORTED_TRAINS;
 	}
 
 	/**

@@ -48,10 +48,14 @@ public record VersionShare(
 		return !folded && standing == OsVersionStanding.CURRENT;
 	}
 
-	/** Amber: the right feature update, missing a fix. */
+	/**
+	 * Amber: the right feature update missing a fix, or an older train Apple
+	 * still patches, on its newest fix.
+	 */
 	public boolean isPatchBehind()
 	{
-		return !folded && standing == OsVersionStanding.PATCH_BEHIND;
+		return !folded && (standing == OsVersionStanding.PATCH_BEHIND
+			|| standing == OsVersionStanding.OLDER_TRAIN_PATCHED);
 	}
 
 	/**
@@ -83,6 +87,7 @@ public record VersionShare(
 		{
 			case CURRENT -> "up to date";
 			case PATCH_BEHIND -> "missing a fix";
+			case OLDER_TRAIN_PATCHED -> "older, fully patched";
 			case MINOR_BEHIND -> "an update behind";
 			case MAJOR_BEHIND -> "a major version behind";
 			case UNKNOWN -> "no version reported";

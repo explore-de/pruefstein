@@ -1,5 +1,7 @@
 package com.pruefstein.dashboard.service;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -103,6 +105,7 @@ public class FleetDashboard
 		}
 
 		Optional<MacOsVersion> latest = catalog.latestPublicVersion();
+		Map<Integer, MacOsVersion> latestPerTrain = catalog.latestPublicPerTrain(LocalDate.now(ZoneOffset.UTC));
 		List<Map.Entry<String, Long>> ordered = new ArrayList<>(counts.entrySet());
 		ordered.sort(newestFirst());
 
@@ -111,13 +114,14 @@ public class FleetDashboard
 		for (Map.Entry<String, Long> entry : ordered.subList(0, Math.min(ordered.size(), MAX_VERSION_BARS)))
 		{
 			OsVersionStanding standing = MacOsVersion.parse(entry.getKey())
-				.map(version -> version.standingAgainst(latest.orElse(null)))
+				.map(version -> version.standingAgainst(latest.orElse(null), latestPerTrain.get(version.major())))
 				.orElse(OsVersionStanding.UNKNOWN);
 			bars.add(share(entry.getKey(), standing, entry.getValue(), runs.size(), max, false, entry.getKey()));
 		}
 
 		// Everything past the cap is older than everything shown, so the fold
-		// is always the old end of the fleet and always reads red.
+		// is always the old end of the fleet and always reads red — even if a
+		// patched older train hides in it, twelve versions in.
 		List<Map.Entry<String, Long>> tail = ordered.subList(Math.min(ordered.size(), MAX_VERSION_BARS),
 			ordered.size());
 		if (!tail.isEmpty())

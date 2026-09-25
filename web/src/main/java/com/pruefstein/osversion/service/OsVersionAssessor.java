@@ -48,7 +48,8 @@ public class OsVersionAssessor
 				null, OsVersionStanding.CURRENT, 0);
 		}
 
-		OsVersionStanding standing = reported.get().standingAgainst(latest);
+		MacOsVersion latestOfTrain = catalog.latestPublicPerTrain(filedOn(report)).get(reported.get().major());
+		OsVersionStanding standing = reported.get().standingAgainst(latest, latestOfTrain);
 		int years = 0;
 		if (standing == OsVersionStanding.MAJOR_BEHIND)
 		{
@@ -57,6 +58,18 @@ public class OsVersionAssessor
 		}
 		return new OsVersionAssessment(report.getOsName(), report.getOsVersion(), report.getOsBuild(),
 			latest.toString(), standing, years);
+	}
+
+	/**
+	 * The day the report was filed, which bounds what counts as the newest fix
+	 * of the device's own train: a fix Apple shipped afterwards was not missing
+	 * then.
+	 */
+	private static LocalDate filedOn(Report report)
+	{
+		return report.getCheckedAt() != null
+			? LocalDate.ofInstant(report.getCheckedAt(), ZoneOffset.UTC)
+			: LocalDate.now(ZoneOffset.UTC);
 	}
 
 	private MacOsVersion latestFor(Report report)

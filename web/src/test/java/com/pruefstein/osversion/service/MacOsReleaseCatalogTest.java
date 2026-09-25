@@ -147,4 +147,27 @@ class MacOsReleaseCatalogTest
 		// then only the usable one lands
 		assertEquals(1, added);
 	}
+
+	@Test
+	void knowsTheNewestFixOfEachTrainAsOfADay() throws Exception
+	{
+		// given — 15.7.9 ships after 15.7.8, and a seed is never counted
+		Mockito.when(feedClient.fetch()).thenReturn(feed(
+			List.of(
+				new ApplePmvFeed.Asset("27.0", "26A428", LocalDate.of(2026, 9, 15)),
+				new ApplePmvFeed.Asset("15.7.8", "24G820", LocalDate.of(2026, 7, 1)),
+				new ApplePmvFeed.Asset("15.7.9", "24G830", LocalDate.of(2026, 9, 15))),
+			List.of(new ApplePmvFeed.Asset("15.8", "24H1", LocalDate.of(2026, 9, 1)))));
+		catalog.refresh();
+
+		// when
+		Map<Integer, MacOsVersion> before = catalog.latestPublicPerTrain(LocalDate.of(2026, 8, 1));
+		Map<Integer, MacOsVersion> after = catalog.latestPublicPerTrain(LocalDate.of(2026, 9, 20));
+
+		// then — a fix that had not shipped yet was not missing
+		assertEquals(new MacOsVersion(15, 7, 8), before.get(15));
+		assertTrue(before.get(27) == null);
+		assertEquals(new MacOsVersion(15, 7, 9), after.get(15));
+		assertEquals(new MacOsVersion(27, 0, 0), after.get(27));
+	}
 }

@@ -139,6 +139,46 @@ class ReportOsVersionHeaderTest
 	}
 
 	@Test
+	void marksTheNewestFixOfAStillPatchedTrainInAmber()
+	{
+		// given — 15.7.9 is the newest Sequoia, and Apple still patches it
+		seed("15.7.9", "24G830", "26.7");
+		release("15.7.9", "24G830");
+
+		try
+		{
+			// when / then
+			given()
+				.when().get("/Reports/show/" + reportId)
+				.then()
+				.statusCode(200)
+				.body(containsString("OLDER, PATCHED"))
+				.body(containsString("bg-amber-400"))
+				.body(containsString("newest fix, still supported"))
+				.body(not(containsString("MAJOR BEHIND")))
+				.body(not(containsString("USES A")));
+		}
+		finally
+		{
+			QuarkusTransaction.requiringNew()
+				.run(() -> releaseRepository.delete("productVersion = ?1", "15.7.9"));
+		}
+	}
+
+	private void release(String version, String build)
+	{
+		QuarkusTransaction.requiringNew().run(() -> {
+			MacOsRelease release = new MacOsRelease();
+			release.setProductVersion(version);
+			release.setBuild(build);
+			release.setPostingDate(LocalDate.of(2026, 9, 15));
+			release.setPublicRelease(true);
+			release.setSeenAt(Instant.now());
+			releaseRepository.persist(release);
+		});
+	}
+
+	@Test
 	void saysSoPlainlyWhenNoVersionWasReported()
 	{
 		// given — an agent older than this field, or an osquery that failed

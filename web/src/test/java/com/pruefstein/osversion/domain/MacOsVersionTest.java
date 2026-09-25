@@ -52,6 +52,59 @@ class MacOsVersionTest
 	}
 
 	@Test
+	void theNewestFixOfAStillPatchedTrainIsNotRed()
+	{
+		// given — 27 is newest; Apple still patches 26 and 15
+		MacOsVersion latest = new MacOsVersion(27, 0, 0);
+
+		// when / then
+		assertEquals(OsVersionStanding.OLDER_TRAIN_PATCHED,
+			new MacOsVersion(26, 7, 1).standingAgainst(latest, new MacOsVersion(26, 7, 1)));
+		assertEquals(OsVersionStanding.OLDER_TRAIN_PATCHED,
+			new MacOsVersion(15, 7, 9).standingAgainst(latest, new MacOsVersion(15, 7, 9)));
+	}
+
+	@Test
+	void anOlderTrainStaysRedWhenItIsMissingItsOwnFix()
+	{
+		// given
+		MacOsVersion latest = new MacOsVersion(27, 0, 0);
+
+		// when / then — one fix short of its train's newest
+		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+			new MacOsVersion(26, 7, 0).standingAgainst(latest, new MacOsVersion(26, 7, 1)));
+		// and when the train's newest is not known at all
+		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+			new MacOsVersion(26, 7, 1).standingAgainst(latest, null));
+	}
+
+	@Test
+	void aTrainApplesStoppedPatchingStaysRedEvenFullyPatched()
+	{
+		// given — with 27 newest, 14 (2023) is three trains back
+		MacOsVersion latest = new MacOsVersion(27, 0, 0);
+
+		// when / then
+		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+			new MacOsVersion(14, 8, 1).standingAgainst(latest, new MacOsVersion(14, 8, 1)));
+		assertEquals(OsVersionStanding.MAJOR_BEHIND,
+			new MacOsVersion(10, 15, 7).standingAgainst(latest, new MacOsVersion(10, 15, 7)));
+	}
+
+	@Test
+	void theNewestTrainIsJudgedAsBeforeWhateverItsTrainSays()
+	{
+		// given
+		MacOsVersion latest = new MacOsVersion(27, 1, 2);
+
+		// when / then — the extra yardstick only ever softens a major gap
+		assertEquals(OsVersionStanding.PATCH_BEHIND,
+			new MacOsVersion(27, 1, 1).standingAgainst(latest, latest));
+		assertEquals(OsVersionStanding.MINOR_BEHIND,
+			new MacOsVersion(27, 0, 0).standingAgainst(latest, latest));
+	}
+
+	@Test
 	void aMachineOnABetaIsNotBehindAnything()
 	{
 		// given — a device ahead of the newest public release
