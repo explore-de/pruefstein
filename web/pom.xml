@@ -54,7 +54,7 @@
         <dependency>
             <groupId>io.quarkiverse.renarde</groupId>
             <artifactId>quarkus-renarde</artifactId>
-            <version>3.1.8</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.quarkiverse.banner</groupId>
