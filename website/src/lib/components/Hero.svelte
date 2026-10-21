@@ -131,8 +131,16 @@
 		letter-spacing: -0.035em;
 	}
 
+	/* Above the highlight, which would otherwise paint over the descenders of
+	   the line before it */
 	.line {
 		display: block;
+		position: relative;
+		z-index: 1;
+	}
+
+	.line:has(.mark) {
+		z-index: 0;
 	}
 
 	/* Highlight hugs the words, not the line box */
