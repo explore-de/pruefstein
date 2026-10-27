@@ -13,6 +13,23 @@ permissions:
   packages: write
 
 jobs:
+  ## Its own job rather than a step of build: TruffleHog diffs the pushed or
+  ## proposed commits against their base, which needs the history a shallow
+  ## checkout has not got, and a leaked secret should fail a pull request in
+  ## seconds rather than wait behind a native build that has no say in it.
+  secret-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      ## Checks secrets leaking, important for ISO 27001
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@v3.99.7
+
   build:
     runs-on: ubuntu-latest
     steps:
