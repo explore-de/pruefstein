@@ -7,8 +7,6 @@ import com.pruefstein.dashboard.service.FleetDashboard;
 import com.pruefstein.dashboard.service.UserDashboard;
 import com.pruefstein.onboarding.SetupManual;
 import com.pruefstein.onboarding.SetupStep;
-import com.pruefstein.report.domain.ReportStatus;
-import com.pruefstein.report.repository.ReportRepository;
 import com.pruefstein.report.service.ReportingSchedule;
 import com.pruefstein.user.repository.UserRepository;
 import com.pruefstein.user.web.CurrentUserBean;
@@ -39,9 +37,6 @@ public class Dashboard extends Controller
 
 	@Inject
 	ComplianceItemRepository itemRepository;
-
-	@Inject
-	ReportRepository reportRepository;
 
 	@Inject
 	UserDashboard userDashboard;
@@ -76,33 +71,6 @@ public class Dashboard extends Controller
 			String intervalLabel);
 	}
 
-	/**
-	 * How many reports stand at each verdict, and what share of all of them
-	 * that is.
-	 */
-	public record ReportCounts(long compliant, long nonCompliant, long missing, long open, long total)
-	{
-		public long compliantPct()
-		{
-			return percentOfTotal(compliant);
-		}
-
-		public long nonCompliantPct()
-		{
-			return percentOfTotal(nonCompliant);
-		}
-
-		public long missingPct()
-		{
-			return percentOfTotal(missing);
-		}
-
-		private long percentOfTotal(long count)
-		{
-			return total > 0 ? (count * 100) / total : 0;
-		}
-	}
-
 	@Path("/")
 	public TemplateInstance index()
 	{
@@ -112,20 +80,11 @@ public class Dashboard extends Controller
 	/** The estate, for the people whose job it is. */
 	private TemplateInstance fleet()
 	{
-		ReportCounts reports = new ReportCounts(
-			countWith(ReportStatus.COMPLIANT),
-			countWith(ReportStatus.NON_COMPLIANT),
-			countWith(ReportStatus.MISSING),
-			countWith(ReportStatus.OPEN),
-			reportRepository.count());
-
-		return Templates.index(reports, itemRepository.countActive(), userRepository.count(),
-			fleetDashboard.stats());
-	}
-
-	private long countWith(ReportStatus status)
-	{
-		return reportRepository.count("status", status);
+		// The cards count machines by their newest run, like the charts below
+		// them: a device's old verdicts are history, not its standing.
+		FleetStats fleet = fleetDashboard.stats();
+		return Templates.index(fleet.standings(), itemRepository.countActive(), userRepository.count(),
+			fleet);
 	}
 
 	/**

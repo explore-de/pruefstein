@@ -14,15 +14,19 @@ import java.util.List;
  * @param deviceCount
  *            machines that have ever reported — the denominator behind every
  *            percentage in either chart
+ * @param standings
+ *            how many of those machines stand at each verdict, by the same
+ *            newest run the charts count
  */
 public record FleetStats(
 	long deviceCount,
+	ReportCounts standings,
 	List<VersionShare> versions,
 	List<ViolationShare> violations)
 {
 	public static FleetStats empty()
 	{
-		return new FleetStats(0, List.of(), List.of());
+		return new FleetStats(0, ReportCounts.EMPTY, List.of(), List.of());
 	}
 
 	public boolean hasDevices()

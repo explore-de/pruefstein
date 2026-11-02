@@ -119,7 +119,7 @@ public class ReportRepository implements PanacheRepository<Report>
 	{
 		String owner = keycloakUser == null ? "" : " where r.keycloakUser = :owner";
 		var query = getEntityManager()
-			.createQuery("select r.id, r.deviceId, r.osVersion from Report r" + owner
+			.createQuery("select r.id, r.deviceId, r.osVersion, r.status from Report r" + owner
 				+ " order by r.checkedAt desc, r.id desc", Object[].class);
 		if (keycloakUser != null)
 		{
@@ -131,7 +131,8 @@ public class ReportRepository implements PanacheRepository<Report>
 		for (Object[] row : rows)
 		{
 			String deviceId = (String)row[1];
-			latest.putIfAbsent(deviceId, new LatestRun((Long)row[0], deviceId, (String)row[2]));
+			latest.putIfAbsent(deviceId, new LatestRun((Long)row[0], deviceId, (String)row[2],
+				(ReportStatus)row[3]));
 		}
 		return List.copyOf(latest.values());
 	}

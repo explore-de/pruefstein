@@ -17,10 +17,10 @@
       <p class="text-5xl font-black mt-2">{reports.nonCompliant}</p>
       {#if reports.total > 0}
       <p class="text-sm font-black mt-2 text-red-900">
-        {reports.nonCompliantPct}% of reports
+        {reports.nonCompliantPct}% of devices
       </p>
       {#else}
-      <p class="text-sm font-black mt-2 text-red-900">no reports yet</p>
+      <p class="text-sm font-black mt-2 text-red-900">no devices yet</p>
       {/if}
     </a>
 
@@ -30,10 +30,10 @@
       <p class="text-5xl font-black mt-2">{reports.missing}</p>
       {#if reports.total > 0}
       <p class="text-sm font-black mt-2 text-stone-700">
-        {reports.missingPct}% of reports
+        {reports.missingPct}% of devices
       </p>
       {#else}
-      <p class="text-sm font-black mt-2 text-stone-700">no reports yet</p>
+      <p class="text-sm font-black mt-2 text-stone-700">no devices yet</p>
       {/if}
     </a>
 
@@ -43,10 +43,10 @@
       <p class="text-5xl font-black mt-2">{reports.compliant}</p>
       {#if reports.total > 0}
       <p class="text-sm font-black mt-2 text-emerald-900">
-        {reports.compliantPct}% of reports
+        {reports.compliantPct}% of devices
       </p>
       {#else}
-      <p class="text-sm font-black mt-2 text-emerald-900">no reports yet</p>
+      <p class="text-sm font-black mt-2 text-emerald-900">no devices yet</p>
       {/if}
     </a>
 
@@ -87,7 +87,7 @@
 
   {#if fleet.hasDevices}
   <!-- ── Fleet distributions ──────────────────────────────────────
-       Counts above are runs; everything below is machines — the newest
+       Everything here counts machines — the newest
        run of each device, counted once. A device that reports daily
        would otherwise outvote one that reports monthly, and the estate
        would look like whatever its chattiest members are running. -->

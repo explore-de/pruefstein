@@ -12,6 +12,7 @@ import java.util.Optional;
 import com.pruefstein.compliance.repository.ComplianceResultRepository;
 import com.pruefstein.compliance.repository.ItemFailureCount;
 import com.pruefstein.dashboard.api.FleetStats;
+import com.pruefstein.dashboard.api.ReportCounts;
 import com.pruefstein.dashboard.api.VersionShare;
 import com.pruefstein.dashboard.api.ViolationShare;
 import com.pruefstein.osversion.domain.MacOsVersion;
@@ -69,7 +70,7 @@ public class FleetDashboard
 		{
 			return FleetStats.empty();
 		}
-		return new FleetStats(runs.size(), versions(runs), violations(runs));
+		return new FleetStats(runs.size(), ReportCounts.of(runs), versions(runs), violations(runs));
 	}
 
 	/**
