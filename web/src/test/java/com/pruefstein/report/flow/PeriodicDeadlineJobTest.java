@@ -59,6 +59,9 @@ class PeriodicDeadlineJobTest
 			.call(() -> reportRepository.list("deviceId", DEVICE));
 		assertEquals(1, reports.size());
 		assertEquals(ReportStatus.MISSING, reports.get(0).getStatus());
+		assertNotNull(reports.get(0).getDeadline(), "a missing report should carry the due date it missed");
+		assertTrue(reports.get(0).getDeadline().isBefore(Instant.now().minus(29, ChronoUnit.DAYS)),
+			"the deadline is the missed due date, not when the job noticed");
 
 		Device device = reloadDevice();
 		assertNotEquals("stale-instance", device.getPeriodicFlowInstanceId(),

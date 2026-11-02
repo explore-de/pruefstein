@@ -47,13 +47,17 @@ public class PeriodicCycleService
 			missing.setCheckedAt(Instant.now());
 			missing.setStatus(ReportStatus.MISSING);
 			missing.setFinalizedAt(Instant.now());
+			// The deadline a missing report broke is the due date it missed —
+			// as bad as a failed run's fix window running out, and shown so.
+			Instant missedDueAt = schedule.dueAt(device.getLastReportAt());
+			missing.setDeadline(missedDueAt);
 			reportRepository.persist(missing);
 
 			// The first missed deadline is the one that counts: a device that
 			// stays silent through several cycles has been overdue since then.
 			if (device.getOverdueSince() == null)
 			{
-				device.setOverdueSince(schedule.dueAt(device.getLastReportAt()));
+				device.setOverdueSince(missedDueAt);
 			}
 		}
 		else
