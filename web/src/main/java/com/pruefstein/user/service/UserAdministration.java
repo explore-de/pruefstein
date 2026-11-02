@@ -138,4 +138,19 @@ public class UserAdministration
 		}
 		return devices.size();
 	}
+
+	/**
+	 * Removes the account and nothing else. Their machines and what those
+	 * machines reported outlive it: the device rows are keyed by hardware and
+	 * re-link to whoever reports from them next, and the reports still name the
+	 * person by mail and login. Cutting the owner loose from both is what lets
+	 * the account go without taking that history with it.
+	 */
+	@Transactional
+	public void delete(Long id)
+	{
+		deviceRepository.findByAppUser(id).forEach(device -> device.setAppUser(null));
+		reportRepository.update("appUser = null where appUser.id = ?1", id);
+		userRepository.deleteById(id);
+	}
 }

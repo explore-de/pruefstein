@@ -7,6 +7,8 @@ import java.util.List;
 import com.pruefstein.device.domain.Device;
 import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.notification.ReportRequestMailService;
+import com.pruefstein.report.domain.Report;
+import com.pruefstein.report.repository.ReportRepository;
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.repository.UserRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -21,6 +23,7 @@ import org.mockito.Mockito;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,6 +44,9 @@ class UsersMailActionsTest
 	@Inject
 	DeviceRepository deviceRepository;
 
+	@Inject
+	ReportRepository reportRepository;
+
 	@InjectMock
 	ReportRequestMailService.Sender sender;
 
@@ -50,6 +56,7 @@ class UsersMailActionsTest
 	void tearDown()
 	{
 		QuarkusTransaction.requiringNew().run(() -> {
+			reportRepository.delete("userId", MAIL);
 			seededDevices.forEach(deviceRepository::deleteById);
 			// The bulk delete below goes straight to SQL, so the device rows
 			// have to be gone from the database and not just from the session
@@ -142,6 +149,27 @@ class UsersMailActionsTest
 	}
 
 	@Test
+	void deletingSomeoneWhoHasReportedKeepsTheirReports()
+	{
+		// given somebody whose Mac has already filed a report
+		AppUser user = seedUser();
+		seedDevice(user, "mail-actions-reporter");
+		Long reportId = seedReport(user, "mail-actions-reporter");
+
+		// when
+		post("/Users/delete", user.id);
+
+		// then the account is gone, and the report stays as evidence of what
+		// the machine said — unowned, like the device it came from
+		QuarkusTransaction.requiringNew().run(() -> {
+			assertNull(userRepository.findById(user.id));
+			Report report = reportRepository.findById(reportId);
+			assertNotNull(report);
+			assertNull(report.getAppUser());
+		});
+	}
+
+	@Test
 	void aMissingUserIsNotFoundRatherThanMailedToNobody()
 	{
 		// given (no user with this id)
@@ -200,5 +228,21 @@ class UsersMailActionsTest
 			deviceRepository.persist(device);
 			seededDevices.add(device.id);
 		});
+	}
+
+	private Long seedReport(AppUser user, String deviceId)
+	{
+		Long[] holder = new Long[1];
+		QuarkusTransaction.requiringNew().run(() -> {
+			Report report = new Report();
+			report.setDeviceId(deviceId);
+			report.setUserId(MAIL);
+			report.setKeycloakUser("mail-actions");
+			report.setCheckedAt(Instant.now());
+			report.setAppUser(userRepository.findById(user.id));
+			reportRepository.persist(report);
+			holder[0] = report.id;
+		});
+		return holder[0];
 	}
 }

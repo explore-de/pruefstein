@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.notification.ReportRequestMailService;
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.repository.UserRepository;
@@ -33,9 +32,6 @@ public class Users extends Controller
 
 	@Inject
 	UserRepository userRepository;
-
-	@Inject
-	DeviceRepository deviceRepository;
 
 	@Inject
 	ReportRequestMailService requestMailService;
@@ -225,16 +221,9 @@ public class Users extends Controller
 	}
 
 	@POST
-	@Transactional
 	public void delete(@RestForm Long id)
 	{
-		// Their machines outlive the account: the device rows are keyed by
-		// hardware, carry the reporting history, and re-link to whoever
-		// reports from them next. Cutting the owner loose is what lets the
-		// account go without taking that with it.
-		deviceRepository.findByAppUser(id).forEach(device -> device.setAppUser(null));
-		deviceRepository.flush();
-		userRepository.deleteById(id);
+		userAdministration.delete(id);
 		index();
 	}
 }
