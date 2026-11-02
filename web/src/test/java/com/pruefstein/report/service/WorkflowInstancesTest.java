@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 import com.pruefstein.report.flow.PeriodicReportingFlow;
+import io.quarkiverse.flow.persistence.common.FlowPersistenceConfig;
 import io.quarkiverse.flow.persistence.jpa.WorkflowInstanceEntity;
 import io.quarkiverse.flow.persistence.jpa.WorkflowInstanceRepository;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -38,6 +39,20 @@ class WorkflowInstancesTest
 
 	@Inject
 	WorkflowInstanceRepository instanceRepository;
+
+	@Inject
+	FlowPersistenceConfig persistenceConfig;
+
+	@Test
+	void theEngineDoesNotRestoreInstancesThatTheStartupSweepRemoves()
+	{
+		// The sweep and the engine's own restore both run at startup, on
+		// different threads. With both on, the restore re-attaches instances
+		// whose rows the sweep is deleting underneath it: it dies loading one
+		// (NPE in the lazy input), and the ones it did re-attach fail the
+		// foreign key the first time their event arrives.
+		assertFalse(persistenceConfig.autoRestore());
+	}
 
 	@Test
 	void discardingAParkedInstanceDetachesItFromTheEngine()
