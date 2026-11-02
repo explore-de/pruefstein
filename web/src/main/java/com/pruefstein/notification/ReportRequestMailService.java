@@ -60,12 +60,15 @@ public class ReportRequestMailService
 	/**
 	 * The recurring ask, for a device that has reported before. The due date is
 	 * the one the periodic job works to, so the mail and the job cannot
-	 * disagree about when the report stops counting.
+	 * disagree about when the report stops counting. Once a device is overdue
+	 * that date is the one it missed, not the next cycle's.
 	 */
 	public void sendReportDue(Device device)
 	{
 		recipient(device.getAppUser(), device.getKeycloakUser()).ifPresent(address -> {
-			Instant dueAt = schedule.dueAt(device.getLastReportAt());
+			Instant dueAt = device.getOverdueSince() != null
+				? device.getOverdueSince()
+				: schedule.dueAt(device.getLastReportAt());
 			ReportRequestMailData data = new ReportRequestMailData(
 				firstName(device.getAppUser(), device.getKeycloakUser()),
 				device.getDeviceId(),

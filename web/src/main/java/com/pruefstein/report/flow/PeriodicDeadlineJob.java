@@ -50,7 +50,7 @@ public class PeriodicDeadlineJob
 
 	@Scheduled(every = "1h")
 	@Transactional
-	void checkOverdueDevices()
+	public void checkOverdueDevices()
 	{
 		Instant cutoff = Instant.now().minus(reportingIntervalDays, ChronoUnit.DAYS);
 		List<Device> overdue = deviceRepository.findOverdue(cutoff);

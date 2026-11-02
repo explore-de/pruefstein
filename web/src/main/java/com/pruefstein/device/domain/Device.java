@@ -39,8 +39,48 @@ public class Device extends PanacheEntity
 	 */
 	private Instant reminderSentAt;
 
+	/**
+	 * When this device's proof of compliance ran out unanswered, kept across
+	 * cycles until a report arrives. {@code lastReportAt} cannot say: closing
+	 * an overdue cycle resets it to start the next one.
+	 */
+	private Instant overdueSince;
+
+	/**
+	 * When the last "your report is overdue" mail went out. The notice repeats
+	 * on its own interval for as long as {@code overdueSince} is set.
+	 */
+	private Instant overdueNoticeSentAt;
+
 	@Column(length = 64)
 	private String periodicFlowInstanceId;
+
+	public Instant getOverdueSince()
+	{
+		return overdueSince;
+	}
+
+	public void setOverdueSince(Instant overdueSince)
+	{
+		this.overdueSince = overdueSince;
+	}
+
+	public Instant getOverdueNoticeSentAt()
+	{
+		return overdueNoticeSentAt;
+	}
+
+	public void setOverdueNoticeSentAt(Instant overdueNoticeSentAt)
+	{
+		this.overdueNoticeSentAt = overdueNoticeSentAt;
+	}
+
+	/** A report arrived, so whatever was outstanding is settled. */
+	public void clearOverdue()
+	{
+		this.overdueSince = null;
+		this.overdueNoticeSentAt = null;
+	}
 
 	public String getDeviceId()
 	{

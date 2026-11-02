@@ -56,7 +56,18 @@ public class DeviceRepository implements PanacheRepository<Device>
 	 */
 	public List<Device> findDueForReminder(Instant remindFrom, Instant overdueCutoff)
 	{
-		return list("reminderSentAt is null and lastReportAt <= ?1 and lastReportAt > ?2 "
+		return list("reminderSentAt is null and overdueSince is null "
+			+ "and lastReportAt <= ?1 and lastReportAt > ?2 "
 			+ "and periodicFlowInstanceId is not null", remindFrom, overdueCutoff);
+	}
+
+	/**
+	 * Devices whose report is overdue and that have not been told so since
+	 * {@code lastNoticeBefore} — never, or one resend interval ago.
+	 */
+	public List<Device> findDueForOverdueNotice(Instant lastNoticeBefore)
+	{
+		return list("overdueSince is not null "
+			+ "and (overdueNoticeSentAt is null or overdueNoticeSentAt <= ?1)", lastNoticeBefore);
 	}
 }

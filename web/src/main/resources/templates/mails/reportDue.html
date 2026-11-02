@@ -39,7 +39,7 @@
               Hi {request.name ?: 'there'}, compliance is proved by a recent check, not a past one —
               so every device reports again every {request.intervalLabel}.
               {#if request.overdue}
-              Yours is now past due.
+              Yours was due on <strong>{request.dueAt}</strong> and is now past due.
               {#else}
               Yours is due by <strong>{request.dueAt}</strong>.
               {/if}
@@ -80,9 +80,15 @@
         <tr>
           <td style="padding:20px 24px;border-bottom:2px solid #000000;">
             <p style="margin:0;font-size:13px;line-height:1.6;color:#57534e;">
+              {#if request.overdue}
+              Until a report arrives this device is recorded as <strong>missing a report</strong> —
+              which reads the same as a failure in the fleet overview — and you will keep getting
+              this notice.
+              {#else}
               If nothing arrives by {request.dueAt}, the cycle closes itself and this device is
               recorded as <strong>missing a report</strong> — which reads the same as a failure in
               the fleet overview.
+              {/if}
             </p>
           </td>
         </tr>

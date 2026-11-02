@@ -439,6 +439,7 @@ public class AgentResource
 			// A fresh report starts a fresh cycle, so the nudge for the last
 			// one is spent — clearing it is what makes the reminder recur.
 			device.setReminderSentAt(null);
+			device.clearOverdue();
 			periodicFlowTrigger.fire(
 				new PeriodicFlowTrigger(device.getDeviceId(), device.getPeriodicFlowInstanceId(), true));
 		}

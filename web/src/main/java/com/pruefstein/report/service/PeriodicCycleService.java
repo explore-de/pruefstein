@@ -33,6 +33,9 @@ public class PeriodicCycleService
 	@Inject
 	Event<WorkflowStartTrigger> workflowStartTrigger;
 
+	@Inject
+	ReportingSchedule schedule;
+
 	public void completeCycle(Device device, boolean reported)
 	{
 		if (!reported)
@@ -45,6 +48,17 @@ public class PeriodicCycleService
 			missing.setStatus(ReportStatus.MISSING);
 			missing.setFinalizedAt(Instant.now());
 			reportRepository.persist(missing);
+
+			// The first missed deadline is the one that counts: a device that
+			// stays silent through several cycles has been overdue since then.
+			if (device.getOverdueSince() == null)
+			{
+				device.setOverdueSince(schedule.dueAt(device.getLastReportAt()));
+			}
+		}
+		else
+		{
+			device.clearOverdue();
 		}
 
 		// Reset the clock so the next hourly tick does not immediately re-fire
