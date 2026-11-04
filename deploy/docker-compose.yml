@@ -3,6 +3,11 @@ services:
   postgres:
     image: postgres:18
     restart: unless-stopped
+    networks:
+      default:
+      databasus:
+        aliases:
+          - pruefstein-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -58,6 +63,9 @@ networks:
   proxy:
     external: true
   default:
+  # Shared with the Databasus backup stack. Only postgres joins it.
+  databasus:
+    external: true
 
 volumes:
   postgres_data:
