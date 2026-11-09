@@ -28,7 +28,7 @@ jobs:
 
       ## Checks secrets leaking, important for ISO 27001
       - name: TruffleHog OSS
-        uses: trufflesecurity/trufflehog@v3.99.7
+        uses: trufflesecurity/trufflehog@v3.99.8
 
   build:
     runs-on: ubuntu-latest
