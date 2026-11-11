@@ -160,12 +160,37 @@ class UsersMailActionsTest
 		post("/Users/delete", user.id);
 
 		// then the account is gone, and the report stays as evidence of what
-		// the machine said — unowned, like the device it came from
+		// the machine said — unowned, like the device it came from, and
+		// archived out of the report list
 		QuarkusTransaction.requiringNew().run(() -> {
 			assertNull(userRepository.findById(user.id));
 			Report report = reportRepository.findById(reportId);
 			assertNotNull(report);
 			assertNull(report.getAppUser());
+			assertNotNull(report.getArchivedAt());
+		});
+	}
+
+	@Test
+	void deletingSomeoneStopsChasingTheirDevice()
+	{
+		// given a leaver's Mac, overdue and in a reporting cycle
+		AppUser user = seedUser();
+		seedDevice(user, "mail-actions-chased");
+		QuarkusTransaction.requiringNew().run(() -> {
+			Device device = deviceRepository.findByDeviceId("mail-actions-chased").orElseThrow();
+			device.setPeriodicFlowInstanceId("mail-actions-no-such-instance");
+			device.setOverdueSince(Instant.now());
+		});
+
+		// when
+		post("/Users/delete", user.id);
+
+		// then no deadline job, reminder or overdue notice picks it up again
+		QuarkusTransaction.requiringNew().run(() -> {
+			Device device = deviceRepository.findByDeviceId("mail-actions-chased").orElseThrow();
+			assertNull(device.getPeriodicFlowInstanceId());
+			assertNull(device.getOverdueSince());
 		});
 	}
 

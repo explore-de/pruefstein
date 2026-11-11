@@ -19,6 +19,11 @@
     f.value = f.value === '1' ? '' : '1';
     document.getElementById('ff').submit();
   },
+  toggleArchived() {
+    var f = document.getElementById('ff-archived');
+    f.value = f.value === '1' ? '' : '1';
+    document.getElementById('ff').submit();
+  },
   setSort(col) {
     var sf = document.getElementById('ff-sort');
     var df = document.getElementById('ff-dir');
@@ -45,6 +50,7 @@
         thing as the page's own opening state: one run per user.
       -->
       <input id="ff-all"    type="hidden" name="all"    value="{#if allRuns}1{/if}">
+      <input id="ff-archived" type="hidden" name="archived" value="{#if archived}1{/if}">
       {#if osFilter}
       <!-- Set from the dashboard's version chart; there is no control for it
            here other than the chip that lifts it. -->
@@ -101,6 +107,17 @@
         <span class="text-[10px] font-black tracking-widest">LATEST ONLY</span>
       </button>
 
+      <!-- Off by default: a deleted person's runs are kept as evidence, not
+           as something anyone has to act on. -->
+      <button type="button" role="checkbox" @click="toggleArchived()"
+        aria-checked="{#if archived}true{#else}false{/if}"
+        title="Also list the runs of people who have been deleted"
+        class="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-accent transition-none">
+        <span class="w-3.5 h-3.5 border-2 border-black flex items-center justify-center text-[9px] font-black leading-none
+          {#if archived}bg-black text-white{#else}bg-white{/if}">{#if archived}&#10003;{/if}</span>
+        <span class="text-[10px] font-black tracking-widest">DELETED USERS</span>
+      </button>
+
       {#if osFilter}
       <!-- Disabling the field drops it from the submission, so everything
            else the form holds survives the click. -->
@@ -137,7 +154,7 @@
         labelled for the filters, and someone who sorted by device did not
         ask for that to be undone.
       -->
-      <a href="{uri:Reports.index}?sort={sort}&amp;dir={dir}{#if allRuns}&amp;all=1{/if}"
+      <a href="{uri:Reports.index}?sort={sort}&amp;dir={dir}{#if allRuns}&amp;all=1{/if}{#if archived}&amp;archived=1{/if}"
         title="Clear the status and version filters and the search box"
         class="flex items-center border-2 border-black px-3 py-1.5 text-[10px] font-black tracking-widest bg-white hover:bg-red-100 transition-none">
         RESET FILTERS
@@ -229,6 +246,10 @@
             <span title="{row.report.userMail}">{row.report.userName}</span>
             {#else}
             <span class="text-stone-400">—</span>
+            {/if}
+            {#if row.report.archived}
+            <span title="This person has been deleted"
+              class="ml-1 inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-stone-400 text-stone-500">DELETED</span>
             {/if}
             {#if group.olderCount > 0}
             <button type="button" @click="toggleGroup('{group.key}')"

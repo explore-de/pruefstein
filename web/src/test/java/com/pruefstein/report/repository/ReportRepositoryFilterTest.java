@@ -162,6 +162,40 @@ class ReportRepositoryFilterTest
 
 	// ── helpers ──────────────────────────────────────────────────────────
 
+	@Test
+	void listFilteredLeavesOutArchivedRunsUnlessAskedFor()
+	{
+		// given a run of somebody who has since been deleted
+		Report archived = report("filter-archived-dev", "leaver", ReportStatus.MISSING);
+		archived.setArchivedAt(Instant.now());
+		reportRepository.persist(archived);
+		reportRepository.persist(report("filter-current-dev", "stayer", ReportStatus.MISSING));
+
+		// when
+		List<Report> byDefault = reportRepository.listFiltered(null, null, null, null);
+		List<Report> withArchived = reportRepository.listFiltered(null, null, null, null, null, true);
+
+		// then
+		assertFalse(byDefault.stream().anyMatch(r -> "filter-archived-dev".equals(r.getDeviceId())));
+		assertTrue(byDefault.stream().anyMatch(r -> "filter-current-dev".equals(r.getDeviceId())));
+		assertTrue(withArchived.stream().anyMatch(r -> "filter-archived-dev".equals(r.getDeviceId())));
+	}
+
+	@Test
+	void latestPerDeviceLeavesOutArchivedRuns()
+	{
+		// given a deleted person's machine
+		Report archived = report("filter-archived-fleet-dev", "leaver", ReportStatus.COMPLIANT);
+		archived.setArchivedAt(Instant.now());
+		reportRepository.persist(archived);
+
+		// when
+		List<LatestRun> fleet = reportRepository.findLatestPerDevice();
+
+		// then it no longer counts towards the fleet
+		assertFalse(fleet.stream().anyMatch(run -> "filter-archived-fleet-dev".equals(run.deviceId())));
+	}
+
 	private Report report(String deviceId, String userId, ReportStatus status)
 	{
 		Report report = new Report();

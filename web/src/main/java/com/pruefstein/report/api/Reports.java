@@ -43,7 +43,8 @@ public class Reports extends Controller
 			String sort,
 			String dir,
 			boolean allRuns,
-			String osFilter);
+			String osFilter,
+			boolean archived);
 
 		public static native TemplateInstance show(Report report, List<ReportDetails.ResultRow> results,
 			ReportDetails.ResultRow blacklistResult, List<ReportDetails.InventoryRow> inventory, long blockedCount,
@@ -56,7 +57,8 @@ public class Reports extends Controller
 		@QueryParam("sort") String sort,
 		@QueryParam("dir") String dir,
 		@QueryParam("all") String allParam,
-		@QueryParam("os") String os)
+		@QueryParam("os") String os,
+		@QueryParam("archived") String archivedParam)
 	{
 		ReportStatus statusFilter = null;
 		if (statusParam != null && !statusParam.isBlank())
@@ -82,6 +84,9 @@ public class Reports extends Controller
 		// The macOS version exactly as the dashboard chart counted it, which is
 		// where this filter is set from: that chart trims what the agent sent.
 		String activeOs = os != null ? os.trim() : "";
+		// Deleted people's runs are history, kept out of the way unless asked
+		// for
+		boolean archived = "1".equals(archivedParam);
 
 		String ownerFilter = reportAccess.ownerFilter();
 		// Held back from the query while only latest runs count, so the group
@@ -89,7 +94,7 @@ public class Reports extends Controller
 		// the run that is actually current. Pushed into the query otherwise,
 		// which is what makes "latest" mean the latest matching run instead.
 		List<Report> reports = reportRepository.listFiltered(
-			allRuns ? statusFilter : null, activeQ, activeSort, activeDir, ownerFilter);
+			allRuns ? statusFilter : null, activeQ, activeSort, activeDir, ownerFilter, archived);
 		// Grouped after filtering, so "latest" means the latest run the reader
 		// asked to see rather than one the filter just took off the page.
 		if (allRuns && !activeOs.isEmpty())
@@ -114,7 +119,7 @@ public class Reports extends Controller
 			ReportStatus wanted = statusFilter;
 			groups = groups.stream().filter(group -> group.latest().getStatus() == wanted).toList();
 		}
-		return Templates.index(groups, activeStatus, activeQ, activeSort, activeDir, allRuns, activeOs);
+		return Templates.index(groups, activeStatus, activeQ, activeSort, activeDir, allRuns, activeOs, archived);
 	}
 
 	private static boolean onVersion(Report report, String os)

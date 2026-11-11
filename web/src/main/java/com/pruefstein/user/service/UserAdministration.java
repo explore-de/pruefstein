@@ -10,6 +10,7 @@ import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.notification.ReportRequestMailService;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.repository.ReportRepository;
+import com.pruefstein.report.service.DeviceRetirement;
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.repository.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,6 +37,9 @@ public class UserAdministration
 
 	@Inject
 	ReportRepository reportRepository;
+
+	@Inject
+	DeviceRetirement deviceRetirement;
 
 	@ConfigProperty(name = "pruefstein.compliance.reporting-interval-days", defaultValue = "30")
 	int reportingIntervalDays;
@@ -140,16 +144,17 @@ public class UserAdministration
 	}
 
 	/**
-	 * Removes the account and nothing else. Their machines and what those
-	 * machines reported outlive it: the device rows are keyed by hardware and
-	 * re-link to whoever reports from them next, and the reports still name the
-	 * person by mail and login. Cutting the owner loose from both is what lets
-	 * the account go without taking that history with it.
+	 * Removes the account. Their machines and what those machines reported
+	 * outlive it: the device rows are keyed by hardware and re-link to whoever
+	 * reports from them next, and the reports still name the person by mail and
+	 * login. The devices stop being chased for reports, and the reports are
+	 * archived rather than deleted, so the history stays without cluttering the
+	 * list.
 	 */
 	@Transactional
 	public void delete(Long id)
 	{
-		deviceRepository.findByAppUser(id).forEach(device -> device.setAppUser(null));
+		deviceRetirement.retire(id, deviceRepository.findByAppUser(id));
 		reportRepository.update("appUser = null where appUser.id = ?1", id);
 		userRepository.deleteById(id);
 	}

@@ -87,6 +87,29 @@ class ReportsTest
 	}
 
 	@Test
+	void indexHidesDeletedPeoplesRunsUntilAskedFor()
+	{
+		// given the run from setUp, its person since deleted
+		QuarkusTransaction.requiringNew()
+			.run(() -> reportRepository.findById(reportId).setArchivedAt(Instant.now()));
+
+		// when / then — out of the way by default
+		given()
+			.when().get("/Reports/index")
+			.then()
+			.statusCode(200)
+			.body(not(containsString("reports-test-device")));
+
+		// when / then — and back, marked, behind the toggle
+		given()
+			.when().get("/Reports/index?archived=1")
+			.then()
+			.statusCode(200)
+			.body(containsString("reports-test-device"))
+			.body(containsString("DELETED</span>"));
+	}
+
+	@Test
 	void indexIgnoresAnUnknownStatus()
 	{
 		// given — a value no ReportStatus has, as a hand-edited URL would give

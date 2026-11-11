@@ -205,6 +205,22 @@ class AgentResourceTest
 			"a clean run has nothing to remediate, so nothing to count down");
 	}
 
+	@Test
+	void aRetiredDeviceThatReportsAgainGetsANewCycle()
+	{
+		// given a Mac whose owner was deleted, and which a new owner now uses
+		push(true);
+		QuarkusTransaction.requiringNew()
+			.run(() -> deviceRepository.findByDeviceId(DEVICE).orElseThrow().retire());
+
+		// when
+		push(true);
+
+		// then it is chased for reports again
+		QuarkusTransaction.requiringNew().run(() -> assertNotNull(
+			deviceRepository.findByDeviceId(DEVICE).orElseThrow().getPeriodicFlowInstanceId()));
+	}
+
 	private String push(boolean passed)
 	{
 		return pushFor(passed).extract().path("reportUrl");

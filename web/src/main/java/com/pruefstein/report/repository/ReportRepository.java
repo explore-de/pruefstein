@@ -37,6 +37,28 @@ public class ReportRepository implements PanacheRepository<Report>
 			deviceId, keycloakUser).firstResultOptional();
 	}
 
+	/**
+	 * Archives a deleted person's runs: those filed under their account, and
+	 * the unowned ones of their devices — the MISSING reports, which never
+	 * carry an account.
+	 *
+	 * @return how many runs were archived
+	 */
+	public int archive(Long appUserId, Collection<String> deviceIds, Instant now)
+	{
+		int archived = 0;
+		if (appUserId != null)
+		{
+			archived += update("archivedAt = ?1 where archivedAt is null and appUser.id = ?2", now, appUserId);
+		}
+		if (!deviceIds.isEmpty())
+		{
+			archived += update("archivedAt = ?1 where archivedAt is null and appUser is null and deviceId in ?2",
+				now, deviceIds);
+		}
+		return archived;
+	}
+
 	public List<Report> findExpiredOpen(Instant now)
 	{
 		return list("status = ?1 and deadline < ?2", ReportStatus.OPEN, now);
@@ -117,9 +139,11 @@ public class ReportRepository implements PanacheRepository<Report>
 	 */
 	public List<LatestRun> findLatestPerDevice(String keycloakUser)
 	{
-		String owner = keycloakUser == null ? "" : " where r.keycloakUser = :owner";
+		// A deleted person's machine is no longer part of the fleet
+		String owner = keycloakUser == null ? "" : " and r.keycloakUser = :owner";
 		var query = getEntityManager()
-			.createQuery("select r.id, r.deviceId, r.osVersion, r.status from Report r" + owner
+			.createQuery("select r.id, r.deviceId, r.osVersion, r.status from Report r"
+				+ " where r.archivedAt is null" + owner
 				+ " order by r.checkedAt desc, r.id desc", Object[].class);
 		if (keycloakUser != null)
 		{
@@ -144,12 +168,28 @@ public class ReportRepository implements PanacheRepository<Report>
 
 	public List<Report> listFiltered(ReportStatus status, String q, String sort, String dir, String keycloakUser)
 	{
+		return listFiltered(status, q, sort, dir, keycloakUser, false);
+	}
+
+	/**
+	 * @param includeArchived
+	 *            whether the runs of deleted people are listed too
+	 */
+	public List<Report> listFiltered(ReportStatus status, String q, String sort, String dir, String keycloakUser,
+		boolean includeArchived)
+	{
 		StringBuilder query = new StringBuilder();
 		List<Object> params = new ArrayList<>();
 		int p = 1;
 
+		if (!includeArchived)
+		{
+			query.append("archivedAt is null");
+		}
+
 		if (status != null)
 		{
+			if (!query.isEmpty()) query.append(" and ");
 			query.append("status = ?").append(p++);
 			params.add(status);
 		}
