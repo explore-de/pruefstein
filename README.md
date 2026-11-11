@@ -66,11 +66,11 @@ checks as a list of things to do, and the date the next run is wanted.
 
 | Entity | Key fields | Purpose |
 |---|---|---|
-| `AppUser` | oidcSubject, firstname, lastname, mail | An employee whose devices are checked |
-| `Device` | deviceId, appUser, lastReportAt | One machine, and when it last proved itself |
+| `AppUser` | oidcSubject, firstname, lastname, mail | An employee whose devices are checked. Deleting one retires their devices (no more cycles, reminders or MISSING reports) and archives their reports, which the Reports list then shows only behind **Deleted users** |
+| `Device` | deviceId, appUser, lastReportAt | One machine, and when it last proved itself. A retired device starts a fresh cycle on its next report |
 | `ComplianceGroup` | name, retiredAt | Groups related items (maps to ISO 27001 control family). Retired rather than deleted — see [Retiring a check](#retiring-a-check) |
 | `ComplianceItem` | name, group, retiredAt | One check. `ExpressionCheck` carries a query and a JEXL expression; `AppBlacklistCheck` generates its query from the `BlockedApp` rules. Retired rather than deleted — see [Retiring a check](#retiring-a-check) |
-| `Report` | deviceId, userId, checkedAt, status, deadline, osVersion, osLatestVersion | One agent run for one device. `status` is COMPLIANT, NON_COMPLIANT, MISSING or OPEN — open meaning the repair window has not run out yet. Carries the macOS the device was running and the newest Apple had published at the time — see [macOS versions](#macos-versions) |
+| `Report` | deviceId, userId, checkedAt, status, deadline, osVersion, osLatestVersion, archivedAt | One agent run for one device. `status` is COMPLIANT, NON_COMPLIANT, MISSING or OPEN — open meaning the repair window has not run out yet. Carries the macOS the device was running and the newest Apple had published at the time — see [macOS versions](#macos-versions) |
 | `ComplianceResult` | item, report, passed, output, aiShortDescription | Outcome of one check in one report, with the JSON osquery returned and the model's reading of it |
 | `MacOsRelease` | productVersion, build, postingDate, publicRelease | One macOS release as Apple's feed described it — the catalog a report's version is judged against |
 

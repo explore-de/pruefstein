@@ -440,8 +440,19 @@ public class AgentResource
 			// one is spent — clearing it is what makes the reminder recur.
 			device.setReminderSentAt(null);
 			device.clearOverdue();
-			periodicFlowTrigger.fire(
-				new PeriodicFlowTrigger(device.getDeviceId(), device.getPeriodicFlowInstanceId(), true));
+			if (device.getPeriodicFlowInstanceId() == null)
+			{
+				// Retired when its owner was deleted: there is no flow waiting
+				// to be told, so it gets a new one, as a new device would
+				var wi = periodicReportingFlow.instance(Map.of("deviceId", payload.deviceId()));
+				device.setPeriodicFlowInstanceId(wi.id());
+				workflowStartTrigger.fire(new WorkflowStartTrigger(wi));
+			}
+			else
+			{
+				periodicFlowTrigger.fire(
+					new PeriodicFlowTrigger(device.getDeviceId(), device.getPeriodicFlowInstanceId(), true));
+			}
 		}
 	}
 }

@@ -72,6 +72,13 @@ public class Report extends PanacheEntity
 	@ManyToOne
 	private AppUser appUser;
 
+	/**
+	 * When the person this run belongs to was deleted. Kept as evidence of what
+	 * the machine said, but out of the report list and the fleet figures unless
+	 * someone asks for it.
+	 */
+	private Instant archivedAt;
+
 	@OneToMany(mappedBy = "report", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ComplianceResult> results;
 
@@ -173,6 +180,21 @@ public class Report extends PanacheEntity
 	public void setAppUser(AppUser appUser)
 	{
 		this.appUser = appUser;
+	}
+
+	public Instant getArchivedAt()
+	{
+		return archivedAt;
+	}
+
+	public void setArchivedAt(Instant archivedAt)
+	{
+		this.archivedAt = archivedAt;
+	}
+
+	public boolean isArchived()
+	{
+		return archivedAt != null;
 	}
 
 	/**

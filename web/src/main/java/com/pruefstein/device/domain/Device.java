@@ -75,6 +75,19 @@ public class Device extends PanacheEntity
 		this.overdueNoticeSentAt = overdueNoticeSentAt;
 	}
 
+	/**
+	 * Its owner was deleted, so nothing is owed any more: no cycle, no
+	 * reminder, no overdue notice. A later report from the machine starts a
+	 * fresh cycle.
+	 */
+	public void retire()
+	{
+		this.appUser = null;
+		this.periodicFlowInstanceId = null;
+		this.reminderSentAt = null;
+		clearOverdue();
+	}
+
 	/** A report arrived, so whatever was outstanding is settled. */
 	public void clearOverdue()
 	{
