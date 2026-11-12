@@ -32,6 +32,7 @@ import com.pruefstein.agent.client.PruefsteinClient;
 import com.pruefstein.agent.client.ReportPayload;
 import com.pruefstein.agent.client.ReportResponse;
 import com.pruefstein.agent.client.ResultPayload;
+import com.pruefstein.agent.command.AgentVersionProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -122,11 +123,19 @@ public class ComplianceRunner
 		// Stamped here rather than at submission: this is when the machine
 		// looked like this, and someone may sit on the question for a while.
 		CheckedRun run = new CheckedRun(
-			new ReportPayload(deviceId, userId, Instant.now(), results, installedApps, osVersion), os);
+			new ReportPayload(deviceId, userId, Instant.now(), results, installedApps, osVersion,
+				AgentVersionProvider.version()),
+			os);
 
 		long total = results.size() + (osLine != null ? 1 : 0);
 		System.out.println(ConsoleStyle.rule());
 		System.out.println(ConsoleStyle.summary(total - run.failing(), total));
+
+		String update = updateNotice(AgentVersionProvider.version(), latestAgentRelease());
+		if (update != null)
+		{
+			System.out.println(ConsoleStyle.hint(update));
+		}
 		return Optional.of(run);
 	}
 
@@ -207,6 +216,40 @@ public class ComplianceRunner
 			default -> ConsoleStyle.verdict(true);
 		};
 		return "  " + tag + " " + os.name() + " — " + os.text();
+	}
+
+	/**
+	 * Says so when this agent is older than the newest release, since an old
+	 * agent may not run checks the way the server now expects.
+	 *
+	 * @return the note, or {@code null} when it is current or that is unknown
+	 */
+	static String updateNotice(String running, String latest)
+	{
+		if (!AgentVersion.isOutdated(running, latest))
+		{
+			return null;
+		}
+		return "This agent (%s) is outdated; %s is out. Update with: brew upgrade pruefstein-agent"
+			.formatted(running, latest.startsWith("v") ? latest.substring(1) : latest);
+	}
+
+	/**
+	 * The newest agent the server knows of. A server from before this question
+	 * answers 404, and nothing about the run depends on it, so any failure is
+	 * simply no note.
+	 */
+	private String latestAgentRelease()
+	{
+		try
+		{
+			return client.agentRelease().latest();
+		}
+		catch (Exception e)
+		{
+			LOG.debug("The server could not name the newest agent release.", e);
+			return null;
+		}
 	}
 
 	/**

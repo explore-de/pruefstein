@@ -182,11 +182,29 @@ class ComplianceRunnerTest
 	void aRedOsCountsAsAFailure()
 	{
 		ReportPayload report = new ReportPayload("device", "user", Instant.now(),
-			List.of(new ResultPayload(1L, false, null), new ResultPayload(2L, true, null)), List.of(), null);
+			List.of(new ResultPayload(1L, false, null), new ResultPayload(2L, true, null)), List.of(), null, null);
 
 		assertEquals(2, new CheckedRun(report, new OsVersionVerdict("FAIL", "macOS up to date", "x")).failing());
 		assertEquals(1, new CheckedRun(report, new OsVersionVerdict("HINT", "macOS up to date", "x")).failing());
 		assertEquals(1, new CheckedRun(report, null).failing());
+	}
+
+	@Test
+	void anOutdatedAgentSaysHowToUpdate()
+	{
+		assertEquals("This agent (1.0.5) is outdated; 1.0.7 is out. Update with: brew upgrade pruefstein-agent",
+			ComplianceRunner.updateNotice("1.0.5", "v1.0.7"));
+	}
+
+	/** Current, newer, a development build, or nothing known: no note. */
+	@Test
+	void otherwiseThereIsNoUpdateNotice()
+	{
+		assertNull(ComplianceRunner.updateNotice("1.0.7", "1.0.7"));
+		assertNull(ComplianceRunner.updateNotice("1.0.8", "1.0.7"));
+		assertNull(ComplianceRunner.updateNotice("1.0.8-SNAPSHOT", "1.0.7"));
+		assertNull(ComplianceRunner.updateNotice("unknown", "1.0.7"));
+		assertNull(ComplianceRunner.updateNotice("1.0.5", null));
 	}
 
 	private static List<CheckItem> checks(int count)

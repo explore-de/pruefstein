@@ -16,7 +16,7 @@ import picocli.CommandLine;
  */
 public class AgentVersionProvider implements CommandLine.IVersionProvider
 {
-	static final String UNKNOWN = "unknown";
+	public static final String UNKNOWN = "unknown";
 
 	@Override
 	public String[] getVersion()
@@ -24,7 +24,7 @@ public class AgentVersionProvider implements CommandLine.IVersionProvider
 		return new String[] { "pruefstein-agent " + version() };
 	}
 
-	static String version()
+	public static String version()
 	{
 		try
 		{

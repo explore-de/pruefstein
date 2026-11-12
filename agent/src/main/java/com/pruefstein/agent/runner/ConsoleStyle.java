@@ -39,6 +39,12 @@ public final class ConsoleStyle
 		return style("@|bold,yellow [HINT]|@");
 	}
 
+	/** A yellow line worth reading that fails nothing, e.g. an outdated agent. */
+	public static String hint(String text)
+	{
+		return style("@|yellow " + text + "|@");
+	}
+
 	/** A check that never produced a verdict — red, like a failure, because it is one. */
 	public static String errorTag()
 	{

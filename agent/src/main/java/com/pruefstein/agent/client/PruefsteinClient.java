@@ -20,6 +20,10 @@ public interface PruefsteinClient
 	@Path("/api/checks")
 	List<CheckItem> getChecks();
 
+	@GET
+	@Path("/api/agent-release")
+	AgentRelease agentRelease();
+
 	@POST
 	@Path("/api/os-version")
 	@Consumes(MediaType.APPLICATION_JSON)

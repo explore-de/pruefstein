@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
+import com.pruefstein.agent.service.AgentReleaseCatalog;
 import com.pruefstein.compliance.domain.ComplianceItem;
 import com.pruefstein.compliance.domain.ComplianceResult;
 import com.pruefstein.compliance.domain.InstalledApp;
@@ -71,6 +72,9 @@ public class AgentResource
 	OsVersionAssessor osVersionAssessor;
 
 	@Inject
+	AgentReleaseCatalog agentReleaseCatalog;
+
+	@Inject
 	ReportRepository reportRepository;
 
 	@Inject
@@ -121,8 +125,22 @@ public class AgentResource
 	{
 	}
 
+	/**
+	 * @param agentVersion
+	 *            the agent's own version, absent from agents older than this
+	 *            field
+	 */
 	public record ReportPayload(String deviceId, String userId, Instant checkedAt, List<ResultPayload> results,
-		List<InstalledAppPayload> installedApps, OsVersionPayload osVersion)
+		List<InstalledAppPayload> installedApps, OsVersionPayload osVersion, String agentVersion)
+	{
+	}
+
+	/**
+	 * @param latest
+	 *            the newest agent released, or {@code null} while the server
+	 *            does not know
+	 */
+	public record AgentRelease(String latest)
 	{
 	}
 
@@ -196,6 +214,14 @@ public class AgentResource
 		return OsVersionVerdict.of(assess(os));
 	}
 
+	/** The newest agent released, so an older one can say it is outdated. */
+	@GET
+	@Path("/agent-release")
+	public AgentRelease agentRelease()
+	{
+		return new AgentRelease(agentReleaseCatalog.latestVersion().orElse(null));
+	}
+
 	/**
 	 * Takes one submitted run.
 	 *
@@ -234,6 +260,8 @@ public class AgentResource
 		report.setAppUser(reportingUser);
 
 		recordOsVersion(report, payload.osVersion());
+		report.setAgentVersion(payload.agentVersion());
+		report.setAgentLatestVersion(agentReleaseCatalog.latestVersion().orElse(null));
 		replaceInventory(report, payload.installedApps());
 		upsertDevice(payload, reportingUser);
 

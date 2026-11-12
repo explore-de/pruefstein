@@ -113,7 +113,7 @@ class RunCommandTest
 
 	private static CheckedRun run()
 	{
-		return new CheckedRun(new ReportPayload("device", "user", Instant.now(), List.of(), List.of(), null), null);
+		return new CheckedRun(new ReportPayload("device", "user", Instant.now(), List.of(), List.of(), null, null), null);
 	}
 
 	/** Stands in for the runner so nothing needs a server, or osquery. */

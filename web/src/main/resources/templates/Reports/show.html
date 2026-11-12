@@ -82,6 +82,23 @@
         {/if}
       </div>
       <div class="min-w-0">
+        <p class="text-[10px] font-black tracking-widest text-stone-400">Agent</p>
+        {#if report.agentVersion != null}
+        <p class="text-sm font-bold mt-0.5 tabular-nums flex items-center gap-1.5 flex-wrap">
+          <span>{report.agentVersion}</span>
+          {#if report.agentOutdated}
+          <span class="inline-block px-1.5 py-0.5 text-[9px] font-black tracking-widest border-2 border-black bg-amber-400">OUTDATED</span>
+          {/if}
+        </p>
+        {#if report.agentOutdated}
+        <p class="text-[10px] font-medium text-stone-500 mt-0.5">latest was {report.agentLatestVersion}</p>
+        {/if}
+        {#else}
+        <p class="text-sm font-bold mt-0.5"><span class="text-stone-400">—</span></p>
+        <p class="text-[10px] font-medium text-stone-400 mt-0.5">older than 1.0.8</p>
+        {/if}
+      </div>
+      <div class="min-w-0">
         <p class="text-[10px] font-black tracking-widest text-stone-400">Checked</p>
         <p class="text-sm font-bold mt-0.5 tabular-nums">
           {report.checkedAt.toString().substring(0, 16).replace('T', ' ')}

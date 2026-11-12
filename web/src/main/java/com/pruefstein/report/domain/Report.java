@@ -3,6 +3,7 @@ package com.pruefstein.report.domain;
 import java.time.Instant;
 import java.util.List;
 
+import com.pruefstein.agent.domain.AgentVersion;
 import com.pruefstein.compliance.domain.ComplianceResult;
 import com.pruefstein.user.domain.AppUser;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
@@ -68,6 +69,18 @@ public class Report extends PanacheEntity
 	 * would turn it red months later without the machine having changed.
 	 */
 	private String osLatestVersion;
+
+	/**
+	 * The agent version that filed this run, or {@code null} from an agent too
+	 * old to say.
+	 */
+	private String agentVersion;
+
+	/**
+	 * The newest agent released when this run was filed, stamped for the same
+	 * reason as {@link #osLatestVersion}.
+	 */
+	private String agentLatestVersion;
 
 	@ManyToOne
 	private AppUser appUser;
@@ -253,6 +266,32 @@ public class Report extends PanacheEntity
 	public void setOsLatestVersion(String osLatestVersion)
 	{
 		this.osLatestVersion = osLatestVersion;
+	}
+
+	public String getAgentVersion()
+	{
+		return agentVersion;
+	}
+
+	public void setAgentVersion(String agentVersion)
+	{
+		this.agentVersion = agentVersion;
+	}
+
+	public String getAgentLatestVersion()
+	{
+		return agentLatestVersion;
+	}
+
+	public void setAgentLatestVersion(String agentLatestVersion)
+	{
+		this.agentLatestVersion = agentLatestVersion;
+	}
+
+	/** Filed by an agent older than the newest release at the time. */
+	public boolean isAgentOutdated()
+	{
+		return AgentVersion.isOutdated(agentVersion, agentLatestVersion);
 	}
 
 	public List<ComplianceResult> getResults()
