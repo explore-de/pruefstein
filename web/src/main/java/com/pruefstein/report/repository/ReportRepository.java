@@ -59,6 +59,12 @@ public class ReportRepository implements PanacheRepository<Report>
 		return archived;
 	}
 
+	/** Archives one device's runs, whoever filed them. */
+	public int archiveDevice(String deviceId, Instant now)
+	{
+		return update("archivedAt = ?1 where archivedAt is null and deviceId = ?2", now, deviceId);
+	}
+
 	public List<Report> findExpiredOpen(Instant now)
 	{
 		return list("status = ?1 and deadline < ?2", ReportStatus.OPEN, now);

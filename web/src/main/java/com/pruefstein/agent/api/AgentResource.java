@@ -26,6 +26,7 @@ import com.pruefstein.report.flow.PeriodicFlowTrigger;
 import com.pruefstein.report.flow.PeriodicReportingFlow;
 import com.pruefstein.report.flow.WorkflowStartTrigger;
 import com.pruefstein.report.repository.ReportRepository;
+import com.pruefstein.report.service.DeviceRetirement;
 import com.pruefstein.report.service.ReportFinalizer;
 import com.pruefstein.user.domain.AppUser;
 import com.pruefstein.user.service.UserSyncService;
@@ -79,6 +80,9 @@ public class AgentResource
 
 	@Inject
 	DeviceRepository deviceRepository;
+
+	@Inject
+	DeviceRetirement deviceRetirement;
 
 	@Inject
 	PeriodicReportingFlow periodicReportingFlow;
@@ -481,6 +485,16 @@ public class AgentResource
 				periodicFlowTrigger.fire(
 					new PeriodicFlowTrigger(device.getDeviceId(), device.getPeriodicFlowInstanceId(), true));
 			}
+		}
+
+		// An agent that once could not read the hardware UUID filed this Mac
+		// under its hostname. Now that it reports under the UUID, that record
+		// would only ever be filed MISSING.
+		if (!payload.deviceId().equals(payload.userId()))
+		{
+			deviceRepository.findHostnameStandIn(payload.userId(), keycloakUser, payload.deviceId())
+				.filter(standIn -> standIn.getPeriodicFlowInstanceId() != null)
+				.ifPresent(deviceRetirement::retireStandIn);
 		}
 	}
 }

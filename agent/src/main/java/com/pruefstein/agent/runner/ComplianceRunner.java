@@ -493,8 +493,15 @@ public class ComplianceRunner
 		throw new IllegalArgumentException("Expression did not return a boolean: " + result);
 	}
 
+	/**
+	 * The hardware UUID, which is what the server knows this Mac by. There is
+	 * deliberately no fallback to the hostname: a run filed under it would put
+	 * the same Mac on record twice, and the hostname record, never reported for
+	 * again, would be filed MISSING every cycle.
+	 */
 	private String fetchDeviceId()
 	{
+		Exception cause = null;
 		try
 		{
 			String output = osquery("SELECT uuid FROM system_info;");
@@ -502,16 +509,20 @@ public class ComplianceRunner
 				output, new TypeReference<List<Map<String, Object>>>()
 				{
 				});
-			if (!rows.isEmpty() && rows.getFirst().get("uuid") != null)
+			if (!rows.isEmpty() && rows.getFirst().get("uuid") != null
+				&& !rows.getFirst().get("uuid").toString().isBlank())
 			{
 				return rows.getFirst().get("uuid").toString();
 			}
 		}
 		catch (Exception e)
 		{
-			LOG.warn("Could not fetch device UUID from osquery, falling back to hostname: {}", e.getMessage());
+			cause = e;
 		}
-		return hostname();
+		throw new IllegalStateException(
+			"Could not read this Mac's hardware UUID from osquery, which is what identifies it to the server. "
+				+ "Nothing was reported; run the agent again.",
+			cause);
 	}
 
 	private String hostname()

@@ -7,6 +7,7 @@ import com.pruefstein.compliance.domain.ExpressionCheck;
 import com.pruefstein.compliance.repository.ComplianceGroupRepository;
 import com.pruefstein.compliance.repository.ComplianceItemRepository;
 import com.pruefstein.compliance.repository.ComplianceResultRepository;
+import com.pruefstein.device.domain.Device;
 import com.pruefstein.device.repository.DeviceRepository;
 import com.pruefstein.report.domain.Report;
 import com.pruefstein.report.domain.ReportStatus;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AgentResourceTest
 {
 	private static final String DEVICE = "test-device";
+	private static final String STAND_IN = "Test-MacBook.local";
 
 	@Inject
 	ComplianceGroupRepository groupRepository;
@@ -77,9 +79,12 @@ class AgentResourceTest
 	void tearDown()
 	{
 		QuarkusTransaction.requiringNew().run(() -> {
-			resultRepository.delete("report.deviceId", DEVICE);
-			reportRepository.delete("deviceId", DEVICE);
-			deviceRepository.delete("deviceId", DEVICE);
+			for (String deviceId : new String[] { DEVICE, STAND_IN })
+			{
+				resultRepository.delete("report.deviceId", deviceId);
+				reportRepository.delete("deviceId", deviceId);
+				deviceRepository.delete("deviceId", deviceId);
+			}
 			itemRepository.deleteById(itemId);
 			groupRepository.deleteById(groupId);
 		});
@@ -221,6 +226,52 @@ class AgentResourceTest
 			deviceRepository.findByDeviceId(DEVICE).orElseThrow().getPeriodicFlowInstanceId()));
 	}
 
+	/**
+	 * An agent that could not read the hardware UUID filed under the hostname
+	 * instead. Once the same Mac reports under its UUID, the hostname record is
+	 * a stand-in nobody will ever report for again — left alone, the deadline
+	 * job would file a MISSING report for it every cycle.
+	 */
+	@Test
+	void reportingUnderTheUuidRetiresTheHostnameStandIn()
+	{
+		// given the Mac's first run, filed under its hostname
+		pushAs(STAND_IN, STAND_IN, true);
+
+		// when it reports under its UUID
+		pushAs(DEVICE, STAND_IN, true);
+
+		// then the stand-in is no longer chased and leaves the fleet figures
+		QuarkusTransaction.requiringNew().run(() -> {
+			assertNull(deviceRepository.findByDeviceId(STAND_IN).orElseThrow().getPeriodicFlowInstanceId());
+			assertTrue(reportRepository.list("deviceId", STAND_IN).stream()
+				.allMatch(r -> r.getArchivedAt() != null), "the stand-in's runs should be archived");
+			assertNotNull(deviceRepository.findByDeviceId(DEVICE).orElseThrow().getPeriodicFlowInstanceId());
+		});
+	}
+
+	@Test
+	void anotherPersonsHostnameDeviceIsLeftAlone()
+	{
+		// given a device under that hostname, but somebody else's
+		QuarkusTransaction.requiringNew().run(() -> {
+			Device other = new Device();
+			other.setDeviceId(STAND_IN);
+			other.setUserId(STAND_IN);
+			other.setKeycloakUser("somebody-else");
+			other.setLastReportAt(Instant.now());
+			other.setPeriodicFlowInstanceId("no-such-instance");
+			deviceRepository.persist(other);
+		});
+
+		// when
+		pushAs(DEVICE, STAND_IN, true);
+
+		// then
+		QuarkusTransaction.requiringNew().run(() -> assertNotNull(
+			deviceRepository.findByDeviceId(STAND_IN).orElseThrow().getPeriodicFlowInstanceId()));
+	}
+
 	private String push(boolean passed)
 	{
 		return pushFor(passed).extract().path("reportUrl");
@@ -228,10 +279,15 @@ class AgentResourceTest
 
 	private ValidatableResponse pushFor(boolean passed)
 	{
+		return pushAs(DEVICE, "test-user", passed);
+	}
+
+	private ValidatableResponse pushAs(String deviceId, String userId, boolean passed)
+	{
 		String body = """
-			{"deviceId":"%s","userId":"test-user","checkedAt":"%s",
+			{"deviceId":"%s","userId":"%s","checkedAt":"%s",
 			 "results":[{"itemId":%d,"passed":%b,"output":"%s"}]}
-			""".formatted(DEVICE, Instant.now(), itemId, passed, passed ? "ok" : "fail");
+			""".formatted(deviceId, userId, Instant.now(), itemId, passed, passed ? "ok" : "fail");
 
 		return given()
 			.contentType(JSON)

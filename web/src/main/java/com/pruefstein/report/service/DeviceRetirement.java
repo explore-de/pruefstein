@@ -49,4 +49,20 @@ public class DeviceRetirement
 		return reportRepository.archive(appUserId, devices.stream().map(Device::getDeviceId).toList(),
 			Instant.now());
 	}
+
+	/**
+	 * Stands down the record a Mac got under its hostname, once it reports
+	 * under its hardware UUID. Nobody will report for it again, so left in its
+	 * cycle it would be filed MISSING every interval; its runs are archived so
+	 * the one Mac is not counted twice.
+	 *
+	 * @return how many runs were archived
+	 */
+	public int retireStandIn(Device standIn)
+	{
+		String abandoned = standIn.getPeriodicFlowInstanceId();
+		standIn.retire();
+		workflowInstances.discard(periodicReportingFlow, abandoned);
+		return reportRepository.archiveDevice(standIn.getDeviceId(), Instant.now());
+	}
 }

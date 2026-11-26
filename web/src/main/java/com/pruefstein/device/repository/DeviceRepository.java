@@ -31,6 +31,28 @@ public class DeviceRepository implements PanacheRepository<Device>
 	}
 
 	/**
+	 * The record a Mac got under its hostname when its agent could not read the
+	 * hardware UUID, found from the UUID record that reports the same hostname
+	 * for the same person.
+	 */
+	public Optional<Device> findHostnameStandIn(String hostname, String keycloakUser, String deviceId)
+	{
+		return find("deviceId = ?1 and userId = ?1 and keycloakUser = ?2 and deviceId <> ?3",
+			hostname, keycloakUser, deviceId).firstResultOptional();
+	}
+
+	/**
+	 * Every hostname record still in its cycle whose Mac has since reported
+	 * under its hardware UUID.
+	 */
+	public List<Device> findHostnameStandIns()
+	{
+		return list("from Device s where s.deviceId = s.userId and s.periodicFlowInstanceId is not null"
+			+ " and exists (select d.id from Device d where d.userId = s.userId"
+			+ " and d.keycloakUser = s.keycloakUser and d.deviceId <> s.deviceId)");
+	}
+
+	/**
 	 * Returns devices whose last report is older than {@code cutoff} and that
 	 * have an active periodic flow instance — i.e. devices that are overdue.
 	 */
