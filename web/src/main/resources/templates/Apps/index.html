@@ -103,7 +103,7 @@
                 <p class="font-medium">{app.row.name}</p>
                 {/if}
                 <code class="text-[11px] font-mono text-stone-400 break-all">{app.row.subtitle}</code>
-                <div data-risk hidden class="mt-1.5 flex items-start gap-1.5">
+                <div data-risk class="mt-1.5 hidden items-start gap-1.5">
                   <span data-risk-category class="flex-shrink-0 text-[9px] font-black tracking-widest border-2 border-black px-1 py-0.5 bg-red-400 text-white"></span>
                   <p data-risk-reason class="text-xs text-stone-600"></p>
                 </div>
@@ -532,7 +532,9 @@ function appsPage(initialTab) {
         const slot = row.querySelector('[data-risk]');
         const reasonInput = row.querySelector('[data-risk-reason-input]');
         if (risk) count++;
-        slot.hidden = !risk;
+        // The class, not the hidden attribute: Tailwind's flex would override it
+        slot.classList.toggle('hidden', !risk);
+        slot.classList.toggle('flex', !!risk);
         slot.querySelector('[data-risk-category]').textContent = risk ? '✦ ' + (RISK_LABELS[risk.category] || 'RISK') : '';
         slot.querySelector('[data-risk-reason]').textContent = risk ? risk.reason : '';
         if (reasonInput) reasonInput.value = risk ? risk.reason : '';
