@@ -18,6 +18,23 @@ public class InstalledAppRepository implements PanacheRepository<InstalledApp>
 	}
 
 	/**
+	 * Every installation across the given reports, as rows of
+	 * {@code source, name, identifier, report id}.
+	 */
+	public List<Object[]> listInstalls(Collection<Long> reportIds)
+	{
+		if (reportIds.isEmpty())
+		{
+			return List.of();
+		}
+		return getEntityManager()
+			.createQuery("select distinct a.source, a.name, a.identifier, a.report.id"
+				+ " from InstalledApp a where a.report.id in :ids", Object[].class)
+			.setParameter("ids", reportIds)
+			.getResultList();
+	}
+
+	/**
 	 * Every distinct application across the given reports, as rows of
 	 * {@code source, name, identifier, newest version, device count}.
 	 * <p>

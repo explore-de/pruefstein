@@ -111,7 +111,28 @@
               <td class="px-4 py-3">
                 <span class="text-[10px] font-black tracking-wide border-2 border-black px-1 py-0.5 bg-accent">{app.row.source}</span>
               </td>
-              <td class="px-4 py-3 text-right font-mono text-xs">{app.devices}</td>
+              <td class="px-4 py-3 text-right font-mono text-xs">
+                <button type="button" popovertarget="holders-{app_index}" title="Who has it"
+                        class="underline decoration-2 decoration-stone-300 underline-offset-2 hover:decoration-black">{app.devices}</button>
+                <div id="holders-{app_index}" popover
+                     class="w-96 max-w-[90vw] max-h-[70vh] overflow-y-auto border-2 border-black bg-white p-0 text-left font-sans shadow-brutal">
+                  <div class="flex items-start justify-between gap-3 px-4 py-3 bg-black text-white">
+                    <p class="text-sm font-bold break-all">{app.row.name}</p>
+                    <button type="button" popovertarget="holders-{app_index}" popovertargetaction="hide"
+                            class="text-[10px] font-black tracking-widest underline">CLOSE</button>
+                  </div>
+                  <ul>
+                    {#for holder in app.holders}
+                    <li class="border-b-2 border-black last:border-0">
+                      <a href="{uri:Reports.show(holder.reportId)}" class="flex items-baseline justify-between gap-3 px-4 py-2 hover:bg-accent">
+                        <span class="font-mono text-xs break-all">{holder.deviceId}</span>
+                        <span class="text-xs text-stone-500 whitespace-nowrap">{holder.userName ?: '—'}</span>
+                      </a>
+                    </li>
+                    {/for}
+                  </ul>
+                </div>
+              </td>
               <td class="px-4 py-3 text-right whitespace-nowrap">
                 {#if app.row.blocked}
                 <span class="inline-block px-2 py-0.5 text-[10px] font-black tracking-widest border-2 border-black bg-red-400 text-white"

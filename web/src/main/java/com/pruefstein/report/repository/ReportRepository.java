@@ -167,6 +167,12 @@ public class ReportRepository implements PanacheRepository<Report>
 		return List.copyOf(latest.values());
 	}
 
+	/** The given runs, with the person behind each fetched alongside. */
+	public List<Report> listWithUsers(Collection<Long> ids)
+	{
+		return find("from Report r left join fetch r.appUser where r.id in ?1", ids).list();
+	}
+
 	public List<Report> listFiltered(ReportStatus status, String q, String sort, String dir)
 	{
 		return listFiltered(status, q, sort, dir, null);

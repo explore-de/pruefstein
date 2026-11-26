@@ -101,7 +101,7 @@ class AppsTest
 				containsString("ZZFleetAliceOnly.app"),
 				containsString("ZZFleetBobOnly.app"),
 				not(containsString("ZZFleetRemoved.app"))))
-			.body(matchesPattern("(?s).*ZZFleetShared\\.app</p>(?:(?!</tr>).)*>2</td>.*"));
+			.body(matchesPattern("(?s).*ZZFleetShared\\.app</p>(?:(?!</tr>).)*>2</button>.*"));
 	}
 
 	@Test
@@ -119,7 +119,26 @@ class AppsTest
 			.body(allOf(
 				containsString("ZZFleetAliceOnly.app"),
 				not(containsString("ZZFleetBobOnly.app")),
+				not(containsString("zzfleet-bob-laptop")),
 				not(containsString("ANALYZE WITH AI"))));
+	}
+
+	@Test
+	@TestSecurity(user = "admin", roles = { "admin" })
+	void eachAppNamesTheDevicesThatHaveItAndLinksTheirLatestReport()
+	{
+		// given — seeded in setUp
+		Long bobsReport = QuarkusTransaction.requiringNew().call(() -> reportRepository
+			.find("deviceId", "zzfleet-bob-laptop").firstResult().id);
+
+		// when / then — the shared app lists both laptops, bob's linked to his
+		// run
+		given()
+			.when().get("/Apps/index")
+			.then()
+			.statusCode(200)
+			.body(matchesPattern("(?s).*ZZFleetShared\\.app</p>(?:(?!</tr>).)*zzfleet-alice-laptop"
+				+ "(?:(?!</tr>).)*/Reports/show/" + bobsReport + "\"(?:(?!</tr>).)*zzfleet-bob-laptop.*"));
 	}
 
 	@Test
